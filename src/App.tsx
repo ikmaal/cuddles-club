@@ -1,34 +1,37 @@
 import { useMemo, useState } from 'react'
-import { AddPlaceSheet } from './components/AddPlaceSheet'
-import { BottomNav } from './components/BottomNav'
+import { CatHome } from './components/CatHome'
 import { Logo } from './components/Logo'
-import { MapView } from './components/MapView'
-import { PlaceDetail } from './components/PlaceDetail'
-import { PlaceList } from './components/PlaceList'
-import { usePlaces } from './hooks/usePlaces'
-import type { Tab } from './types'
+import { PlayGame } from './components/PlayGame'
+import { useCat } from './hooks/useCat'
+import { useProfile } from './hooks/useProfile'
 import './App.css'
 
 export default function App() {
-  const { places, profile, addPlace, deletePlace, updateProfile } = usePlaces()
-  const [tab, setTab] = useState<Tab>('map')
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [query, setQuery] = useState('')
-  const [toast, setToast] = useState('')
+  const { profile, updateProfile } = useProfile()
+  const {
+    cat,
+    mood,
+    level,
+    feed,
+    groom,
+    pet,
+    toggleSleep,
+    finishPlay,
+    setCarer,
+    rename,
+  } = useCat()
 
-  const selected = useMemo(
-    () => places.find((place) => place.id === selectedId) ?? null,
-    [places, selectedId],
+  const [toast, setToast] = useState('')
+  const [playing, setPlaying] = useState(false)
+
+  const tagline = useMemo(
+    () => `${profile.nameYou} & ${profile.namePartner} · ${cat.name} lv ${level}`,
+    [profile.nameYou, profile.namePartner, cat.name, level],
   )
 
   function showToast(message: string) {
     setToast(message)
     window.setTimeout(() => setToast(''), 2400)
-  }
-
-  function handleTabChange(next: Tab) {
-    setTab(next)
-    if (next !== 'map') setSelectedId(null)
   }
 
   return (
@@ -42,89 +45,44 @@ export default function App() {
           </span>
           <div>
             <p className="brand__name">Cuddles Club</p>
-            <p className="brand__tag">
-              {profile.nameYou} & {profile.namePartner} · {places.length}{' '}
-              {places.length === 1 ? 'place' : 'places'}
-            </p>
+            <p className="brand__tag">{tagline}</p>
           </div>
         </div>
       </header>
 
       <main className="app__main">
-        {tab === 'map' ? (
-          <section className="panel panel--map" aria-label="Map">
-            {places.length === 0 ? (
-              <div className="map-empty">
-                <MapView
-                  places={places}
-                  selectedId={selectedId}
-                  onSelect={setSelectedId}
-                />
-                <div className="map-empty__card">
-                  <h2>No pins yet</h2>
-                  <p>Add a place you’ve visited together to start your food map.</p>
-                  <button
-                    type="button"
-                    className="btn btn--primary"
-                    onClick={() => setTab('add')}
-                  >
-                    Add a place
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <MapView
-                places={places}
-                selectedId={selectedId}
-                onSelect={setSelectedId}
-              />
-            )}
-          </section>
-        ) : null}
-
-        {tab === 'list' ? (
-          <section className="panel panel--list" aria-label="Places">
-            <PlaceList
-              places={places}
-              profile={profile}
-              query={query}
-              onQueryChange={setQuery}
-              onSelect={setSelectedId}
-              onAdd={() => setTab('add')}
-            />
-          </section>
-        ) : null}
+        <section className="panel panel--cat" aria-label="Our cat">
+          <CatHome
+            cat={cat}
+            mood={mood}
+            level={level}
+            profile={profile}
+            onFeed={feed}
+            onGroom={groom}
+            onPet={pet}
+            onToggleSleep={toggleSleep}
+            onPlay={() => setPlaying(true)}
+            onSetCarer={setCarer}
+            onRename={rename}
+            onUpdateProfile={updateProfile}
+            onNotify={showToast}
+          />
+        </section>
       </main>
 
-      <BottomNav tab={tab} onChange={handleTabChange} count={places.length} />
-
-      {tab === 'add' ? (
-        <AddPlaceSheet
-          profile={profile}
-          onClose={() => setTab(places.length ? 'map' : 'list')}
-          onUpdateProfile={updateProfile}
-          onSave={(input) => {
-            const place = addPlace(input)
-            setSelectedId(place.id)
-            setTab('map')
-            showToast(`Saved ${place.name}`)
-          }}
-        />
-      ) : null}
-
-      {selected && tab !== 'add' ? (
-        <PlaceDetail
-          place={selected}
-          profile={profile}
-          onClose={() => setSelectedId(null)}
-          onDelete={(id) => {
-            deletePlace(id)
-            setSelectedId(null)
-            showToast('Place removed')
-          }}
-          onShowOnMap={(id) => {
-            setSelectedId(id)
-            setTab('map')
+      {playing ? (
+        <PlayGame
+          catName={cat.name}
+          bestScore={cat.bestScore}
+          onClose={() => setPlaying(false)}
+          onFinish={(score) => {
+            const result = finishPlay(score)
+            setPlaying(false)
+            showToast(
+              result.gainedXp > 0
+                ? `${result.message} · +${result.gainedXp} XP`
+                : result.message,
+            )
           }}
         />
       ) : null}

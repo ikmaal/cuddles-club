@@ -1,6 +1,6 @@
 # Cuddles Club
 
-A mobile-first couple’s food map — log every restaurant, café, and stall you’ve visited together.
+A mobile-first couple’s cat-care game — raise a cat together, feed it, play with it, and grow your bond.
 
 ## Live app
 
@@ -8,10 +8,11 @@ https://ikmaal.github.io/cuddles-club/
 
 ## Features
 
-- Interactive map with custom heart pins
-- Add places with dual ratings, cuisine, notes, and visit date
-- Drop a pin by tapping the map, searching, or using your location
-- Places list with search
+- Cute SVG cat companion with moods and animations
+- Care actions: feed, play, brush, nap, and pet
+- Catch-the-feather mini-game with combo scoring
+- Shared bond level and care counters for both of you
+- Stats that drain over time, even while the app is closed
 - Data saved locally in your browser
 
 ## Run locally
@@ -21,7 +22,7 @@ npm install
 npm run dev
 ```
 
-Open the local URL shown in the terminal (usually `http://localhost:5173`).
+Open the local URL shown in the terminal (usually `http://localhost:5173/cuddles-club/`).
 
 ## Deploy
 

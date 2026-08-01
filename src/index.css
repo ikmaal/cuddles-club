@@ -15,7 +15,6 @@
   --radius-s: 12px;
   --radius-m: 20px;
   --radius-l: 28px;
-  --nav-h: 76px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --font-display: 'Fraunces', Georgia, serif;
   --font-body: 'Nunito', system-ui, sans-serif;
