@@ -1,0 +1,97 @@
+:root {
+  --rose: #e85d75;
+  --rose-deep: #c44569;
+  --rose-soft: #ffe4ea;
+  --rose-mist: #fff0f4;
+  --ink: #241c1a;
+  --ink-soft: #5c524f;
+  --mist: #f3f0f6;
+  --foam: #ffffff;
+  --sage: #5b9a8b;
+  --sage-soft: #e3f2ed;
+  --stone: #8a7f7c;
+  --outline: #e8e0e3;
+  --shadow: 0 12px 40px rgba(36, 28, 26, 0.12);
+  --radius-s: 12px;
+  --radius-m: 20px;
+  --radius-l: 28px;
+  --nav-h: 76px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Nunito', system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--mist);
+  font-family: var(--font-body);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  min-width: 320px;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 80% at 10% -10%, #ffd6e0 0%, transparent 55%),
+    radial-gradient(90% 70% at 100% 0%, #d8efe7 0%, transparent 45%),
+    var(--mist);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+a {
+  color: var(--rose-deep);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+:focus-visible {
+  outline: 3px solid #ffb3c3;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
