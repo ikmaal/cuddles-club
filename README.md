@@ -25,4 +25,10 @@ Open the local URL shown in the terminal (usually `http://localhost:5173`).
 
 ## Deploy
 
-Pushes to `main` build and publish automatically to GitHub Pages via GitHub Actions.
+Pushes to `main` build the app and publish it to the `gh-pages` branch.
+
+In the repo: **Settings → Pages → Build and deployment**
+- Source: **Deploy from a branch**
+- Branch: **gh-pages** / **/** (root)
+
+Live URL: https://ikmaal.github.io/cuddles-club/
