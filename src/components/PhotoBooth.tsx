@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { composeCuteStrip } from '../composeStrip'
+import { loadStripDesignPreviews } from '../stripDesignPreviews'
+import {
+  DEFAULT_STRIP_DESIGN,
+  STRIP_DESIGNS,
+  type StripDesignId,
+} from '../stripDesigns'
 
 interface PhotoBoothProps {
   busy: boolean
@@ -7,7 +13,14 @@ interface PhotoBoothProps {
   onClose: () => void
 }
 
-type Phase = 'boot' | 'ready' | 'countdown' | 'flash' | 'review' | 'denied'
+type Phase =
+  | 'boot'
+  | 'pick-design'
+  | 'ready'
+  | 'countdown'
+  | 'flash'
+  | 'review'
+  | 'denied'
 
 const TOTAL_SHOTS = 4
 const COUNTDOWN_FROM = 3
@@ -24,6 +37,28 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
   const [title, setTitle] = useState('')
   const [error, setError] = useState('')
   const [composing, setComposing] = useState(false)
+  const [design, setDesign] = useState<StripDesignId>(DEFAULT_STRIP_DESIGN)
+  const [designPreviews, setDesignPreviews] = useState<Partial<Record<StripDesignId, string>>>(
+    {},
+  )
+  const [previewsLoading, setPreviewsLoading] = useState(true)
+
+  useEffect(() => {
+    let alive = true
+    loadStripDesignPreviews()
+      .then((previews) => {
+        if (alive) setDesignPreviews(previews)
+      })
+      .catch(() => {
+        // Previews are optional; picker still works without them
+      })
+      .finally(() => {
+        if (alive) setPreviewsLoading(false)
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -48,7 +83,7 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
           video.srcObject = stream
           await video.play()
         }
-        setPhase('ready')
+        setPhase('pick-design')
       } catch {
         if (!cancelled) {
           setPhase('denied')
@@ -125,6 +160,7 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
       const image = await composeCuteStrip(finalShots, {
         title: 'Cuddles Club',
         takenAt: Date.now(),
+        design,
       })
       setComposed(image)
       setTitle(defaultBoothTitle())
@@ -170,6 +206,11 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
     setShots([])
     setError('')
     await restartCamera()
+    setPhase('pick-design')
+  }
+
+  function continueToBooth() {
+    setError('')
     setPhase('ready')
   }
 
@@ -180,21 +221,26 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
   }
 
   const shotIndex = shots.length
+  const selectedDesign = STRIP_DESIGNS.find((item) => item.id === design)
 
   return (
-    <div className="booth" role="dialog" aria-modal aria-label="Photo booth">
+    <div className="booth" role="dialog" aria-modal aria-label="Photobooth">
       <header className="booth__bar">
         <button type="button" className="booth__text-btn" onClick={onClose}>
           Close
         </button>
         <div className="booth__title">
-          <strong>Photo Booth</strong>
+          <strong>Photobooth</strong>
           <span>
-            {phase === 'review'
-              ? 'Your cute strip is ready'
-              : phase === 'countdown' || phase === 'flash'
-                ? `Shot ${Math.min(shotIndex + 1, TOTAL_SHOTS)} of ${TOTAL_SHOTS}`
-                : 'Four snaps · one strip'}
+            {phase === 'pick-design'
+              ? 'Pick your strip design'
+              : phase === 'review'
+                ? 'Your strip is ready'
+                : phase === 'countdown' || phase === 'flash'
+                  ? `Shot ${Math.min(shotIndex + 1, TOTAL_SHOTS)} of ${TOTAL_SHOTS}`
+                  : selectedDesign
+                    ? `${selectedDesign.label} · 4 snaps`
+                    : 'Four snaps · one strip'}
           </span>
         </div>
         <span className="booth__bar-spacer" />
@@ -206,10 +252,57 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
         </p>
       ) : null}
 
-      {phase === 'review' ? (
+      {phase === 'pick-design' ? (
+        <div className="booth__designs">
+          <p className="booth__designs-lead">
+            Choose a style for your strip before the camera starts.
+          </p>
+          <ul className="booth__design-grid" role="listbox" aria-label="Strip designs">
+            {STRIP_DESIGNS.map((item) => (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={design === item.id}
+                  className={`booth__design-card ${design === item.id ? 'is-selected' : ''}`}
+                  onClick={() => setDesign(item.id)}
+                >
+                  <span className="booth__design-preview-wrap" aria-hidden>
+                    {designPreviews[item.id] ? (
+                      <img
+                        className="booth__design-preview"
+                        src={designPreviews[item.id]}
+                        alt=""
+                      />
+                    ) : (
+                      <span
+                        className={`booth__design-preview booth__design-preview--loading ${previewsLoading ? 'is-loading' : ''}`}
+                        style={{
+                          background: `linear-gradient(160deg, ${item.swatch[0]} 0%, ${item.swatch[1]} 55%, ${item.swatch[2]} 100%)`,
+                        }}
+                      />
+                    )}
+                  </span>
+                  <span className="booth__design-copy">
+                    <strong>{item.label}</strong>
+                    <small>{item.description}</small>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            className="btn btn--primary booth__design-continue"
+            onClick={continueToBooth}
+          >
+            Continue to booth
+          </button>
+        </div>
+      ) : phase === 'review' ? (
         <div className="booth__review">
           <div className="booth__strip-preview">
-            <img src={composed} alt="Finished photostrip" />
+            <img src={composed} alt="Finished photobooth strip" />
           </div>
           <label className="field booth__name">
             <span>Name this strip</span>
@@ -284,13 +377,24 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
           </ul>
 
           {phase === 'ready' ? (
-            <button type="button" className="btn btn--primary booth__start" onClick={startSession}>
-              Start booth
-            </button>
+            <div className="booth__ready-actions">
+              <button
+                type="button"
+                className="booth__change-design"
+                onClick={() => setPhase('pick-design')}
+              >
+                Change design
+              </button>
+              <button type="button" className="btn btn--primary booth__start" onClick={startSession}>
+                Start booth
+              </button>
+            </div>
           ) : null}
 
           {phase === 'countdown' || phase === 'flash' ? (
-            <p className="booth__hint">Hold still — cute characters incoming</p>
+            <p className="booth__hint">
+              Hold still — {selectedDesign?.label.toLowerCase()} magic incoming
+            </p>
           ) : null}
         </div>
       )}

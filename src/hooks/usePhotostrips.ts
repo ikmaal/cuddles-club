@@ -21,7 +21,7 @@ export function usePhotostrips() {
         if (alive) setStrips(rows)
       })
       .catch(() => {
-        if (alive) setError('Could not load your photo strips')
+        if (alive) setError('Could not load your photobooth album')
       })
       .finally(() => {
         if (alive) setReady(true)

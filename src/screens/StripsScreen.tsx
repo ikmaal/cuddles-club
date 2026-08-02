@@ -1,12 +1,13 @@
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { PhotoBooth } from '../components/PhotoBooth'
-import { PlusIcon, TrashIcon } from '../components/Icons'
+import { PlusIcon, StripIcon, TrashIcon } from '../components/Icons'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { StripViewer } from '../components/StripViewer'
 import { formatRelative } from '../hooks/useStored'
-import type { Photostrip } from '../types'
+import type { CoupleProfile, Photostrip } from '../types'
 
 interface StripsScreenProps {
+  profile: CoupleProfile
   strips: Photostrip[]
   ready: boolean
   busy: boolean
@@ -19,7 +20,24 @@ interface StripsScreenProps {
   onBack: () => void
 }
 
+function formatAlbumDate(timestamp: number): string {
+  return new Date(timestamp).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
+function albumDateRange(strips: Photostrip[]): string | null {
+  if (strips.length === 0) return null
+  const sorted = [...strips].sort((a, b) => a.createdAt - b.createdAt)
+  const first = formatAlbumDate(sorted[0].createdAt)
+  const last = formatAlbumDate(sorted[sorted.length - 1].createdAt)
+  return first === last ? first : `${first} – ${last}`
+}
+
 export function StripsScreen({
+  profile,
   strips,
   ready,
   busy,
@@ -37,6 +55,10 @@ export function StripsScreen({
   const [preview, setPreview] = useState('')
   const [active, setActive] = useState<Photostrip | null>(null)
   const [boothOpen, setBoothOpen] = useState(false)
+
+  const coverStrip = strips[0] ?? null
+  const dateRange = useMemo(() => albumDateRange(strips), [strips])
+  const photoCount = strips.length * 4
 
   function pickFile() {
     onClearError()
@@ -77,8 +99,8 @@ export function StripsScreen({
   return (
     <div className="screen">
       <ScreenHeader
-        title="Photo Strips"
-        subtitle="Booth snaps and keepsakes"
+        title="Photobooth"
+        subtitle="Our booth memories, kept together"
         onBack={onBack}
         action={
           <button
@@ -86,7 +108,7 @@ export function StripsScreen({
             className="strip-add-btn"
             onClick={pickFile}
             disabled={busy}
-            aria-label="Upload a photo strip"
+            aria-label="Upload a photobooth strip"
             title="Upload"
           >
             <PlusIcon size={20} />
@@ -103,22 +125,64 @@ export function StripsScreen({
       />
 
       <div className="screen__scroll">
-        <div className="surface booth-launch">
-          <div className="booth-launch__copy">
-            <p className="booth-launch__eyebrow">In-app booth</p>
-            <h2>Take 4 cutie photos</h2>
-            <p>
-              Countdown, snap four times, and we dress the strip with cats,
-              hearts, and stars.
-            </p>
+        <section className="album-cover" aria-label="Album cover">
+          <div className="album-cover__spine" aria-hidden />
+          <div className="album-cover__face">
+            <div className="album-cover__peek" aria-hidden>
+              {coverStrip ? (
+                <img src={coverStrip.image} alt="" />
+              ) : (
+                <span className="album-cover__empty">
+                  <StripIcon size={28} />
+                </span>
+              )}
+            </div>
+            <div className="album-cover__info">
+              <p className="album-cover__eyebrow">Photobooth album</p>
+              <h2>
+                {profile.nameYou} & {profile.namePartner}
+              </h2>
+              <p className="album-cover__blurb">
+                {strips.length > 0
+                  ? 'Every booth night, saved on one shelf.'
+                  : 'Start your first page with the booth or an upload.'}
+              </p>
+              <dl className="album-cover__stats">
+                <div>
+                  <dt>Strips</dt>
+                  <dd>{ready ? strips.length : '—'}</dd>
+                </div>
+                <div>
+                  <dt>Photos</dt>
+                  <dd>{ready ? photoCount : '—'}</dd>
+                </div>
+                <div>
+                  <dt>Span</dt>
+                  <dd>{dateRange ?? '—'}</dd>
+                </div>
+              </dl>
+            </div>
           </div>
+        </section>
+
+        <div className="album-toolbar">
           <button
             type="button"
-            className="btn btn--primary btn--sm"
+            className="album-toolbar__btn album-toolbar__btn--primary"
             onClick={openBooth}
             disabled={busy}
           >
+            <StripIcon size={18} />
             Open booth
+          </button>
+          <button
+            type="button"
+            className="album-toolbar__btn"
+            onClick={pickFile}
+            disabled={busy}
+          >
+            <PlusIcon size={18} />
+            Upload strip
           </button>
         </div>
 
@@ -129,12 +193,13 @@ export function StripsScreen({
         ) : null}
 
         {pendingFile ? (
-          <form className="surface strip-compose" onSubmit={savePending}>
-            <div className="strip-compose__preview">
+          <form className="surface album-compose" onSubmit={savePending}>
+            <p className="album-compose__label">New album page</p>
+            <div className="album-compose__preview">
               <img src={preview} alt="New strip preview" />
             </div>
             <label className="field">
-              <span>Name this strip</span>
+              <span>Caption this strip</span>
               <input
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
@@ -143,7 +208,7 @@ export function StripsScreen({
                 autoFocus
               />
             </label>
-            <div className="strip-compose__actions">
+            <div className="album-compose__actions">
               <button
                 type="button"
                 className="btn btn--ghost btn--sm"
@@ -153,7 +218,7 @@ export function StripsScreen({
                 Cancel
               </button>
               <button type="submit" className="btn btn--primary btn--sm" disabled={busy}>
-                {busy ? 'Saving…' : 'Save strip'}
+                {busy ? 'Saving…' : 'Add to album'}
               </button>
             </div>
           </form>
@@ -161,68 +226,79 @@ export function StripsScreen({
 
         {!ready ? (
           <div className="empty">
-            <p className="empty__title">Loading strips…</p>
+            <p className="empty__title">Opening album…</p>
           </div>
         ) : strips.length === 0 && !pendingFile ? (
-          <div className="empty">
-            <p className="empty__title">No strips yet</p>
-            <p className="empty__body">
-              Open the booth for a fresh 4-shot strip, or upload one you already have.
+          <div className="album-empty">
+            <p className="album-empty__title">This album is waiting for its first strip</p>
+            <p className="album-empty__body">
+              Snap four photos in the booth, or tuck in a strip you already love.
             </p>
-            <button type="button" className="btn btn--primary btn--sm" onClick={openBooth}>
-              Open booth
-            </button>
           </div>
-        ) : (
-          <ul className="strip-grid">
-            {strips.map((strip) => (
-              <li key={strip.id}>
-                <button
-                  type="button"
-                  className="strip-tile"
-                  onClick={() => setActive(strip)}
+        ) : strips.length > 0 ? (
+          <section className="album-shelf" aria-label="Album pages">
+            <header className="album-shelf__head">
+              <h3>Inside the album</h3>
+              <p>{strips.length} page{strips.length === 1 ? '' : 's'}</p>
+            </header>
+            <ul className="album-pages">
+              {strips.map((strip, index) => (
+                <li
+                  key={strip.id}
+                  className="album-page"
+                  style={{ '--page-tilt': `${((index % 3) - 1) * 0.6}deg` } as React.CSSProperties}
                 >
-                  <span className="strip-tile__frame">
-                    <img src={strip.image} alt="" />
-                  </span>
-                  <span className="strip-tile__meta">
-                    <strong>{strip.title}</strong>
-                    <small>{formatRelative(strip.createdAt)}</small>
-                  </span>
-                </button>
-                <div className="strip-tile__actions">
                   <button
                     type="button"
-                    className="ghost-icon"
-                    onClick={() => {
-                      const next = window.prompt('Rename this strip', strip.title)
-                      if (next) void onRename(strip.id, next)
-                    }}
-                    aria-label={`Rename ${strip.title}`}
+                    className="album-page__open"
+                    onClick={() => setActive(strip)}
                   >
-                    ✎
+                    <span className="album-page__paper">
+                      <span className="album-page__mount album-page__mount--tl" aria-hidden />
+                      <span className="album-page__mount album-page__mount--tr" aria-hidden />
+                      <span className="album-page__strip">
+                        <img src={strip.image} alt="" />
+                      </span>
+                      <span className="album-page__caption">
+                        <strong>{strip.title}</strong>
+                        <small>{formatRelative(strip.createdAt)}</small>
+                      </span>
+                    </span>
                   </button>
-                  <button
-                    type="button"
-                    className="ghost-icon"
-                    onClick={() => {
-                      if (window.confirm(`Remove “${strip.title}”?`)) {
-                        void onRemove(strip.id)
-                      }
-                    }}
-                    aria-label={`Delete ${strip.title}`}
-                  >
-                    <TrashIcon size={18} />
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+                  <div className="album-page__actions">
+                    <button
+                      type="button"
+                      className="ghost-icon"
+                      onClick={() => {
+                        const next = window.prompt('Rename this strip', strip.title)
+                        if (next) void onRename(strip.id, next)
+                      }}
+                      aria-label={`Rename ${strip.title}`}
+                    >
+                      ✎
+                    </button>
+                    <button
+                      type="button"
+                      className="ghost-icon"
+                      onClick={() => {
+                        if (window.confirm(`Remove “${strip.title}”?`)) {
+                          void onRemove(strip.id)
+                        }
+                      }}
+                      aria-label={`Delete ${strip.title}`}
+                    >
+                      <TrashIcon size={18} />
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
 
         {strips.length > 0 ? (
           <p className="fineprint">
-            Tap a strip to spin it in 3D. Photos stay on this device only.
+            Tap a page to view the strip in 3D. Everything stays on this device.
           </p>
         ) : null}
       </div>

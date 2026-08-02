@@ -29,8 +29,8 @@ export const SERVICES: Service[] = [
   },
   {
     id: 'strips',
-    label: 'Photo Strips',
-    blurb: 'Save booth strips and spin them in 3D',
+    label: 'Photobooth',
+    blurb: 'Snap strips, save memories, spin them in 3D',
     tone: 'film',
     Icon: StripIcon,
   },

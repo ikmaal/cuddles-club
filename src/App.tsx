@@ -171,6 +171,7 @@ export default function App() {
 
         {screen === 'strips' ? (
           <StripsScreen
+            profile={profile}
             strips={strips.strips}
             ready={strips.ready}
             busy={strips.busy}
