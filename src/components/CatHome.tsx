@@ -260,7 +260,8 @@ export function CatHome({
         </div>
 
         <p className="cat-hint">
-          {carerName} is on duty · tap {cat.name} for pets
+          {carerName === 'You' ? "You're" : `${carerName} is`} on duty · tap{' '}
+          {cat.name} for pets
         </p>
 
         <div className="care-actions">

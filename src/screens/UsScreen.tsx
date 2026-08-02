@@ -62,7 +62,7 @@ export function UsScreen({
           </li>
           <li className="metric">
             <span className="metric__value">{bucketDone}</span>
-            <span className="metric__label">Bucket items done</span>
+            <span className="metric__label">Bucket done</span>
           </li>
         </ul>
 

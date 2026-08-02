@@ -89,45 +89,47 @@ export function RouletteScreen({
           </button>
         </div>
 
-        <div className="section-head section-head--tight">
-          <h2>The pool</h2>
-          <span className="section-head__meta">
-            {ideas.length} {ideas.length === 1 ? 'idea' : 'ideas'}
-          </span>
+        <div className="section-block">
+          <div className="section-head section-head--tight">
+            <h2>The pool</h2>
+            <span className="section-head__meta">
+              {ideas.length} {ideas.length === 1 ? 'idea' : 'ideas'}
+            </span>
+          </div>
+
+          <form className="inline-add" onSubmit={submit}>
+            <input
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              placeholder="Add your own date idea"
+              maxLength={90}
+              aria-label="New date idea"
+            />
+            <button
+              type="submit"
+              className="inline-add__btn"
+              disabled={!draft.trim()}
+              aria-label="Add idea"
+            >
+              <PlusIcon size={20} />
+            </button>
+          </form>
+
+          <ul className="chip-list">
+            {ideas.map((idea) => (
+              <li key={idea.id} className="chip">
+                <span className="chip__text">{idea.text}</span>
+                <button
+                  type="button"
+                  onClick={() => onRemove(idea.id)}
+                  aria-label={`Remove ${idea.text}`}
+                >
+                  <TrashIcon size={16} />
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
-
-        <form className="inline-add" onSubmit={submit}>
-          <input
-            value={draft}
-            onChange={(event) => setDraft(event.target.value)}
-            placeholder="Add your own date idea"
-            maxLength={90}
-            aria-label="New date idea"
-          />
-          <button
-            type="submit"
-            className="inline-add__btn"
-            disabled={!draft.trim()}
-            aria-label="Add idea"
-          >
-            <PlusIcon size={20} />
-          </button>
-        </form>
-
-        <ul className="chip-list">
-          {ideas.map((idea) => (
-            <li key={idea.id} className="chip">
-              {idea.text}
-              <button
-                type="button"
-                onClick={() => onRemove(idea.id)}
-                aria-label={`Remove ${idea.text}`}
-              >
-                <TrashIcon size={16} />
-              </button>
-            </li>
-          ))}
-        </ul>
 
         {ideas.length === 0 ? (
           <div className="empty">

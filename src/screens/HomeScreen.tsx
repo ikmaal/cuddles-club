@@ -142,7 +142,7 @@ export function HomeScreen({ profile, summary, onOpen }: HomeScreenProps) {
 
         {searching ? null : (
           <>
-            <section aria-label="Pick up where you left off">
+            <section className="home-section" aria-label="Pick up where you left off">
               <div className="section-head">
                 <h2>Pick up where you left off</h2>
               </div>
@@ -207,7 +207,7 @@ export function HomeScreen({ profile, summary, onOpen }: HomeScreenProps) {
               </div>
             </section>
 
-            <section aria-label="Us by the numbers">
+            <section className="home-section" aria-label="Us by the numbers">
               <div className="section-head">
                 <h2>Us, by the numbers</h2>
               </div>
@@ -229,7 +229,7 @@ export function HomeScreen({ profile, summary, onOpen }: HomeScreenProps) {
                   <span className="metric__value">
                     {summary.bucketDone}/{summary.bucketTotal}
                   </span>
-                  <span className="metric__label">Bucket list done</span>
+                  <span className="metric__label">Bucket done</span>
                 </li>
                 <li className="metric">
                   <span className="metric__value">{summary.noteCount}</span>

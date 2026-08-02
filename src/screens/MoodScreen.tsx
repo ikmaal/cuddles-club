@@ -70,32 +70,34 @@ export function MoodScreen({ moods, profile, onSet, onBack }: MoodScreenProps) {
           </div>
         ))}
 
-        <div className="section-head section-head--tight">
-          <h2>Last 7 days</h2>
-        </div>
+        <div className="section-block">
+          <div className="section-head section-head--tight">
+            <h2>Last 7 days</h2>
+          </div>
 
-        <div className="surface week">
-          {week.map((day) => {
-            const record = moods.find((item) => item.day === day)
-            const date = new Date(`${day}T00:00:00`)
-            return (
-              <div key={day} className={`week__day ${day === today ? 'is-today' : ''}`}>
-                <span className="week__label">
-                  {date.toLocaleDateString(undefined, { weekday: 'narrow' })}
-                </span>
-                <span className="week__emoji" aria-hidden>
-                  {emojiFor(record?.you)}
-                </span>
-                <span className="week__emoji" aria-hidden>
-                  {emojiFor(record?.partner)}
-                </span>
-              </div>
-            )
-          })}
+          <div className="surface week">
+            {week.map((day) => {
+              const record = moods.find((item) => item.day === day)
+              const date = new Date(`${day}T00:00:00`)
+              return (
+                <div key={day} className={`week__day ${day === today ? 'is-today' : ''}`}>
+                  <span className="week__label">
+                    {date.toLocaleDateString(undefined, { weekday: 'narrow' })}
+                  </span>
+                  <span className="week__emoji" aria-hidden>
+                    {emojiFor(record?.you)}
+                  </span>
+                  <span className="week__emoji" aria-hidden>
+                    {emojiFor(record?.partner)}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+          <p className="week__legend">
+            Top row is {profile.nameYou}, bottom row is {profile.namePartner}.
+          </p>
         </div>
-        <p className="week__legend">
-          Top row is {profile.nameYou}, bottom row is {profile.namePartner}.
-        </p>
       </div>
     </div>
   )
