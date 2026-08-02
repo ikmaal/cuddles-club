@@ -176,6 +176,7 @@ export default function App() {
             busy={strips.busy}
             error={strips.error}
             onAdd={strips.addFromFile}
+            onAddBooth={strips.addFromDataUrl}
             onRename={strips.rename}
             onRemove={strips.remove}
             onClearError={() => strips.setError('')}

@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { PhotoBooth } from '../components/PhotoBooth'
 import { PlusIcon, TrashIcon } from '../components/Icons'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { StripViewer } from '../components/StripViewer'
@@ -11,6 +12,7 @@ interface StripsScreenProps {
   busy: boolean
   error: string
   onAdd: (file: File, title: string) => Promise<Photostrip | null>
+  onAddBooth: (imageDataUrl: string, title: string) => Promise<boolean>
   onRename: (id: string, title: string) => Promise<void>
   onRemove: (id: string) => Promise<void>
   onClearError: () => void
@@ -23,6 +25,7 @@ export function StripsScreen({
   busy,
   error,
   onAdd,
+  onAddBooth,
   onRename,
   onRemove,
   onClearError,
@@ -33,10 +36,16 @@ export function StripsScreen({
   const [pendingFile, setPendingFile] = useState<File | null>(null)
   const [preview, setPreview] = useState('')
   const [active, setActive] = useState<Photostrip | null>(null)
+  const [boothOpen, setBoothOpen] = useState(false)
 
   function pickFile() {
     onClearError()
     inputRef.current?.click()
+  }
+
+  function openBooth() {
+    onClearError()
+    setBoothOpen(true)
   }
 
   function onFileChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -69,7 +78,7 @@ export function StripsScreen({
     <div className="screen">
       <ScreenHeader
         title="Photo Strips"
-        subtitle="Your booth strips, kept together"
+        subtitle="Booth snaps and keepsakes"
         onBack={onBack}
         action={
           <button
@@ -77,7 +86,8 @@ export function StripsScreen({
             className="strip-add-btn"
             onClick={pickFile}
             disabled={busy}
-            aria-label="Add a photo strip"
+            aria-label="Upload a photo strip"
+            title="Upload"
           >
             <PlusIcon size={20} />
           </button>
@@ -93,6 +103,25 @@ export function StripsScreen({
       />
 
       <div className="screen__scroll">
+        <div className="surface booth-launch">
+          <div className="booth-launch__copy">
+            <p className="booth-launch__eyebrow">In-app booth</p>
+            <h2>Take 4 cutie photos</h2>
+            <p>
+              Countdown, snap four times, and we dress the strip with cats,
+              hearts, and stars.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="btn btn--primary btn--sm"
+            onClick={openBooth}
+            disabled={busy}
+          >
+            Open booth
+          </button>
+        </div>
+
         {error ? (
           <p className="strip-error" role="alert">
             {error}
@@ -138,10 +167,10 @@ export function StripsScreen({
           <div className="empty">
             <p className="empty__title">No strips yet</p>
             <p className="empty__body">
-              Snap or upload a photo booth strip, then spin it around in 3D.
+              Open the booth for a fresh 4-shot strip, or upload one you already have.
             </p>
-            <button type="button" className="btn btn--primary btn--sm" onClick={pickFile}>
-              Add your first strip
+            <button type="button" className="btn btn--primary btn--sm" onClick={openBooth}>
+              Open booth
             </button>
           </div>
         ) : (
@@ -197,6 +226,14 @@ export function StripsScreen({
           </p>
         ) : null}
       </div>
+
+      {boothOpen ? (
+        <PhotoBooth
+          busy={busy}
+          onSave={onAddBooth}
+          onClose={() => setBoothOpen(false)}
+        />
+      ) : null}
 
       {active ? <StripViewer strip={active} onClose={() => setActive(null)} /> : null}
     </div>

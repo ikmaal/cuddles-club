@@ -331,6 +331,15 @@ export async function createStripFromFile(
   }
 }
 
+export function createStripFromDataUrl(image: string, title: string): Photostrip {
+  return {
+    id: createId(),
+    title: title.trim().slice(0, 40) || 'Booth strip',
+    image,
+    createdAt: Date.now(),
+  }
+}
+
 function defaultTitle(filename: string): string {
   const base = filename.replace(/\.[^.]+$/, '').trim()
   return base.slice(0, 40) || 'Photo strip'

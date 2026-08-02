@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
+  createStripFromDataUrl,
   createStripFromFile,
   deleteStrip,
   ensureSampleStrip,
@@ -30,21 +31,46 @@ export function usePhotostrips() {
     }
   }, [])
 
-  const addFromFile = useCallback(async (file: File, title: string) => {
-    setBusy(true)
-    setError('')
-    try {
-      const strip = await createStripFromFile(file, title)
-      await putStrip(strip)
-      setStrips((prev) => [strip, ...prev])
-      return strip
-    } catch {
-      setError('Could not save that strip. Try a smaller photo.')
-      return null
-    } finally {
-      setBusy(false)
-    }
+  const persist = useCallback(async (strip: Photostrip) => {
+    await putStrip(strip)
+    setStrips((prev) => [strip, ...prev.filter((item) => item.id !== strip.id)])
+    return strip
   }, [])
+
+  const addFromFile = useCallback(
+    async (file: File, title: string) => {
+      setBusy(true)
+      setError('')
+      try {
+        const strip = await createStripFromFile(file, title)
+        return await persist(strip)
+      } catch {
+        setError('Could not save that strip. Try a smaller photo.')
+        return null
+      } finally {
+        setBusy(false)
+      }
+    },
+    [persist],
+  )
+
+  const addFromDataUrl = useCallback(
+    async (image: string, title: string) => {
+      setBusy(true)
+      setError('')
+      try {
+        const strip = createStripFromDataUrl(image, title)
+        await persist(strip)
+        return true
+      } catch {
+        setError('Could not save that booth strip.')
+        return false
+      } finally {
+        setBusy(false)
+      }
+    },
+    [persist],
+  )
 
   const rename = useCallback(async (id: string, title: string) => {
     const next = title.trim().slice(0, 40)
@@ -63,5 +89,15 @@ export function usePhotostrips() {
     setStrips((prev) => prev.filter((strip) => strip.id !== id))
   }, [])
 
-  return { strips, ready, busy, error, addFromFile, rename, remove, setError }
+  return {
+    strips,
+    ready,
+    busy,
+    error,
+    addFromFile,
+    addFromDataUrl,
+    rename,
+    remove,
+    setError,
+  }
 }
