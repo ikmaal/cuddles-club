@@ -5,14 +5,14 @@ import {
   CatIcon,
   ChatIcon,
   DiceIcon,
-  GridIcon,
   NoteIcon,
   SmileIcon,
+  StripIcon,
 } from './components/Icons'
 import type { Screen } from './types'
 
 export interface Service {
-  id: Screen | 'more'
+  id: Screen
   label: string
   blurb: string
   tone: string
@@ -26,6 +26,13 @@ export const SERVICES: Service[] = [
     blurb: 'Feed, play and raise Mochi together',
     tone: 'rose',
     Icon: CatIcon,
+  },
+  {
+    id: 'strips',
+    label: 'Photo Strips',
+    blurb: 'Save booth strips and spin them in 3D',
+    tone: 'film',
+    Icon: StripIcon,
   },
   {
     id: 'notes',
@@ -69,18 +76,4 @@ export const SERVICES: Service[] = [
     tone: 'yellow',
     Icon: SmileIcon,
   },
-  {
-    id: 'more',
-    label: 'More',
-    blurb: 'What’s coming next',
-    tone: 'neutral',
-    Icon: GridIcon,
-  },
-]
-
-export const UPCOMING = [
-  'Shared photo album',
-  'Song of the day',
-  'Split the bill',
-  'Movie watchlist',
 ]

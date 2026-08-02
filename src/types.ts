@@ -43,7 +43,16 @@ export type Screen =
   | 'countdown'
   | 'question'
   | 'mood'
+  | 'strips'
   | 'us'
+
+export interface Photostrip {
+  id: string
+  title: string
+  /** Compressed JPEG data URL for the strip face. */
+  image: string
+  createdAt: number
+}
 
 export interface Note {
   id: string

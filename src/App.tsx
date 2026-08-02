@@ -5,6 +5,7 @@ import { PlayGame } from './components/PlayGame'
 import { questionForDay } from './data'
 import { useCat } from './hooks/useCat'
 import { useCoupleData } from './hooks/useCoupleData'
+import { usePhotostrips } from './hooks/usePhotostrips'
 import { daysTogether, useProfile } from './hooks/useProfile'
 import { todayKey } from './hooks/useStored'
 import { BucketScreen } from './screens/BucketScreen'
@@ -15,6 +16,7 @@ import { MoodScreen } from './screens/MoodScreen'
 import { NotesScreen } from './screens/NotesScreen'
 import { QuestionScreen } from './screens/QuestionScreen'
 import { RouletteScreen } from './screens/RouletteScreen'
+import { StripsScreen } from './screens/StripsScreen'
 import { UsScreen } from './screens/UsScreen'
 import type { Carer, Screen } from './types'
 import './App.css'
@@ -27,6 +29,7 @@ const TABS: { id: Screen; label: string; Icon: typeof HomeIcon }[] = [
 export default function App() {
   const { profile, updateProfile } = useProfile()
   const data = useCoupleData()
+  const strips = usePhotostrips()
   const {
     cat,
     mood,
@@ -162,6 +165,20 @@ export default function App() {
             moods={data.moods}
             profile={profile}
             onSet={data.setMood}
+            onBack={goHome}
+          />
+        ) : null}
+
+        {screen === 'strips' ? (
+          <StripsScreen
+            strips={strips.strips}
+            ready={strips.ready}
+            busy={strips.busy}
+            error={strips.error}
+            onAdd={strips.addFromFile}
+            onRename={strips.rename}
+            onRemove={strips.remove}
+            onClearError={() => strips.setError('')}
             onBack={goHome}
           />
         ) : null}

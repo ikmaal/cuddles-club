@@ -1,7 +1,6 @@
-import { useState } from 'react'
 import { ChevronIcon, HeartIcon } from '../components/Icons'
 import { Logo } from '../components/Logo'
-import { SERVICES, UPCOMING } from '../services'
+import { SERVICES } from '../services'
 import type { CoupleProfile, Screen } from '../types'
 
 export interface HomeSummary {
@@ -39,8 +38,6 @@ function initials(profile: CoupleProfile): string {
 }
 
 export function HomeScreen({ profile, summary, onOpen }: HomeScreenProps) {
-  const [showUpcoming, setShowUpcoming] = useState(false)
-
   return (
     <div className="home">
       <header className="home__top">
@@ -71,13 +68,7 @@ export function HomeScreen({ profile, summary, onOpen }: HomeScreenProps) {
                 <button
                   type="button"
                   className="service"
-                  onClick={() => {
-                    if (service.id === 'more') {
-                      setShowUpcoming((prev) => !prev)
-                      return
-                    }
-                    onOpen(service.id as Screen)
-                  }}
+                  onClick={() => onOpen(service.id)}
                 >
                   <span className={`service__tile service__tile--${service.tone}`}>
                     <service.Icon size={26} />
@@ -87,17 +78,6 @@ export function HomeScreen({ profile, summary, onOpen }: HomeScreenProps) {
               </li>
             ))}
           </ul>
-
-          {showUpcoming ? (
-            <div className="services__upcoming">
-              <p className="services__upcoming-title">In the works</p>
-              <ul>
-                {UPCOMING.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
         </section>
 
         <section className="home-section" aria-label="Pick up where you left off">

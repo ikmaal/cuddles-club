@@ -85,6 +85,15 @@ export function SmileIcon({ size }: IconProps) {
   )
 }
 
+export function StripIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <rect x="7" y="2.5" width="10" height="19" rx="2" />
+      <path d="M9.5 5.5h5M9.5 10h5M9.5 14.5h5M9.5 19h5" />
+    </Frame>
+  )
+}
+
 export function GridIcon({ size }: IconProps) {
   return (
     <Frame size={size}>
