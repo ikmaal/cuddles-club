@@ -17,7 +17,6 @@ export interface Service {
   blurb: string
   tone: string
   Icon: ComponentType<{ size?: number }>
-  keywords: string[]
 }
 
 export const SERVICES: Service[] = [
@@ -27,7 +26,6 @@ export const SERVICES: Service[] = [
     blurb: 'Feed, play and raise Mochi together',
     tone: 'rose',
     Icon: CatIcon,
-    keywords: ['cat', 'pet', 'mochi', 'feed', 'play', 'game'],
   },
   {
     id: 'notes',
@@ -35,7 +33,6 @@ export const SERVICES: Service[] = [
     blurb: 'Leave each other little messages',
     tone: 'purple',
     Icon: NoteIcon,
-    keywords: ['note', 'love', 'message', 'letter', 'write'],
   },
   {
     id: 'bucket',
@@ -43,7 +40,6 @@ export const SERVICES: Service[] = [
     blurb: 'Everything you want to do together',
     tone: 'green',
     Icon: BucketIcon,
-    keywords: ['bucket', 'list', 'goals', 'todo', 'plans'],
   },
   {
     id: 'roulette',
@@ -51,7 +47,6 @@ export const SERVICES: Service[] = [
     blurb: 'Let fate pick tonight’s plan',
     tone: 'orange',
     Icon: DiceIcon,
-    keywords: ['date', 'spin', 'random', 'idea', 'roulette'],
   },
   {
     id: 'countdown',
@@ -59,7 +54,6 @@ export const SERVICES: Service[] = [
     blurb: 'Days until the moments that matter',
     tone: 'blue',
     Icon: CalendarIcon,
-    keywords: ['countdown', 'date', 'anniversary', 'birthday', 'calendar'],
   },
   {
     id: 'question',
@@ -67,7 +61,6 @@ export const SERVICES: Service[] = [
     blurb: 'One question, two answers',
     tone: 'teal',
     Icon: ChatIcon,
-    keywords: ['question', 'daily', 'answer', 'talk', 'prompt'],
   },
   {
     id: 'mood',
@@ -75,7 +68,6 @@ export const SERVICES: Service[] = [
     blurb: 'Check in on how you both feel',
     tone: 'yellow',
     Icon: SmileIcon,
-    keywords: ['mood', 'feel', 'check in', 'today'],
   },
   {
     id: 'more',
@@ -83,7 +75,6 @@ export const SERVICES: Service[] = [
     blurb: 'What’s coming next',
     tone: 'neutral',
     Icon: GridIcon,
-    keywords: ['more', 'soon', 'other'],
   },
 ]
 

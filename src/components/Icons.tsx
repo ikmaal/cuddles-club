@@ -120,15 +120,6 @@ export function BackIcon({ size }: IconProps) {
   )
 }
 
-export function SearchIcon({ size }: IconProps) {
-  return (
-    <Frame size={size}>
-      <circle cx="11" cy="11" r="6.5" />
-      <path d="m16 16 4.5 4.5" />
-    </Frame>
-  )
-}
-
 export function PlusIcon({ size }: IconProps) {
   return (
     <Frame size={size}>
