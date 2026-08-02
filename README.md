@@ -1,19 +1,28 @@
 # Cuddles Club
 
-A mobile-first couple’s cat-care game — raise a cat together, feed it, play with it, and grow your bond.
+A mobile-first app for two people. The home screen is a hub of small apps you open like tiles, so everything you do together lives in one place.
 
 ## Live app
 
 https://ikmaal.github.io/cuddles-club/
 
-## Features
+## What's inside
 
-- Cute SVG cat companion with moods and animations
-- Care actions: feed, play, brush, nap, and pet
-- Catch-the-feather mini-game with combo scoring
-- Shared bond level and care counters for both of you
-- Stats that drain over time, even while the app is closed
-- Data saved locally in your browser
+The home hub has a searchable service grid, a spotlight rail that picks up where you left off, and a summary of the two of you. Each tile opens its own screen:
+
+| Tile | What it does |
+| --- | --- |
+| Our Cat | Raise Mochi together: feed, brush, nap, pet, and a catch-the-feather mini-game with a shared bond level |
+| Love Notes | Leave each other short messages, tagged by who wrote them |
+| Bucket List | A shared checklist of things to do together, with progress |
+| Date Spin | Spin a wheel of date ideas when neither of you can decide |
+| Countdowns | Days until birthdays, trips, and anniversaries, with yearly repeats |
+| Daily Q | One rotating question a day, answered by both of you |
+| Mood | A quick check-in for each of you, plus a seven-day view |
+
+The **Us** tab holds your names, the day you got together, and your running totals.
+
+Everything is stored in the browser's local storage — nothing leaves the device.
 
 ## Run locally
 

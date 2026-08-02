@@ -6,6 +6,7 @@ const LEGACY_PROFILE_KEY = 'spoonful-profile-v1'
 export const defaultProfile: CoupleProfile = {
   nameYou: 'You',
   namePartner: 'Partner',
+  since: '',
 }
 
 function readJson<T>(key: string): T | null {

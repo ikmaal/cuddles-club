@@ -1,0 +1,155 @@
+interface IconProps {
+  size?: number
+}
+
+const base = {
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 1.9,
+  strokeLinecap: 'round' as const,
+  strokeLinejoin: 'round' as const,
+}
+
+function Frame({ size = 24, children }: IconProps & { children: React.ReactNode }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden {...base}>
+      {children}
+    </svg>
+  )
+}
+
+export function CatIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="M5 11c0-4 .9-7.6 1.5-7.6C7.3 3.4 9 5.2 10 6.2a8.8 8.8 0 0 1 4 0c1-1 2.7-2.8 3.5-2.8.6 0 1.5 3.6 1.5 7.6 0 5.1-3.1 9-7 9s-7-3.9-7-9z" />
+      <path d="M9.6 12h.01M14.4 12h.01" strokeWidth="2.4" />
+      <path d="M12 14.6v.9M12 15.5c-.6 1-1.9.9-2.4.3M12 15.5c.6 1 1.9.9 2.4.3" />
+    </Frame>
+  )
+}
+
+export function NoteIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <rect x="3" y="5" width="18" height="14" rx="3" />
+      <path d="M3.6 7.2 12 13l8.4-5.8" />
+    </Frame>
+  )
+}
+
+export function BucketIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="M9 3h9a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V9" />
+      <path d="m3 5 2.6 2.6L10 3.2" />
+      <path d="M9.5 11h7M9.5 15.5h4.5" />
+    </Frame>
+  )
+}
+
+export function DiceIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <rect x="3" y="3" width="18" height="18" rx="4.5" />
+      <path d="M8.4 8.4h.01M15.6 8.4h.01M12 12h.01M8.4 15.6h.01M15.6 15.6h.01" strokeWidth="2.6" />
+    </Frame>
+  )
+}
+
+export function CalendarIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <rect x="3" y="5" width="18" height="16" rx="3.5" />
+      <path d="M3 9.5h18M8 3v4M16 3v4" />
+      <path d="M8 14h3.5" />
+    </Frame>
+  )
+}
+
+export function ChatIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="M21 12.5a7.5 7.5 0 0 1-7.5 7.5H8l-4 3v-4.4A7.5 7.5 0 0 1 3 12.5 7.5 7.5 0 0 1 10.5 5h3A7.5 7.5 0 0 1 21 12.5z" />
+      <path d="M9 12h.01M12 12h.01M15 12h.01" strokeWidth="2.4" />
+    </Frame>
+  )
+}
+
+export function SmileIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9 10h.01M15 10h.01" strokeWidth="2.4" />
+      <path d="M8.5 14.5a4.5 4.5 0 0 0 7 0" />
+    </Frame>
+  )
+}
+
+export function GridIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <circle cx="6" cy="12" r="1.6" strokeWidth="2.2" />
+      <circle cx="12" cy="12" r="1.6" strokeWidth="2.2" />
+      <circle cx="18" cy="12" r="1.6" strokeWidth="2.2" />
+    </Frame>
+  )
+}
+
+export function HomeIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="M4 10.5 12 4l8 6.5V19a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" />
+      <path d="M9.5 21v-6h5v6" />
+    </Frame>
+  )
+}
+
+export function HeartIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="M12 20.3C7.9 17.1 4 13.6 4 10a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 3.6-3.9 7.1-8 10.3z" />
+    </Frame>
+  )
+}
+
+export function BackIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="M15 5.5 8.5 12l6.5 6.5" />
+    </Frame>
+  )
+}
+
+export function SearchIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="m16 16 4.5 4.5" />
+    </Frame>
+  )
+}
+
+export function PlusIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="M12 5.5v13M5.5 12h13" />
+    </Frame>
+  )
+}
+
+export function TrashIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="M4.5 6.5h15M9.5 6.5V4.8a1.3 1.3 0 0 1 1.3-1.3h2.4a1.3 1.3 0 0 1 1.3 1.3v1.7" />
+      <path d="M6.5 6.5 7.4 19a1.6 1.6 0 0 0 1.6 1.5h6a1.6 1.6 0 0 0 1.6-1.5l.9-12.5" />
+    </Frame>
+  )
+}
+
+export function ChevronIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="m9.5 5.5 6.5 6.5-6.5 6.5" />
+    </Frame>
+  )
+}

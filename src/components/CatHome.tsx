@@ -16,7 +16,6 @@ interface CatHomeProps {
   onPlay: () => void
   onSetCarer: (carer: Carer) => void
   onRename: (name: string) => void
-  onUpdateProfile: (profile: CoupleProfile) => void
   onNotify: (message: string) => void
 }
 
@@ -26,7 +25,7 @@ interface Heart {
   drift: number
 }
 
-const MOOD_COPY: Record<CatMood, string> = {
+export const MOOD_COPY: Record<CatMood, string> = {
   happy: 'is purring like a tiny engine',
   content: 'is chilling with the two of you',
   hungry: 'keeps staring at the empty bowl',
@@ -54,16 +53,12 @@ export function CatHome({
   onPlay,
   onSetCarer,
   onRename,
-  onUpdateProfile,
   onNotify,
 }: CatHomeProps) {
   const [phase, setPhase] = useState<CatPhase>('idle')
   const [hearts, setHearts] = useState<Heart[]>([])
   const [editingName, setEditingName] = useState(false)
   const [draftName, setDraftName] = useState(cat.name)
-  const [editingProfile, setEditingProfile] = useState(false)
-  const [draftYou, setDraftYou] = useState(profile.nameYou)
-  const [draftPartner, setDraftPartner] = useState(profile.namePartner)
   const heartId = useRef(0)
   const phaseTimer = useRef<number | null>(null)
 
@@ -120,11 +115,6 @@ export function CatHome({
   function commitName() {
     onRename(draftName)
     setEditingName(false)
-  }
-
-  function commitProfile() {
-    onUpdateProfile({ nameYou: draftYou, namePartner: draftPartner })
-    setEditingProfile(false)
   }
 
   const xpInLevel = cat.xp % XP_PER_LEVEL
@@ -245,80 +235,29 @@ export function CatHome({
           ))}
         </ul>
 
-        {editingProfile ? (
-          <form
-            className="profile-edit"
-            onSubmit={(e) => {
-              e.preventDefault()
-              commitProfile()
-            }}
-          >
-            <label className="profile-edit__field">
-              <span>Your name</span>
-              <input
-                value={draftYou}
-                onChange={(e) => setDraftYou(e.target.value)}
-                maxLength={18}
-                autoFocus
-              />
-            </label>
-            <label className="profile-edit__field">
-              <span>Partner</span>
-              <input
-                value={draftPartner}
-                onChange={(e) => setDraftPartner(e.target.value)}
-                maxLength={18}
-              />
-            </label>
-            <div className="profile-edit__actions">
-              <button
-                type="button"
-                className="btn btn--ghost btn--tiny"
-                onClick={() => setEditingProfile(false)}
-              >
-                Cancel
-              </button>
-              <button type="submit" className="btn btn--secondary btn--tiny">
-                Save
-              </button>
-            </div>
-          </form>
-        ) : (
-          <div className="carer-switch" role="group" aria-label="Who is caring right now">
+        <div className="carer-switch" role="group" aria-label="Who is caring right now">
+          <span className="carer-switch__label">Caring as</span>
+          <div className="carer-switch__options">
             <button
               type="button"
-              className="carer-switch__label"
-              onClick={() => {
-                setDraftYou(profile.nameYou)
-                setDraftPartner(profile.namePartner)
-                setEditingProfile(true)
-              }}
+              className={`carer-chip ${cat.activeCarer === 'you' ? 'is-active' : ''}`}
+              onClick={() => onSetCarer('you')}
+              aria-pressed={cat.activeCarer === 'you'}
             >
-              Caring as
-              <span aria-hidden>✎</span>
+              {profile.nameYou}
+              <small>{cat.careYou}</small>
             </button>
-            <div className="carer-switch__options">
-              <button
-                type="button"
-                className={`carer-chip ${cat.activeCarer === 'you' ? 'is-active' : ''}`}
-                onClick={() => onSetCarer('you')}
-                aria-pressed={cat.activeCarer === 'you'}
-              >
-                {profile.nameYou}
-                <small>{cat.careYou}</small>
-              </button>
-              <button
-                type="button"
-                className={`carer-chip ${cat.activeCarer === 'partner' ? 'is-active' : ''}`}
-                onClick={() => onSetCarer('partner')}
-                aria-pressed={cat.activeCarer === 'partner'}
-              >
-                {profile.namePartner}
-                <small>{cat.carePartner}</small>
-              </button>
-            </div>
+            <button
+              type="button"
+              className={`carer-chip ${cat.activeCarer === 'partner' ? 'is-active' : ''}`}
+              onClick={() => onSetCarer('partner')}
+              aria-pressed={cat.activeCarer === 'partner'}
+            >
+              {profile.namePartner}
+              <small>{cat.carePartner}</small>
+            </button>
           </div>
-        )}
+        </div>
 
         <p className="cat-hint">
           {carerName} is on duty · tap {cat.name} for pets

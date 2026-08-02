@@ -1,25 +1,63 @@
 :root {
+  /* Brand */
   --rose: #e85d75;
   --rose-deep: #c44569;
   --rose-soft: #ffe4ea;
   --rose-mist: #fff0f4;
-  --ink: #241c1a;
-  --ink-soft: #5c524f;
-  --mist: #f3f0f6;
+
+  /* Surfaces & text */
+  --ink: #1a1a1a;
+  --ink-soft: #575757;
+  --stone: #8c8c8c;
   --foam: #ffffff;
+  --mist: #f5f5f5;
+  --canvas: #f2f3f5;
+  --outline: #e8e8e8;
+  --outline-bold: #dbdbdb;
+
+  /* Accents for service tiles */
+  --acc-rose-bg: #ffe4ea;
+  --acc-rose-fg: #a82f47;
+  --acc-purple-bg: #fbf0ff;
+  --acc-purple-fg: #4d29b3;
+  --acc-green-bg: #d9fcde;
+  --acc-green-fg: #005339;
+  --acc-orange-bg: #fff4eb;
+  --acc-orange-fg: #9e3105;
+  --acc-blue-bg: #ebfaff;
+  --acc-blue-fg: #0a3d71;
+  --acc-teal-bg: #eefbfb;
+  --acc-teal-fg: #184440;
+  --acc-yellow-bg: #fff9c0;
+  --acc-yellow-fg: #824703;
+  --acc-neutral-bg: #f5f5f5;
+  --acc-neutral-fg: #3d3d3d;
+
+  /* Status */
+  --positive: #00804a;
+  --positive-soft: #d9fcde;
+  --notice: #a55f03;
+  --notice-soft: #fff9c0;
+  --alert: #d42e1c;
+  --alert-soft: #fdf2f2;
+
+  /* Shape & depth */
+  --radius-s: 8px;
+  --radius-m: 16px;
+  --radius-l: 24px;
+  --radius-xl: 32px;
+  --shadow-card: 0 1px 2px rgba(26, 26, 26, 0.04), 0 8px 24px rgba(26, 26, 26, 0.06);
+  --shadow-raised: 0 2px 6px rgba(26, 26, 26, 0.06), 0 16px 40px rgba(26, 26, 26, 0.1);
+  --shadow: var(--shadow-raised);
   --sage: #5b9a8b;
   --sage-soft: #e3f2ed;
-  --stone: #8a7f7c;
-  --outline: #e8e0e3;
-  --shadow: 0 12px 40px rgba(36, 28, 26, 0.12);
-  --radius-s: 12px;
-  --radius-m: 20px;
-  --radius-l: 28px;
+
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --font-display: 'Fraunces', Georgia, serif;
-  --font-body: 'Nunito', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+
   color: var(--ink);
-  background: var(--mist);
+  background: var(--canvas);
   font-family: var(--font-body);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -43,10 +81,7 @@ body,
 body {
   min-width: 320px;
   overflow: hidden;
-  background:
-    radial-gradient(120% 80% at 10% -10%, #ffd6e0 0%, transparent 55%),
-    radial-gradient(90% 70% at 100% 0%, #d8efe7 0%, transparent 45%),
-    var(--mist);
+  background: var(--canvas);
 }
 
 button,
@@ -61,10 +96,18 @@ button {
   cursor: pointer;
   border: none;
   background: none;
+  padding: 0;
 }
 
 a {
   color: var(--rose-deep);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  letter-spacing: -0.01em;
 }
 
 .sr-only {

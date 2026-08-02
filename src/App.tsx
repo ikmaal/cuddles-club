@@ -1,13 +1,32 @@
 import { useMemo, useState } from 'react'
-import { CatHome } from './components/CatHome'
-import { Logo } from './components/Logo'
+import { MOOD_COPY } from './components/CatHome'
+import { HeartIcon, HomeIcon } from './components/Icons'
 import { PlayGame } from './components/PlayGame'
+import { questionForDay } from './data'
 import { useCat } from './hooks/useCat'
-import { useProfile } from './hooks/useProfile'
+import { useCoupleData } from './hooks/useCoupleData'
+import { daysTogether, useProfile } from './hooks/useProfile'
+import { todayKey } from './hooks/useStored'
+import { BucketScreen } from './screens/BucketScreen'
+import { CatScreen } from './screens/CatScreen'
+import { CountdownScreen } from './screens/CountdownScreen'
+import { HomeScreen } from './screens/HomeScreen'
+import { MoodScreen } from './screens/MoodScreen'
+import { NotesScreen } from './screens/NotesScreen'
+import { QuestionScreen } from './screens/QuestionScreen'
+import { RouletteScreen } from './screens/RouletteScreen'
+import { UsScreen } from './screens/UsScreen'
+import type { Carer, Screen } from './types'
 import './App.css'
+
+const TABS: { id: Screen; label: string; Icon: typeof HomeIcon }[] = [
+  { id: 'home', label: 'Home', Icon: HomeIcon },
+  { id: 'us', label: 'Us', Icon: HeartIcon },
+]
 
 export default function App() {
   const { profile, updateProfile } = useProfile()
+  const data = useCoupleData()
   const {
     cat,
     mood,
@@ -21,12 +40,38 @@ export default function App() {
     rename,
   } = useCat()
 
+  const [screen, setScreen] = useState<Screen>('home')
   const [toast, setToast] = useState('')
   const [playing, setPlaying] = useState(false)
+  const [noteAuthor, setNoteAuthor] = useState<Carer>('you')
 
-  const tagline = useMemo(
-    () => `${profile.nameYou} & ${profile.namePartner} · ${cat.name} lv ${level}`,
-    [profile.nameYou, profile.namePartner, cat.name, level],
+  const question = useMemo(() => questionForDay(todayKey()), [])
+
+  const summary = useMemo(
+    () => ({
+      catName: cat.name,
+      catMoodLine: `${cat.name} ${MOOD_COPY[mood]}`,
+      catLevel: level,
+      noteCount: data.notes.length,
+      latestNote: data.notes[0]?.text ?? null,
+      bucketDone: data.bucket.filter((item) => item.done).length,
+      bucketTotal: data.bucket.length,
+      nextEvent: data.nextEvent,
+      daysTogether: daysTogether(profile.since),
+      moodLoggedToday: Boolean(data.todayMood?.you || data.todayMood?.partner),
+      questionOfTheDay: question,
+    }),
+    [
+      cat.name,
+      mood,
+      level,
+      data.notes,
+      data.bucket,
+      data.nextEvent,
+      data.todayMood,
+      profile.since,
+      question,
+    ],
   )
 
   function showToast(message: string) {
@@ -34,25 +79,18 @@ export default function App() {
     window.setTimeout(() => setToast(''), 2400)
   }
 
+  const goHome = () => setScreen('home')
+  const showTabs = screen === 'home' || screen === 'us'
+
   return (
     <div className="app">
-      <div className="app__glow" aria-hidden />
+      <main className={`app__main ${showTabs ? 'has-tabs' : ''}`}>
+        {screen === 'home' ? (
+          <HomeScreen profile={profile} summary={summary} onOpen={setScreen} />
+        ) : null}
 
-      <header className="topbar">
-        <div className="brand">
-          <span className="brand__mark" aria-hidden>
-            <Logo size={44} />
-          </span>
-          <div>
-            <p className="brand__name">Cuddles Club</p>
-            <p className="brand__tag">{tagline}</p>
-          </div>
-        </div>
-      </header>
-
-      <main className="app__main">
-        <section className="panel panel--cat" aria-label="Our cat">
-          <CatHome
+        {screen === 'cat' ? (
+          <CatScreen
             cat={cat}
             mood={mood}
             level={level}
@@ -64,11 +102,98 @@ export default function App() {
             onPlay={() => setPlaying(true)}
             onSetCarer={setCarer}
             onRename={rename}
-            onUpdateProfile={updateProfile}
             onNotify={showToast}
+            onBack={goHome}
           />
-        </section>
+        ) : null}
+
+        {screen === 'notes' ? (
+          <NotesScreen
+            notes={data.notes}
+            profile={profile}
+            author={noteAuthor}
+            onSetAuthor={setNoteAuthor}
+            onAdd={data.addNote}
+            onRemove={data.removeNote}
+            onBack={goHome}
+          />
+        ) : null}
+
+        {screen === 'bucket' ? (
+          <BucketScreen
+            items={data.bucket}
+            onAdd={data.addBucketItem}
+            onToggle={data.toggleBucketItem}
+            onRemove={data.removeBucketItem}
+            onBack={goHome}
+          />
+        ) : null}
+
+        {screen === 'roulette' ? (
+          <RouletteScreen
+            ideas={data.ideas}
+            onAdd={data.addIdea}
+            onRemove={data.removeIdea}
+            onBack={goHome}
+          />
+        ) : null}
+
+        {screen === 'countdown' ? (
+          <CountdownScreen
+            events={data.events}
+            onAdd={data.addEvent}
+            onRemove={data.removeEvent}
+            onBack={goHome}
+          />
+        ) : null}
+
+        {screen === 'question' ? (
+          <QuestionScreen
+            question={question}
+            answers={data.answers}
+            profile={profile}
+            onSave={data.saveAnswer}
+            onBack={goHome}
+          />
+        ) : null}
+
+        {screen === 'mood' ? (
+          <MoodScreen
+            moods={data.moods}
+            profile={profile}
+            onSet={data.setMood}
+            onBack={goHome}
+          />
+        ) : null}
+
+        {screen === 'us' ? (
+          <UsScreen
+            profile={profile}
+            catName={cat.name}
+            catLevel={level}
+            noteCount={data.notes.length}
+            bucketDone={summary.bucketDone}
+            onSave={updateProfile}
+          />
+        ) : null}
       </main>
+
+      {showTabs ? (
+        <nav className="tabbar" aria-label="Main">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              className={`tabbar__item ${screen === tab.id ? 'is-active' : ''}`}
+              onClick={() => setScreen(tab.id)}
+              aria-current={screen === tab.id ? 'page' : undefined}
+            >
+              <tab.Icon size={22} />
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </nav>
+      ) : null}
 
       {playing ? (
         <PlayGame
