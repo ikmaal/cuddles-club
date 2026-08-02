@@ -365,8 +365,9 @@
   gap: 12px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
-  margin: 0 -16px;
-  padding: 2px 16px 4px;
+  /* Bleed only on the right so the first card lines up with the section title. */
+  margin: 0 -16px 0 0;
+  padding: 2px 16px 6px 0;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
