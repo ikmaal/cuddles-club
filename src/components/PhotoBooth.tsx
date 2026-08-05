@@ -23,14 +23,15 @@ type Phase =
   | 'denied'
 
 const TOTAL_SHOTS = 4
-const COUNTDOWN_FROM = 3
+const COUNTDOWN_FROM = 5
+const COUNTDOWN_TICK_MS = 1000
 
 export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const shotsRef = useRef<string[]>([])
 
-  const [phase, setPhase] = useState<Phase>('boot')
+  const [phase, setPhase] = useState<Phase>('pick-design')
   const [count, setCount] = useState(COUNTDOWN_FROM)
   const [shots, setShots] = useState<string[]>([])
   const [composed, setComposed] = useState('')
@@ -113,7 +114,7 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
       return
     }
 
-    const id = window.setTimeout(() => setCount((value) => value - 1), 800)
+    const id = window.setTimeout(() => setCount((value) => value - 1), COUNTDOWN_TICK_MS)
     return () => window.clearTimeout(id)
   }, [phase, count])
 
@@ -279,6 +280,8 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
 
   const shotIndex = shots.length
   const selectedDesign = STRIP_DESIGNS.find((item) => item.id === design)
+  const showLiveCamera =
+    phase === 'ready' || phase === 'countdown' || phase === 'flash' || phase === 'boot'
 
   return (
     <div className="booth" role="dialog" aria-modal aria-label="Photobooth">
@@ -309,52 +312,63 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
         </p>
       ) : null}
 
-      {phase === 'pick-design' ? (
+      {phase === 'pick-design' || phase === 'denied' ? (
         <div className="booth__designs">
-          <p className="booth__designs-lead">
-            Choose a style for your strip before the camera starts.
-          </p>
-          <ul className="booth__design-grid" role="listbox" aria-label="Strip designs">
-            {STRIP_DESIGNS.map((item) => (
-              <li key={item.id}>
-                <button
-                  type="button"
-                  role="option"
-                  aria-selected={design === item.id}
-                  className={`booth__design-card ${design === item.id ? 'is-selected' : ''}`}
-                  onClick={() => setDesign(item.id)}
-                >
-                  <span className="booth__design-preview-wrap" aria-hidden>
-                    {designPreviews[item.id] ? (
-                      <img
-                        className="booth__design-preview"
-                        src={designPreviews[item.id]}
-                        alt=""
-                      />
-                    ) : (
-                      <span
-                        className={`booth__design-preview booth__design-preview--loading ${previewsLoading ? 'is-loading' : ''}`}
-                        style={{
-                          background: `linear-gradient(160deg, ${item.swatch[0]} 0%, ${item.swatch[1]} 55%, ${item.swatch[2]} 100%)`,
-                        }}
-                      />
-                    )}
-                  </span>
-                  <span className="booth__design-copy">
-                    <strong>{item.label}</strong>
-                    <small>{item.description}</small>
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-          <button
-            type="button"
-            className="btn btn--primary booth__design-continue"
-            onClick={continueToBooth}
-          >
-            Continue to booth
-          </button>
+          {phase === 'denied' ? (
+            <div className="booth__denied-panel">
+              <p className="booth__denied-title">Camera blocked</p>
+              <p className="booth__denied-body">
+                Allow camera access in your browser settings, then reopen the booth.
+              </p>
+            </div>
+          ) : (
+            <>
+              <p className="booth__designs-lead">
+                Choose a style for your strip before the camera starts.
+              </p>
+              <ul className="booth__design-grid" role="listbox" aria-label="Strip designs">
+                {STRIP_DESIGNS.map((item) => (
+                  <li key={item.id}>
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={design === item.id}
+                      className={`booth__design-card ${design === item.id ? 'is-selected' : ''}`}
+                      onClick={() => setDesign(item.id)}
+                    >
+                      <span className="booth__design-preview-wrap" aria-hidden>
+                        {designPreviews[item.id] ? (
+                          <img
+                            className="booth__design-preview"
+                            src={designPreviews[item.id]}
+                            alt=""
+                          />
+                        ) : (
+                          <span
+                            className={`booth__design-preview booth__design-preview--loading ${previewsLoading ? 'is-loading' : ''}`}
+                            style={{
+                              background: `linear-gradient(160deg, ${item.swatch[0]} 0%, ${item.swatch[1]} 55%, ${item.swatch[2]} 100%)`,
+                            }}
+                          />
+                        )}
+                      </span>
+                      <span className="booth__design-copy">
+                        <strong>{item.label}</strong>
+                        <small>{item.description}</small>
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <button
+                type="button"
+                className="btn btn--primary booth__design-continue"
+                onClick={continueToBooth}
+              >
+                Continue to booth
+              </button>
+            </>
+          )}
         </div>
       ) : null}
 
@@ -394,77 +408,77 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
       ) : null}
 
       <div
-        className="booth__stage"
-        hidden={phase === 'pick-design' || phase === 'review'}
-        aria-hidden={phase === 'pick-design' || phase === 'review'}
+        className={`booth__camera-host ${showLiveCamera ? 'is-live' : 'is-sink'}`}
+        aria-hidden={!showLiveCamera}
       >
         <div className={`booth__viewport ${phase === 'flash' ? 'is-flash' : ''}`}>
           <video ref={videoRef} className="booth__video" playsInline muted autoPlay />
-          <div className="booth__frame" aria-hidden />
+          {showLiveCamera ? (
+            <>
+              <div className="booth__frame" aria-hidden />
 
-          {phase === 'boot' ? (
-            <div className="booth__overlay">
-              <p>Warming up the camera…</p>
-            </div>
-          ) : null}
+              {phase === 'boot' ? (
+                <div className="booth__overlay">
+                  <p>Warming up the camera…</p>
+                </div>
+              ) : null}
 
-          {phase === 'denied' ? (
-            <div className="booth__overlay">
-              <p>Camera blocked</p>
-              <span>Allow camera access, then reopen the booth.</span>
-            </div>
-          ) : null}
+              {phase === 'countdown' ? (
+                <div className="booth__countdown" aria-live="polite">
+                  {count > 0 ? count : '♥'}
+                </div>
+              ) : null}
 
-          {phase === 'countdown' ? (
-            <div className="booth__countdown" aria-live="polite">
-              {count > 0 ? count : '♥'}
-            </div>
-          ) : null}
-
-          {composing ? (
-            <div className="booth__overlay">
-              <p>Decorating your strip…</p>
-            </div>
+              {composing ? (
+                <div className="booth__overlay">
+                  <p>Decorating your strip…</p>
+                </div>
+              ) : null}
+            </>
           ) : null}
         </div>
-
-        <ul className="booth__thumbs" aria-label="Captured shots">
-          {Array.from({ length: TOTAL_SHOTS }, (_, index) => (
-            <li key={index} className={shots[index] ? 'is-filled' : ''}>
-              {shots[index] ? (
-                <img src={shots[index]} alt={`Shot ${index + 1}`} />
-              ) : (
-                <span>{index + 1}</span>
-              )}
-            </li>
-          ))}
-        </ul>
-
-        {phase === 'ready' ? (
-          <div className="booth__ready-actions">
-            <button
-              type="button"
-              className="booth__change-design"
-              onClick={() => setPhase('pick-design')}
-            >
-              Change design
-            </button>
-            <button
-              type="button"
-              className="btn btn--primary booth__start"
-              onClick={() => void startSession()}
-            >
-              Start booth
-            </button>
-          </div>
-        ) : null}
-
-        {phase === 'countdown' || phase === 'flash' ? (
-          <p className="booth__hint">
-            Hold still — {selectedDesign?.label.toLowerCase()} magic incoming
-          </p>
-        ) : null}
       </div>
+
+      {showLiveCamera ? (
+        <div className="booth__stage">
+          <ul className="booth__thumbs" aria-label="Captured shots">
+            {Array.from({ length: TOTAL_SHOTS }, (_, index) => (
+              <li key={index} className={shots[index] ? 'is-filled' : ''}>
+                {shots[index] ? (
+                  <img src={shots[index]} alt={`Shot ${index + 1}`} />
+                ) : (
+                  <span>{index + 1}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+
+          {phase === 'ready' ? (
+            <div className="booth__ready-actions">
+              <button
+                type="button"
+                className="booth__change-design"
+                onClick={() => setPhase('pick-design')}
+              >
+                Change design
+              </button>
+              <button
+                type="button"
+                className="btn btn--primary booth__start"
+                onClick={() => void startSession()}
+              >
+                Start booth
+              </button>
+            </div>
+          ) : null}
+
+          {phase === 'countdown' || phase === 'flash' ? (
+            <p className="booth__hint">
+              Hold still — {selectedDesign?.label.toLowerCase()} magic incoming
+            </p>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   )
 }
