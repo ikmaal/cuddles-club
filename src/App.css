@@ -3397,6 +3397,101 @@
   }
 }
 
+.app--boot {
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+}
+
+.app__boot {
+  margin: 0;
+  font-weight: 600;
+  color: var(--stone);
+}
+
+.cloud-card {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
+.cloud-card__body {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.cloud-card__body code {
+  font-size: 0.82rem;
+}
+
+.cloud-card__invite {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--mist);
+  text-align: center;
+}
+
+.cloud-card__invite span {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--stone);
+}
+
+.cloud-card__invite strong {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  letter-spacing: 0.12em;
+  color: var(--rose-deep);
+}
+
+.cloud-card__tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.cloud-card__tabs button {
+  min-height: 40px;
+  border-radius: 999px;
+  background: var(--mist);
+  color: var(--ink-soft);
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.cloud-card__tabs button.is-active {
+  background: var(--rose-soft);
+  color: var(--rose-deep);
+}
+
+.cloud-card__actions {
+  display: grid;
+  gap: 8px;
+}
+
+.cloud-card__error {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--alert-soft);
+  color: var(--alert);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.cloud-card__success {
+  margin: 0;
+  font-size: 0.84rem;
+  color: var(--positive);
+  font-weight: 600;
+}
+
 @media (min-width: 720px) {
   body {
     overflow: auto;

@@ -1,29 +1,8 @@
-import { useCallback, useEffect, useState } from 'react'
-import { loadProfile, saveProfile } from '../storage'
-import type { CoupleProfile } from '../types'
+import { useCouple } from '../context/CoupleContext'
 
 export function useProfile() {
-  const [profile, setProfile] = useState<CoupleProfile>(() => loadProfile())
-  const [ready, setReady] = useState(false)
-
-  useEffect(() => {
-    setReady(true)
-  }, [])
-
-  useEffect(() => {
-    if (!ready) return
-    saveProfile(profile)
-  }, [profile, ready])
-
-  const updateProfile = useCallback((next: CoupleProfile) => {
-    setProfile({
-      nameYou: next.nameYou.trim().slice(0, 18) || 'You',
-      namePartner: next.namePartner.trim().slice(0, 18) || 'Partner',
-      since: next.since,
-    })
-  }, [])
-
-  return { profile, updateProfile }
+  const { profile, updateProfile, ready } = useCouple()
+  return { profile, updateProfile, ready }
 }
 
 export function daysTogether(since: string): number | null {

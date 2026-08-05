@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { CloudSyncCard } from '../components/CloudSyncCard'
 import { Logo } from '../components/Logo'
+import { useCouple } from '../context/CoupleContext'
 import { daysTogether } from '../hooks/useProfile'
 import type { CoupleProfile } from '../types'
 
@@ -20,6 +22,7 @@ export function UsScreen({
   bucketDone,
   onSave,
 }: UsScreenProps) {
+  const { isCloud } = useCouple()
   const [nameYou, setNameYou] = useState(profile.nameYou)
   const [namePartner, setNamePartner] = useState(profile.namePartner)
   const [since, setSince] = useState(profile.since)
@@ -103,8 +106,12 @@ export function UsScreen({
           </button>
         </form>
 
+        <CloudSyncCard />
+
         <p className="fineprint">
-          Everything lives on this device only. Nothing is uploaded anywhere.
+          {isCloud
+            ? 'Your couple data syncs through Supabase when you are signed in.'
+            : 'Without cloud sync, everything stays on this device only.'}
         </p>
       </div>
     </div>

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { MOOD_COPY } from './components/CatHome'
 import { HeartIcon, HomeIcon } from './components/Icons'
 import { PlayGame } from './components/PlayGame'
+import { useCouple } from './context/CoupleContext'
 import { questionForDay } from './data'
 import { useCat } from './hooks/useCat'
 import { useCoupleData } from './hooks/useCoupleData'
@@ -27,6 +28,7 @@ const TABS: { id: Screen; label: string; Icon: typeof HomeIcon }[] = [
 ]
 
 export default function App() {
+  const { ready } = useCouple()
   const { profile, updateProfile } = useProfile()
   const data = useCoupleData()
   const strips = usePhotostrips()
@@ -84,6 +86,14 @@ export default function App() {
 
   const goHome = () => setScreen('home')
   const showTabs = screen === 'home' || screen === 'us'
+
+  if (!ready) {
+    return (
+      <div className="app app--boot">
+        <p className="app__boot">Loading Cuddles Club…</p>
+      </div>
+    )
+  }
 
   return (
     <div className="app">
@@ -180,7 +190,7 @@ export default function App() {
             onAddBooth={strips.addFromDataUrl}
             onRename={strips.rename}
             onRemove={strips.remove}
-            onClearError={() => strips.setError('')}
+            onClearError={() => strips.setError()}
             onBack={goHome}
           />
         ) : null}
