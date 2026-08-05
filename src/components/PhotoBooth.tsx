@@ -78,12 +78,11 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
           return
         }
         streamRef.current = stream
-        const video = videoRef.current
-        if (video) {
-          video.srcObject = stream
-          await video.play()
-        }
         setPhase('pick-design')
+        // Video stays mounted (hidden during design pick) — attach on next frame.
+        window.requestAnimationFrame(() => {
+          void attachStreamToVideo()
+        })
       } catch {
         if (!cancelled) {
           setPhase('denied')
@@ -102,10 +101,15 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
   }, [])
 
   useEffect(() => {
+    if (phase !== 'ready') return
+    void attachStreamToVideo()
+  }, [phase])
+
+  useEffect(() => {
     if (phase !== 'countdown') return
 
     if (count <= 0) {
-      captureShot()
+      void captureShot()
       return
     }
 
@@ -113,9 +117,57 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
     return () => window.clearTimeout(id)
   }, [phase, count])
 
-  function captureShot() {
+  async function attachStreamToVideo(): Promise<boolean> {
+    const stream = streamRef.current
     const video = videoRef.current
-    if (!video || video.readyState < 2) {
+    if (!stream || !video) return false
+
+    if (video.srcObject !== stream) {
+      video.srcObject = stream
+    }
+
+    try {
+      await video.play()
+    } catch {
+      // Autoplay may be blocked until the element is visible; frames can still load.
+    }
+
+    return waitForVideoReady(video)
+  }
+
+  function waitForVideoReady(video: HTMLVideoElement, timeoutMs = 5000): Promise<boolean> {
+    if (video.readyState >= 2 && video.videoWidth > 0) {
+      return Promise.resolve(true)
+    }
+
+    return new Promise((resolve) => {
+      function done(ok: boolean) {
+        window.clearTimeout(timeout)
+        video.removeEventListener('loadeddata', onReady)
+        video.removeEventListener('canplay', onReady)
+        resolve(ok)
+      }
+
+      function onReady() {
+        if (video.readyState >= 2 && video.videoWidth > 0) {
+          done(true)
+        }
+      }
+
+      const timeout = window.setTimeout(() => {
+        done(video.readyState >= 2 && video.videoWidth > 0)
+      }, timeoutMs)
+
+      video.addEventListener('loadeddata', onReady)
+      video.addEventListener('canplay', onReady)
+      onReady()
+    })
+  }
+
+  async function captureShot() {
+    const ready = await attachStreamToVideo()
+    const video = videoRef.current
+    if (!ready || !video || video.readyState < 2 || video.videoWidth === 0) {
       setPhase('ready')
       setError('Camera was not ready. Try again.')
       return
@@ -182,21 +234,25 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
         video: { facingMode: 'user' },
       })
       streamRef.current = stream
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-        await videoRef.current.play()
-      }
+      await attachStreamToVideo()
     } catch {
       setPhase('denied')
     }
   }
 
-  function startSession() {
+  async function startSession() {
     setError('')
     shotsRef.current = []
     setShots([])
     setComposed('')
     setCount(COUNTDOWN_FROM)
+
+    const ready = await attachStreamToVideo()
+    if (!ready) {
+      setError('Camera was not ready. Try again.')
+      return
+    }
+
     setPhase('countdown')
   }
 
@@ -212,6 +268,7 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
   function continueToBooth() {
     setError('')
     setPhase('ready')
+    void attachStreamToVideo()
   }
 
   async function save() {
@@ -299,7 +356,9 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
             Continue to booth
           </button>
         </div>
-      ) : phase === 'review' ? (
+      ) : null}
+
+      {phase === 'review' ? (
         <div className="booth__review">
           <div className="booth__strip-preview">
             <img src={composed} alt="Finished photobooth strip" />
@@ -332,72 +391,80 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
             </button>
           </div>
         </div>
-      ) : (
-        <div className="booth__stage">
-          <div className={`booth__viewport ${phase === 'flash' ? 'is-flash' : ''}`}>
-            <video ref={videoRef} className="booth__video" playsInline muted autoPlay />
-            <div className="booth__frame" aria-hidden />
+      ) : null}
 
-            {phase === 'boot' ? (
-              <div className="booth__overlay">
-                <p>Warming up the camera…</p>
-              </div>
-            ) : null}
+      <div
+        className="booth__stage"
+        hidden={phase === 'pick-design' || phase === 'review'}
+        aria-hidden={phase === 'pick-design' || phase === 'review'}
+      >
+        <div className={`booth__viewport ${phase === 'flash' ? 'is-flash' : ''}`}>
+          <video ref={videoRef} className="booth__video" playsInline muted autoPlay />
+          <div className="booth__frame" aria-hidden />
 
-            {phase === 'denied' ? (
-              <div className="booth__overlay">
-                <p>Camera blocked</p>
-                <span>Allow camera access, then reopen the booth.</span>
-              </div>
-            ) : null}
-
-            {phase === 'countdown' ? (
-              <div className="booth__countdown" aria-live="polite">
-                {count > 0 ? count : '♥'}
-              </div>
-            ) : null}
-
-            {composing ? (
-              <div className="booth__overlay">
-                <p>Decorating your strip…</p>
-              </div>
-            ) : null}
-          </div>
-
-          <ul className="booth__thumbs" aria-label="Captured shots">
-            {Array.from({ length: TOTAL_SHOTS }, (_, index) => (
-              <li key={index} className={shots[index] ? 'is-filled' : ''}>
-                {shots[index] ? (
-                  <img src={shots[index]} alt={`Shot ${index + 1}`} />
-                ) : (
-                  <span>{index + 1}</span>
-                )}
-              </li>
-            ))}
-          </ul>
-
-          {phase === 'ready' ? (
-            <div className="booth__ready-actions">
-              <button
-                type="button"
-                className="booth__change-design"
-                onClick={() => setPhase('pick-design')}
-              >
-                Change design
-              </button>
-              <button type="button" className="btn btn--primary booth__start" onClick={startSession}>
-                Start booth
-              </button>
+          {phase === 'boot' ? (
+            <div className="booth__overlay">
+              <p>Warming up the camera…</p>
             </div>
           ) : null}
 
-          {phase === 'countdown' || phase === 'flash' ? (
-            <p className="booth__hint">
-              Hold still — {selectedDesign?.label.toLowerCase()} magic incoming
-            </p>
+          {phase === 'denied' ? (
+            <div className="booth__overlay">
+              <p>Camera blocked</p>
+              <span>Allow camera access, then reopen the booth.</span>
+            </div>
+          ) : null}
+
+          {phase === 'countdown' ? (
+            <div className="booth__countdown" aria-live="polite">
+              {count > 0 ? count : '♥'}
+            </div>
+          ) : null}
+
+          {composing ? (
+            <div className="booth__overlay">
+              <p>Decorating your strip…</p>
+            </div>
           ) : null}
         </div>
-      )}
+
+        <ul className="booth__thumbs" aria-label="Captured shots">
+          {Array.from({ length: TOTAL_SHOTS }, (_, index) => (
+            <li key={index} className={shots[index] ? 'is-filled' : ''}>
+              {shots[index] ? (
+                <img src={shots[index]} alt={`Shot ${index + 1}`} />
+              ) : (
+                <span>{index + 1}</span>
+              )}
+            </li>
+          ))}
+        </ul>
+
+        {phase === 'ready' ? (
+          <div className="booth__ready-actions">
+            <button
+              type="button"
+              className="booth__change-design"
+              onClick={() => setPhase('pick-design')}
+            >
+              Change design
+            </button>
+            <button
+              type="button"
+              className="btn btn--primary booth__start"
+              onClick={() => void startSession()}
+            >
+              Start booth
+            </button>
+          </div>
+        ) : null}
+
+        {phase === 'countdown' || phase === 'flash' ? (
+          <p className="booth__hint">
+            Hold still — {selectedDesign?.label.toLowerCase()} magic incoming
+          </p>
+        ) : null}
+      </div>
     </div>
   )
 }
