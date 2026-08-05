@@ -1,12 +1,9 @@
 import type { ComponentType } from 'react'
 import {
   BucketIcon,
-  CalendarIcon,
   CatIcon,
-  ChatIcon,
   DiceIcon,
   NoteIcon,
-  SmileIcon,
   StripIcon,
 } from './components/Icons'
 import type { Screen } from './types'
@@ -54,26 +51,5 @@ export const SERVICES: Service[] = [
     blurb: 'Let fate pick tonight’s plan',
     tone: 'orange',
     Icon: DiceIcon,
-  },
-  {
-    id: 'countdown',
-    label: 'Countdowns',
-    blurb: 'Days until the moments that matter',
-    tone: 'blue',
-    Icon: CalendarIcon,
-  },
-  {
-    id: 'question',
-    label: 'Daily Q',
-    blurb: 'One question, two answers',
-    tone: 'teal',
-    Icon: ChatIcon,
-  },
-  {
-    id: 'mood',
-    label: 'Mood',
-    blurb: 'Check in on how you both feel',
-    tone: 'yellow',
-    Icon: SmileIcon,
   },
 ]

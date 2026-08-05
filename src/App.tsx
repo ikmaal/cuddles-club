@@ -49,7 +49,6 @@ export default function App() {
   const [toast, setToast] = useState('')
   const [playing, setPlaying] = useState(false)
   const [noteAuthor, setNoteAuthor] = useState<Carer>('you')
-
   const question = useMemo(() => questionForDay(todayKey()), [])
 
   const summary = useMemo(
@@ -61,22 +60,9 @@ export default function App() {
       latestNote: data.notes[0]?.text ?? null,
       bucketDone: data.bucket.filter((item) => item.done).length,
       bucketTotal: data.bucket.length,
-      nextEvent: data.nextEvent,
       daysTogether: daysTogether(profile.since),
-      moodLoggedToday: Boolean(data.todayMood?.you || data.todayMood?.partner),
-      questionOfTheDay: question,
     }),
-    [
-      cat.name,
-      mood,
-      level,
-      data.notes,
-      data.bucket,
-      data.nextEvent,
-      data.todayMood,
-      profile.since,
-      question,
-    ],
+    [cat.name, mood, level, data.notes, data.bucket, profile.since],
   )
 
   function showToast(message: string) {

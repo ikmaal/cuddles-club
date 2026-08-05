@@ -11,10 +11,7 @@ export interface HomeSummary {
   latestNote: string | null
   bucketDone: number
   bucketTotal: number
-  nextEvent: { label: string; days: number } | null
   daysTogether: number | null
-  moodLoggedToday: boolean
-  questionOfTheDay: string
 }
 
 interface HomeScreenProps {
@@ -99,49 +96,6 @@ export function HomeScreen({ profile, summary, onOpen }: HomeScreenProps) {
                 <ChevronIcon size={16} />
               </span>
             </button>
-
-            <button
-              type="button"
-              className="promo promo--question"
-              onClick={() => onOpen('question')}
-            >
-              <span className="promo__eyebrow">Question of the day</span>
-              <span className="promo__title promo__title--sm">
-                {summary.questionOfTheDay}
-              </span>
-              <span className="promo__cta">
-                Answer together
-                <ChevronIcon size={16} />
-              </span>
-            </button>
-
-            <button
-              type="button"
-              className="promo promo--event"
-              onClick={() => onOpen(summary.nextEvent ? 'countdown' : 'roulette')}
-            >
-              <span className="promo__eyebrow">
-                {summary.nextEvent ? 'Coming up' : 'No plans yet'}
-              </span>
-              <span className="promo__title promo__title--sm">
-                {summary.nextEvent
-                  ? summary.nextEvent.label
-                  : 'Let the wheel decide'}
-              </span>
-              <span className="promo__body">
-                {summary.nextEvent
-                  ? summary.nextEvent.days === 0
-                    ? 'That’s today'
-                    : `In ${summary.nextEvent.days} ${
-                        summary.nextEvent.days === 1 ? 'day' : 'days'
-                      }`
-                  : 'Spin for a date idea'}
-              </span>
-              <span className="promo__cta">
-                {summary.nextEvent ? 'See countdowns' : 'Spin the wheel'}
-                <ChevronIcon size={16} />
-              </span>
-            </button>
           </div>
         </section>
 
@@ -190,19 +144,6 @@ export function HomeScreen({ profile, summary, onOpen }: HomeScreenProps) {
               <ChevronIcon size={18} />
             </button>
           ) : null}
-
-          {summary.moodLoggedToday ? null : (
-            <button
-              type="button"
-              className="surface nudge"
-              onClick={() => onOpen('mood')}
-            >
-              <span className="nudge__text">
-                Neither of you has checked in today
-              </span>
-              <span className="nudge__cta">Log a mood</span>
-            </button>
-          )}
         </section>
       </div>
     </div>
