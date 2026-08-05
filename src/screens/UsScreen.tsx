@@ -54,6 +54,8 @@ export function UsScreen({
       </header>
 
       <div className="screen__scroll">
+        <CloudSyncCard />
+
         <ul className="metrics">
           <li className="metric">
             <span className="metric__value">{catLevel}</span>
@@ -105,8 +107,6 @@ export function UsScreen({
             {saved ? 'Saved' : 'Save'}
           </button>
         </form>
-
-        <CloudSyncCard />
 
         <p className="fineprint">
           {isCloud

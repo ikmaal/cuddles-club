@@ -24,13 +24,15 @@ export function CloudSyncCard() {
 
   if (!isConfigured) {
     return (
-      <section className="surface cloud-card">
+      <section className="surface cloud-card" id="cloud-sync">
         <div className="section-head section-head--tight">
           <h2>Cloud sync</h2>
         </div>
         <p className="cloud-card__body">
-          Add your Supabase keys to a <code>.env</code> file to sync data between your phones.
-          See <code>.env.example</code> and <code>supabase/schema.sql</code>.
+          Supabase is not connected on this build. For local dev, add keys to <code>.env</code> and
+          restart <code>npm run dev</code>. For the live site, add{' '}
+          <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code> as GitHub Actions
+          secrets, then redeploy.
         </p>
       </section>
     )
@@ -126,7 +128,7 @@ export function CloudSyncCard() {
   }
 
   return (
-    <section className="surface cloud-card">
+    <section className="surface cloud-card" id="cloud-sync">
       <div className="section-head section-head--tight">
         <h2>Cloud sync</h2>
       </div>
