@@ -1,34 +1,44 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface SplashIntroProps {
+  /** When false, splash stays up even after the animation finishes. */
+  canFinish: boolean
   onDone: () => void
 }
 
 const SPLASH_MS = 2200
 const EXIT_MS = 480
 
-export function SplashIntro({ onDone }: SplashIntroProps) {
+export function SplashIntro({ canFinish, onDone }: SplashIntroProps) {
   const [exiting, setExiting] = useState(false)
+  const [holdDone, setHoldDone] = useState(false)
+  const finishedRef = useRef(false)
 
   useEffect(() => {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const hold = reduceMotion ? 500 : SPLASH_MS
+    const timer = window.setTimeout(() => setHoldDone(true), hold)
+    return () => window.clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    if (!holdDone || !canFinish || finishedRef.current) return
+
+    finishedRef.current = true
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const exit = reduceMotion ? 100 : EXIT_MS
 
-    const exitTimer = window.setTimeout(() => setExiting(true), hold)
-    const doneTimer = window.setTimeout(() => onDone(), hold + exit)
-
-    return () => {
-      window.clearTimeout(exitTimer)
-      window.clearTimeout(doneTimer)
-    }
-  }, [onDone])
+    setExiting(true)
+    const doneTimer = window.setTimeout(() => onDone(), exit)
+    return () => window.clearTimeout(doneTimer)
+  }, [holdDone, canFinish, onDone])
 
   return (
     <div
       className={`splash ${exiting ? 'is-exiting' : ''}`}
       role="status"
       aria-live="polite"
+      aria-busy={!canFinish || !holdDone}
       aria-label="Welcome to Cuddles Club"
     >
       <div className="splash__sparkles" aria-hidden>

@@ -26,61 +26,59 @@ export default function App() {
   const finishSplash = useCallback(() => setShowSplash(false), [])
 
   const goHome = () => setScreen('home')
-  const showTabs = !showSplash && (screen === 'home' || screen === 'us')
-
-  if (!ready) {
-    return (
-      <div className="app app--boot">
-        <p className="app__boot">Loading Cuddles Club…</p>
-      </div>
-    )
-  }
+  const showTabs = !showSplash && ready && (screen === 'home' || screen === 'us')
 
   return (
     <div className="app">
-      {showSplash ? <SplashIntro onDone={finishSplash} /> : null}
+      {showSplash ? (
+        <SplashIntro canFinish={ready} onDone={finishSplash} />
+      ) : null}
 
-      <main className={`app__main ${showTabs ? 'has-tabs' : ''}`}>
-        {screen === 'home' ? (
-          <HomeScreen profile={profile} onOpen={setScreen} />
-        ) : null}
+      {ready ? (
+        <>
+          <main className={`app__main ${showTabs ? 'has-tabs' : ''}`}>
+            {screen === 'home' ? (
+              <HomeScreen profile={profile} onOpen={setScreen} />
+            ) : null}
 
-        {screen === 'strips' ? (
-          <StripsScreen
-            profile={profile}
-            strips={strips.strips}
-            ready={strips.ready}
-            busy={strips.busy}
-            error={strips.error}
-            onAdd={strips.addFromFile}
-            onAddBooth={strips.addFromDataUrl}
-            onRename={strips.rename}
-            onRemove={strips.remove}
-            onClearError={() => strips.setError()}
-            onBack={goHome}
-          />
-        ) : null}
+            {screen === 'strips' ? (
+              <StripsScreen
+                profile={profile}
+                strips={strips.strips}
+                ready={strips.ready}
+                busy={strips.busy}
+                error={strips.error}
+                onAdd={strips.addFromFile}
+                onAddBooth={strips.addFromDataUrl}
+                onRename={strips.rename}
+                onRemove={strips.remove}
+                onClearError={() => strips.setError()}
+                onBack={goHome}
+              />
+            ) : null}
 
-        {screen === 'us' ? (
-          <UsScreen profile={profile} onSave={updateProfile} />
-        ) : null}
-      </main>
+            {screen === 'us' ? (
+              <UsScreen profile={profile} onSave={updateProfile} />
+            ) : null}
+          </main>
 
-      {showTabs ? (
-        <nav className="tabbar" aria-label="Main">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              className={`tabbar__item ${screen === tab.id ? 'is-active' : ''}`}
-              onClick={() => setScreen(tab.id)}
-              aria-current={screen === tab.id ? 'page' : undefined}
-            >
-              <tab.Icon size={22} />
-              <span>{tab.label}</span>
-            </button>
-          ))}
-        </nav>
+          {showTabs ? (
+            <nav className="tabbar" aria-label="Main">
+              {TABS.map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  className={`tabbar__item ${screen === tab.id ? 'is-active' : ''}`}
+                  onClick={() => setScreen(tab.id)}
+                  aria-current={screen === tab.id ? 'page' : undefined}
+                >
+                  <tab.Icon size={22} />
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </nav>
+          ) : null}
+        </>
       ) : null}
     </div>
   )
