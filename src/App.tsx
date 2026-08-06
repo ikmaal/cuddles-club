@@ -27,9 +27,17 @@ export default function App() {
 
   const goHome = () => setScreen('home')
   const showTabs = !showSplash && ready && (screen === 'home' || screen === 'us')
+  const homeBg = screen === 'home' && !showSplash
 
   return (
-    <div className="app">
+    <div
+      className={`app${homeBg ? ' app--home-bg' : ''}`}
+      style={
+        homeBg
+          ? { ['--home-bg' as string]: `url(${import.meta.env.BASE_URL}background.png)` }
+          : undefined
+      }
+    >
       {showSplash ? (
         <SplashIntro canFinish={ready} onDone={finishSplash} />
       ) : null}
@@ -63,7 +71,7 @@ export default function App() {
           </main>
 
           {showTabs ? (
-            <nav className="tabbar" aria-label="Main">
+            <nav className={`tabbar${screen === 'home' ? ' tabbar--clear' : ''}`} aria-label="Main">
               {TABS.map((tab) => (
                 <button
                   key={tab.id}
