@@ -34,17 +34,7 @@ export interface CatState {
 
 export const XP_PER_LEVEL = 100
 
-export type Screen =
-  | 'home'
-  | 'cat'
-  | 'notes'
-  | 'bucket'
-  | 'roulette'
-  | 'countdown'
-  | 'question'
-  | 'mood'
-  | 'strips'
-  | 'us'
+export type Screen = 'home' | 'strips' | 'us'
 
 export interface Photostrip {
   id: string

@@ -1,27 +1,15 @@
 import { useState } from 'react'
 import { CloudSyncCard } from '../components/CloudSyncCard'
-import { Logo } from '../components/Logo'
 import { useCouple } from '../context/CoupleContext'
 import { daysTogether } from '../hooks/useProfile'
 import type { CoupleProfile } from '../types'
 
 interface UsScreenProps {
   profile: CoupleProfile
-  catName: string
-  catLevel: number
-  noteCount: number
-  bucketDone: number
   onSave: (profile: CoupleProfile) => void
 }
 
-export function UsScreen({
-  profile,
-  catName,
-  catLevel,
-  noteCount,
-  bucketDone,
-  onSave,
-}: UsScreenProps) {
+export function UsScreen({ profile, onSave }: UsScreenProps) {
   const { isCloud } = useCouple()
   const [nameYou, setNameYou] = useState(profile.nameYou)
   const [namePartner, setNamePartner] = useState(profile.namePartner)
@@ -41,7 +29,12 @@ export function UsScreen({
     <div className="screen screen--us">
       <header className="us-hero">
         <span className="us-hero__mark" aria-hidden>
-          <Logo size={52} />
+          <img
+            src={`${import.meta.env.BASE_URL}favicon.jpg`}
+            alt=""
+            width={52}
+            height={52}
+          />
         </span>
         <h1>
           {profile.nameYou} & {profile.namePartner}
@@ -55,21 +48,6 @@ export function UsScreen({
 
       <div className="screen__scroll">
         <CloudSyncCard />
-
-        <ul className="metrics">
-          <li className="metric">
-            <span className="metric__value">{catLevel}</span>
-            <span className="metric__label">{catName}’s level</span>
-          </li>
-          <li className="metric">
-            <span className="metric__value">{noteCount}</span>
-            <span className="metric__label">Notes written</span>
-          </li>
-          <li className="metric">
-            <span className="metric__value">{bucketDone}</span>
-            <span className="metric__label">Bucket done</span>
-          </li>
-        </ul>
 
         <form className="surface form-card" onSubmit={submit}>
           <div className="section-head section-head--tight">

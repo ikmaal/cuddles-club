@@ -1,22 +1,9 @@
-import { ChevronIcon, HeartIcon } from '../components/Icons'
-import { Logo } from '../components/Logo'
 import { SERVICES } from '../services'
+import { daysTogether } from '../hooks/useProfile'
 import type { CoupleProfile, Screen } from '../types'
-
-export interface HomeSummary {
-  catName: string
-  catMoodLine: string
-  catLevel: number
-  noteCount: number
-  latestNote: string | null
-  bucketDone: number
-  bucketTotal: number
-  daysTogether: number | null
-}
 
 interface HomeScreenProps {
   profile: CoupleProfile
-  summary: HomeSummary
   onOpen: (screen: Screen) => void
 }
 
@@ -34,12 +21,19 @@ function initials(profile: CoupleProfile): string {
   return `${a}${b}`.toUpperCase()
 }
 
-export function HomeScreen({ profile, summary, onOpen }: HomeScreenProps) {
+export function HomeScreen({ profile, onOpen }: HomeScreenProps) {
+  const days = daysTogether(profile.since)
+
   return (
     <div className="home">
       <header className="home__top">
         <span className="home__mark" aria-hidden>
-          <Logo size={40} />
+          <img
+            src={`${import.meta.env.BASE_URL}favicon.jpg`}
+            alt=""
+            width={40}
+            height={40}
+          />
         </span>
         <div className="home__greet">
           <p className="home__hello">{greeting()}</p>
@@ -58,8 +52,8 @@ export function HomeScreen({ profile, summary, onOpen }: HomeScreenProps) {
       </header>
 
       <div className="home__scroll">
-        <section className="surface services" aria-label="Things you can do">
-          <ul className="services__grid">
+        <section className="surface services services--solo" aria-label="Things you can do">
+          <ul className="services__grid services__grid--solo">
             {SERVICES.map((service) => (
               <li key={service.id}>
                 <button
@@ -88,74 +82,21 @@ export function HomeScreen({ profile, summary, onOpen }: HomeScreenProps) {
           </ul>
         </section>
 
-        <section className="home-section" aria-label="Pick up where you left off">
-          <div className="section-head">
-            <h2>Pick up where you left off</h2>
-          </div>
-
-          <div className="rail">
-            <button
-              type="button"
-              className="promo promo--cat"
-              onClick={() => onOpen('cat')}
-            >
-              <span className="promo__eyebrow">Our Cat · lv {summary.catLevel}</span>
-              <span className="promo__title">{summary.catName}</span>
-              <span className="promo__body">{summary.catMoodLine}</span>
-              <span className="promo__cta">
-                Go check on {summary.catName}
-                <ChevronIcon size={16} />
-              </span>
-            </button>
-          </div>
-        </section>
-
-        <section className="home-section" aria-label="Us by the numbers">
-          <div className="section-head">
-            <h2>Us, by the numbers</h2>
-          </div>
-
-          <ul className="metrics">
-            <li className="metric">
-              <span className="metric__value">
-                {summary.daysTogether === null ? '—' : summary.daysTogether}
-              </span>
-              <span className="metric__label">
-                {summary.daysTogether === null
-                  ? 'Add your date'
-                  : summary.daysTogether === 1
-                    ? 'Day together'
-                    : 'Days together'}
-              </span>
-            </li>
-            <li className="metric">
-              <span className="metric__value">
-                {summary.bucketDone}/{summary.bucketTotal}
-              </span>
-              <span className="metric__label">Bucket done</span>
-            </li>
-            <li className="metric">
-              <span className="metric__value">{summary.noteCount}</span>
-              <span className="metric__label">
-                {summary.noteCount === 1 ? 'Love note' : 'Love notes'}
-              </span>
-            </li>
-          </ul>
-
-          {summary.latestNote ? (
-            <button
-              type="button"
-              className="surface latest-note"
-              onClick={() => onOpen('notes')}
-            >
-              <span className="latest-note__icon" aria-hidden>
-                <HeartIcon size={18} />
-              </span>
-              <span className="latest-note__text">“{summary.latestNote}”</span>
-              <ChevronIcon size={18} />
-            </button>
-          ) : null}
-        </section>
+        {days !== null ? (
+          <section className="home-section" aria-label="Us by the numbers">
+            <div className="section-head">
+              <h2>Us, by the numbers</h2>
+            </div>
+            <ul className="metrics metrics--solo">
+              <li className="metric">
+                <span className="metric__value">{days}</span>
+                <span className="metric__label">
+                  {days === 1 ? 'Day together' : 'Days together'}
+                </span>
+              </li>
+            </ul>
+          </section>
+        ) : null}
       </div>
     </div>
   )

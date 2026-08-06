@@ -133,7 +133,7 @@ export function CloudSyncCard() {
         <h2>Cloud sync</h2>
       </div>
       <p className="cloud-card__body">
-        Sign in to sync notes, moods, Mochi, and photostrips between both phones.
+        Sign in to sync your photostrips and couple profile between both phones.
       </p>
       <div className="cloud-card__tabs">
         <button
