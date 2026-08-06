@@ -83,10 +83,7 @@ export function HomeScreen({ profile, onOpen }: HomeScreenProps) {
         </section>
 
         {days !== null ? (
-          <section className="home-section" aria-label="Us by the numbers">
-            <div className="section-head">
-              <h2>Us, by the numbers</h2>
-            </div>
+          <section className="home-section" aria-label="Days together">
             <ul className="metrics metrics--solo">
               <li className="metric">
                 <span className="metric__value">{days}</span>

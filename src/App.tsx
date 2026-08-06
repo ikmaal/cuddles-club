@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { HeartIcon, HomeIcon } from './components/Icons'
 import { SplashIntro } from './components/SplashIntro'
 import { useCouple } from './context/CoupleContext'
@@ -9,6 +9,8 @@ import { StripsScreen } from './screens/StripsScreen'
 import { UsScreen } from './screens/UsScreen'
 import type { Screen } from './types'
 import './App.css'
+
+const HOME_BG_URL = `${import.meta.env.BASE_URL}background.png`
 
 const TABS: { id: Screen; label: string; Icon: typeof HomeIcon }[] = [
   { id: 'home', label: 'Home', Icon: HomeIcon },
@@ -23,20 +25,21 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>('home')
   const [showSplash, setShowSplash] = useState(true)
 
+  useEffect(() => {
+    const img = new Image()
+    img.src = HOME_BG_URL
+  }, [])
+
   const finishSplash = useCallback(() => setShowSplash(false), [])
 
   const goHome = () => setScreen('home')
   const showTabs = !showSplash && ready && (screen === 'home' || screen === 'us')
-  const homeBg = screen === 'home' && !showSplash
+  const homeBg = screen === 'home'
 
   return (
     <div
       className={`app${homeBg ? ' app--home-bg' : ''}`}
-      style={
-        homeBg
-          ? { ['--home-bg' as string]: `url(${import.meta.env.BASE_URL}background.png)` }
-          : undefined
-      }
+      style={homeBg ? { ['--home-bg' as string]: `url(${HOME_BG_URL})` } : undefined}
     >
       {showSplash ? (
         <SplashIntro canFinish={ready} onDone={finishSplash} />

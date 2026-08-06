@@ -23,10 +23,7 @@
 
 .app--home-bg .home__hello,
 .app--home-bg .home__greet h1,
-.app--home-bg .home__avatar,
-.app--home-bg .section-head h2,
-.app--home-bg .metric__value,
-.app--home-bg .metric__label {
+.app--home-bg .home__avatar {
   color: #fad0c4;
 }
 
@@ -205,20 +202,22 @@
 }
 
 .home .surface {
-  background: #fad0c4;
+  background: #ebb8b3;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border-color: transparent;
 }
 
 .home .metric {
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: #ebb8b3;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-color: transparent;
 }
 
-.home .section-head h2 {
-  text-shadow: none;
+.home .metric__value,
+.home .metric__label {
+  color: #3d4f8f;
 }
 
 .home .service__label {
@@ -248,8 +247,25 @@
 
 .metrics--solo {
   grid-template-columns: 1fr;
-  max-width: 200px;
+  max-width: 260px;
   margin: 0 auto;
+  width: 100%;
+}
+
+.metrics--solo .metric {
+  min-height: 110px;
+  padding: 22px 16px;
+  border-radius: 20px;
+  gap: 8px;
+}
+
+.metrics--solo .metric__value {
+  font-size: 2rem;
+}
+
+.metrics--solo .metric__label {
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 .services__grid {
@@ -3539,6 +3555,7 @@
   opacity: 0;
   transform: scale(1.03);
   pointer-events: none;
+  background: transparent;
 }
 
 .splash__sparkles {
@@ -3578,8 +3595,9 @@
   width: 108px;
   height: 108px;
   border-radius: 28px;
-  padding: 6px;
-  background: #ffffff;
+  padding: 0;
+  background: transparent;
+  overflow: hidden;
   box-shadow:
     0 1px 2px rgba(26, 26, 26, 0.04),
     0 14px 32px rgba(26, 26, 26, 0.08);
@@ -3589,15 +3607,15 @@
 .splash__mark {
   width: 100%;
   height: 100%;
-  border-radius: 22px;
+  border-radius: 28px;
   object-fit: cover;
   display: block;
 }
 
 .splash__shutter {
   position: absolute;
-  inset: 6px;
-  border-radius: 22px;
+  inset: 0;
+  border-radius: 28px;
   background: white;
   opacity: 0;
   pointer-events: none;
