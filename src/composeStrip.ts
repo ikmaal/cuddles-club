@@ -90,7 +90,7 @@ function drawCuteHeader(ctx: CanvasRenderingContext2D) {
   drawMiniCat(ctx, 140, 48, 0.55, '#f4c7a5')
   drawMiniCat(ctx, STRIP_W - 140, 48, 0.55, '#e8b4c8')
   ctx.fillStyle = '#c44569'
-  ctx.font = '700 20px Fraunces, Georgia, serif'
+  ctx.font = '700 20px Fredoka, Georgia, serif'
   ctx.textAlign = 'center'
   ctx.fillText('♡ booth cuties ♡', STRIP_W / 2, 52)
 }
@@ -127,7 +127,7 @@ function drawClassicStrip(
   drawFilmPerforations(ctx, 0, 0, STRIP_W, STRIP_H)
 
   ctx.fillStyle = '#1a1a1a'
-  ctx.font = '700 16px Inter, system-ui, sans-serif'
+  ctx.font = '700 16px Fredoka, system-ui, sans-serif'
   ctx.textAlign = 'center'
   ctx.letterSpacing = '0.18em'
   ctx.fillText('PHOTO BOOTH', STRIP_W / 2, 48)
@@ -150,7 +150,7 @@ function drawClassicStrip(
     titleColor: '#1a1a1a',
     dateColor: '#575757',
     accent: '#1a1a1a',
-    font: '600 16px Inter, system-ui, sans-serif',
+    font: '600 16px Fredoka, system-ui, sans-serif',
   })
 }
 
@@ -224,7 +224,7 @@ function drawDateNightStrip(
   drawHeart(ctx, STRIP_W - 120, 46, 8, '#ff8fa8')
 
   ctx.fillStyle = '#ffd933'
-  ctx.font = '700 20px Fraunces, Georgia, serif'
+  ctx.font = '700 20px Fredoka, Georgia, serif'
   ctx.textAlign = 'center'
   ctx.fillText('♡ date night ♡', STRIP_W / 2, 52)
 
@@ -261,7 +261,7 @@ function drawPolaroidStrip(
   drawHeart(ctx, STRIP_W - 72, 40, 8, '#5b9a8b')
 
   ctx.fillStyle = '#3d5c54'
-  ctx.font = '700 22px Fraunces, Georgia, serif'
+  ctx.font = '700 22px Fredoka, Georgia, serif'
   ctx.textAlign = 'center'
   ctx.fillText('our moments', STRIP_W / 2, 50)
 
@@ -339,7 +339,7 @@ function drawRetroStrip(
   drawSunburst(ctx, STRIP_W - 50, 46, 22, '#f76708')
 
   ctx.fillStyle = '#9e3105'
-  ctx.font = '700 22px Fraunces, Georgia, serif'
+  ctx.font = '700 22px Fredoka, Georgia, serif'
   ctx.textAlign = 'center'
   ctx.fillText('retro booth', STRIP_W / 2, 52)
 
@@ -527,12 +527,12 @@ function drawFooter(
   drawHeart(ctx, STRIP_W / 2 + 70, STRIP_H - 42, 8, colors.accent)
 
   ctx.fillStyle = colors.titleColor
-  ctx.font = colors.font ?? '700 18px Fraunces, Georgia, serif'
+  ctx.font = colors.font ?? '700 18px Fredoka, Georgia, serif'
   ctx.textAlign = 'center'
   ctx.fillText(title?.trim() || 'Cuddles Club', STRIP_W / 2, STRIP_H - 48)
 
   ctx.fillStyle = colors.dateColor
-  ctx.font = '600 13px Inter, system-ui, sans-serif'
+  ctx.font = '600 13px Fredoka, system-ui, sans-serif'
   ctx.fillText(label, STRIP_W / 2, STRIP_H - 26)
 }
 

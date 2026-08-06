@@ -55,8 +55,8 @@
   --sage-soft: #e3f2ed;
 
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --font-display: 'Fraunces', Georgia, serif;
-  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Fredoka', system-ui, sans-serif;
+  --font-body: 'Fredoka', system-ui, sans-serif;
 
   color: var(--ink);
   background: var(--canvas);
@@ -125,6 +125,7 @@ h1,
 h2,
 h3,
 h4 {
+  font-family: var(--font-display);
   letter-spacing: -0.01em;
 }
 

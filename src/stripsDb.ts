@@ -119,7 +119,7 @@ function drawSampleStrip(): string {
   })
 
   ctx.fillStyle = '#c44569'
-  ctx.font = '700 18px Inter, system-ui, sans-serif'
+  ctx.font = '700 18px Fredoka, system-ui, sans-serif'
   ctx.textAlign = 'center'
   ctx.fillText('Cuddles Club', width / 2, height - 10)
 
@@ -155,7 +155,7 @@ function drawWave(
   drawPerson(ctx, cx - 48, cy, '#e85d75', true)
   drawPerson(ctx, cx + 48, cy, '#17b5a6', false)
   ctx.fillStyle = '#c44569'
-  ctx.font = '700 22px Fraunces, Georgia, serif'
+  ctx.font = '700 22px Fredoka, Georgia, serif'
   ctx.textAlign = 'center'
   ctx.fillText('hi ♥', cx, y + 42)
 }
@@ -218,7 +218,7 @@ function drawCat(
   ctx.closePath()
   ctx.fill()
   ctx.fillStyle = '#c44569'
-  ctx.font = '700 18px Inter, system-ui, sans-serif'
+  ctx.font = '700 18px Fredoka, system-ui, sans-serif'
   ctx.textAlign = 'center'
   ctx.fillText('Mochi says hi', cx, y + h - 28)
 }
