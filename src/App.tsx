@@ -30,6 +30,21 @@ export default function App() {
     img.src = HOME_BG_URL
   }, [])
 
+  useEffect(() => {
+    const active = screen === 'home' && ready && !showSplash
+    const root = document.documentElement
+    root.classList.toggle('home-bg', active)
+    if (active) {
+      root.style.setProperty('--home-bg', `url(${HOME_BG_URL})`)
+    } else {
+      root.style.removeProperty('--home-bg')
+    }
+    return () => {
+      root.classList.remove('home-bg')
+      root.style.removeProperty('--home-bg')
+    }
+  }, [screen, ready, showSplash])
+
   const finishSplash = useCallback(() => setShowSplash(false), [])
 
   const goHome = () => setScreen('home')

@@ -73,10 +73,16 @@
   box-sizing: border-box;
 }
 
+html {
+  height: -webkit-fill-available;
+}
+
 html,
 body,
 #root {
-  height: 100%;
+  min-height: 100%;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
   margin: 0;
 }
 
@@ -84,6 +90,16 @@ body {
   min-width: 320px;
   overflow: hidden;
   background: var(--canvas);
+}
+
+/* Match home wallpaper behind iOS safe areas (status bar / home indicator) */
+html.home-bg,
+html.home-bg body {
+  background-color: #ebb8b3;
+  background-image: var(--home-bg);
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
 }
 
 button,

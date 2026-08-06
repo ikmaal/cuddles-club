@@ -2,7 +2,9 @@
 
 .app {
   position: relative;
-  height: 100%;
+  min-height: 100%;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
   max-width: 520px;
   margin: 0 auto;
   display: flex;
@@ -13,12 +15,27 @@
 }
 
 .app--home-bg {
-  background-color: var(--canvas);
+  background: transparent;
+  color: #fad0c4;
+}
+
+/* Full-bleed on iPhone notch / status bar — paints behind safe areas */
+.app--home-bg::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-color: #ebb8b3;
   background-image: var(--home-bg);
   background-size: cover;
-  background-position: center;
+  background-position: center top;
   background-repeat: no-repeat;
-  color: #fad0c4;
+  pointer-events: none;
+}
+
+.app--home-bg > * {
+  position: relative;
+  z-index: 1;
 }
 
 .app--home-bg .home__hello,
