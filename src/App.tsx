@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { HeartIcon, HomeIcon } from './components/Icons'
+import { SplashIntro } from './components/SplashIntro'
 import { useCouple } from './context/CoupleContext'
 import { usePhotostrips } from './hooks/usePhotostrips'
 import { useProfile } from './hooks/useProfile'
@@ -20,9 +21,12 @@ export default function App() {
   const strips = usePhotostrips()
 
   const [screen, setScreen] = useState<Screen>('home')
+  const [showSplash, setShowSplash] = useState(true)
+
+  const finishSplash = useCallback(() => setShowSplash(false), [])
 
   const goHome = () => setScreen('home')
-  const showTabs = screen === 'home' || screen === 'us'
+  const showTabs = !showSplash && (screen === 'home' || screen === 'us')
 
   if (!ready) {
     return (
@@ -34,6 +38,8 @@ export default function App() {
 
   return (
     <div className="app">
+      {showSplash ? <SplashIntro onDone={finishSplash} /> : null}
+
       <main className={`app__main ${showTabs ? 'has-tabs' : ''}`}>
         {screen === 'home' ? (
           <HomeScreen profile={profile} onOpen={setScreen} />

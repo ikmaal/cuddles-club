@@ -3459,6 +3459,146 @@
   color: var(--stone);
 }
 
+/* ---------- Splash intro ---------- */
+
+.splash {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #ffffff;
+  opacity: 1;
+  transition: opacity 480ms ease, transform 480ms ease;
+}
+
+.splash.is-exiting {
+  opacity: 0;
+  transform: scale(1.03);
+  pointer-events: none;
+}
+
+.splash__sparkles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.splash__spark {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--rose);
+  opacity: 0;
+  animation: splash-spark 1.8s ease-in-out infinite;
+}
+
+.splash__spark--1 { top: 18%; left: 18%; animation-delay: 0.2s; }
+.splash__spark--2 { top: 22%; right: 20%; width: 4px; height: 4px; animation-delay: 0.55s; }
+.splash__spark--3 { top: 58%; left: 14%; width: 5px; height: 5px; animation-delay: 0.9s; }
+.splash__spark--4 { bottom: 22%; right: 16%; animation-delay: 1.1s; }
+.splash__spark--5 { top: 42%; right: 12%; width: 3px; height: 3px; animation-delay: 0.35s; }
+.splash__spark--6 { bottom: 28%; left: 22%; width: 4px; height: 4px; animation-delay: 1.35s; }
+
+.splash__stage {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+}
+
+.splash__frame {
+  position: relative;
+  width: 108px;
+  height: 108px;
+  border-radius: 28px;
+  padding: 6px;
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgba(26, 26, 26, 0.04),
+    0 14px 32px rgba(26, 26, 26, 0.08);
+  animation: splash-pop 780ms cubic-bezier(0.22, 1.2, 0.36, 1) both;
+}
+
+.splash__mark {
+  width: 100%;
+  height: 100%;
+  border-radius: 22px;
+  object-fit: cover;
+  display: block;
+}
+
+.splash__shutter {
+  position: absolute;
+  inset: 6px;
+  border-radius: 22px;
+  background: white;
+  opacity: 0;
+  pointer-events: none;
+  animation: splash-shutter 900ms ease-out 0.55s both;
+}
+
+@keyframes splash-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.55) rotate(-6deg);
+  }
+  70% {
+    transform: scale(1.06) rotate(1.5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes splash-shutter {
+  0% {
+    opacity: 0;
+  }
+  18% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes splash-spark {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  45% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .splash,
+  .splash.is-exiting {
+    transition-duration: 100ms;
+  }
+
+  .splash__spark,
+  .splash__frame,
+  .splash__shutter {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+
+  .splash__shutter {
+    opacity: 0;
+  }
+}
+
 .cloud-card {
   display: grid;
   gap: 12px;
