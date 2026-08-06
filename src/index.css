@@ -95,7 +95,7 @@ body {
 /* Match home wallpaper behind iOS safe areas (status bar / home indicator) */
 html.home-bg,
 html.home-bg body {
-  background-color: #ebb8b3;
+  background-color: #272d88;
   background-image: var(--home-bg);
   background-size: cover;
   background-position: center top;

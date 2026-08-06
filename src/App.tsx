@@ -11,6 +11,8 @@ import type { Screen } from './types'
 import './App.css'
 
 const HOME_BG_URL = `${import.meta.env.BASE_URL}background.png`
+const HOME_STATUS_COLOR = '#272d88'
+const DEFAULT_THEME_COLOR = '#E85D75'
 
 const TABS: { id: Screen; label: string; Icon: typeof HomeIcon }[] = [
   { id: 'home', label: 'Home', Icon: HomeIcon },
@@ -33,15 +35,20 @@ export default function App() {
   useEffect(() => {
     const active = screen === 'home' && ready && !showSplash
     const root = document.documentElement
+    const themeMeta = document.querySelector('meta[name="theme-color"]')
+
     root.classList.toggle('home-bg', active)
     if (active) {
       root.style.setProperty('--home-bg', `url(${HOME_BG_URL})`)
+      themeMeta?.setAttribute('content', HOME_STATUS_COLOR)
     } else {
       root.style.removeProperty('--home-bg')
+      themeMeta?.setAttribute('content', DEFAULT_THEME_COLOR)
     }
     return () => {
       root.classList.remove('home-bg')
       root.style.removeProperty('--home-bg')
+      themeMeta?.setAttribute('content', DEFAULT_THEME_COLOR)
     }
   }, [screen, ready, showSplash])
 
