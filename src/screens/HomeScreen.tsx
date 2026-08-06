@@ -67,8 +67,19 @@ export function HomeScreen({ profile, summary, onOpen }: HomeScreenProps) {
                   className="service"
                   onClick={() => onOpen(service.id)}
                 >
-                  <span className={`service__tile service__tile--${service.tone}`}>
-                    <service.Icon size={26} />
+                  <span
+                    className={`service__tile service__tile--${service.tone}${
+                      service.image ? ' service__tile--image' : ''
+                    }`}
+                  >
+                    {service.image ? (
+                      <img
+                        src={`${import.meta.env.BASE_URL}${service.image}`}
+                        alt=""
+                      />
+                    ) : (
+                      <service.Icon size={26} />
+                    )}
                   </span>
                   <span className="service__label">{service.label}</span>
                 </button>

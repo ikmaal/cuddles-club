@@ -226,6 +226,19 @@
   background: var(--acc-film-bg);
   color: var(--acc-film-fg);
 }
+
+.service__tile--image {
+  overflow: hidden;
+  padding: 0;
+}
+
+.service__tile--image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .service__tile--neutral {
   background: var(--acc-neutral-bg);
   color: var(--acc-neutral-fg);

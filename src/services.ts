@@ -14,6 +14,7 @@ export interface Service {
   blurb: string
   tone: string
   Icon: ComponentType<{ size?: number }>
+  image?: string
 }
 
 export const SERVICES: Service[] = [
@@ -30,6 +31,7 @@ export const SERVICES: Service[] = [
     blurb: 'Snap strips, save memories, spin them in 3D',
     tone: 'film',
     Icon: StripIcon,
+    image: 'photobooth.jpg',
   },
   {
     id: 'notes',
