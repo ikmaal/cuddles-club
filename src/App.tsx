@@ -54,7 +54,14 @@ export default function App() {
 
   const finishSplash = useCallback(() => setShowSplash(false), [])
 
-  const goHome = () => setScreen('home')
+  const goToScreen = useCallback((next: Screen) => {
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur()
+    }
+    setScreen(next)
+  }, [])
+
+  const goHome = () => goToScreen('home')
   const showTabs = !showSplash && ready && (screen === 'home' || screen === 'us')
   const homeBg = screen === 'home'
 
@@ -71,7 +78,7 @@ export default function App() {
         <>
           <main className={`app__main ${showTabs ? 'has-tabs' : ''}`}>
             {screen === 'home' ? (
-              <HomeScreen profile={profile} onOpen={setScreen} />
+              <HomeScreen profile={profile} onOpen={goToScreen} />
             ) : null}
 
             {screen === 'strips' ? (
@@ -102,7 +109,7 @@ export default function App() {
                   key={tab.id}
                   type="button"
                   className={`tabbar__item ${screen === tab.id ? 'is-active' : ''}`}
-                  onClick={() => setScreen(tab.id)}
+                  onClick={() => goToScreen(tab.id)}
                   aria-current={screen === tab.id ? 'page' : undefined}
                 >
                   <tab.Icon size={22} />

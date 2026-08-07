@@ -27,26 +27,26 @@ export function UsScreen({ profile, onSave }: UsScreenProps) {
 
   return (
     <div className="screen screen--us">
-      <header className="us-hero">
-        <span className="us-hero__mark" aria-hidden>
-          <img
-            src={`${import.meta.env.BASE_URL}favicon.jpg`}
-            alt=""
-            width={52}
-            height={52}
-          />
-        </span>
-        <h1>
-          {profile.nameYou} & {profile.namePartner}
-        </h1>
-        <p>
-          {days === null
-            ? 'Add the day it started below'
-            : `${days.toLocaleString()} ${days === 1 ? 'day' : 'days'} together`}
-        </p>
-      </header>
-
       <div className="screen__scroll">
+        <header className="us-hero">
+          <span className="us-hero__mark" aria-hidden>
+            <img
+              src={`${import.meta.env.BASE_URL}favicon.jpg`}
+              alt=""
+              width={52}
+              height={52}
+            />
+          </span>
+          <h1>
+            {profile.nameYou} & {profile.namePartner}
+          </h1>
+          <p>
+            {days === null
+              ? 'Add the day it started below'
+              : `${days.toLocaleString()} ${days === 1 ? 'day' : 'days'} together`}
+          </p>
+        </header>
+
         <CloudSyncCard />
 
         <form className="surface form-card" onSubmit={submit}>
