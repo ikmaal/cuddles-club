@@ -1,0 +1,18 @@
+{
+  "name": "Cuddles Club",
+  "short_name": "Cuddles",
+  "description": "Everything you two do together, in one app.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#272d88",
+  "theme_color": "#272d88",
+  "icons": [
+    {
+      "src": "favicon.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}
