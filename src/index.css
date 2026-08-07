@@ -114,6 +114,7 @@ html:not(.home-bg):not(.splash-active) body {
 html.home-bg,
 html.home-bg body {
   background-color: transparent;
+  overscroll-behavior: none;
 }
 
 html:has(.home-wallpaper),

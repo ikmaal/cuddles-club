@@ -34,6 +34,10 @@
   overflow: hidden;
 }
 
+.app--home-bg .app__main {
+  overscroll-behavior: none;
+}
+
 .app--home-bg .app__main,
 .app--home-bg .tabbar {
   opacity: 0;
@@ -116,6 +120,7 @@
 .home {
   position: relative;
   background: transparent;
+  overscroll-behavior: none;
 }
 
 .home__top {
@@ -132,10 +137,9 @@
 .home__scroll {
   flex: 1 1 auto;
   min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior-y: contain;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: manipulation;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -164,6 +168,8 @@
 .home__scroll > *,
 .screen__scroll > * {
   flex: 0 0 auto;
+  min-width: 0;
+  max-width: 100%;
 }
 
 /* ---------- Bottom tabs ---------- */
@@ -782,6 +788,8 @@
 .field {
   display: grid;
   gap: 6px;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
 }
 
 .field > span {
@@ -796,6 +804,8 @@
 .composer textarea,
 .inline-add input {
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
   border-radius: 12px;
   border: 1px solid var(--outline-bold);
   background: var(--foam);
@@ -805,6 +815,15 @@
   outline: none;
   resize: vertical;
   transition: border-color 140ms ease;
+}
+
+.field input[type='date'] {
+  display: block;
+}
+
+.field input[type='date']::-webkit-date-and-time-value {
+  text-align: left;
+  min-width: 0;
 }
 
 .field input:focus,
@@ -818,6 +837,7 @@
   display: grid;
   gap: 14px;
   padding: 16px;
+  min-width: 0;
 }
 
 .form-card .btn {
