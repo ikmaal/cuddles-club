@@ -63,10 +63,9 @@ export default function App() {
     const root = document.documentElement
 
     root.classList.toggle('splash-active', splashActive)
-    root.classList.toggle('home-bg', homeLive)
+    root.classList.toggle('home-bg', wallpaperMounted)
 
     if (homeLive) {
-      root.style.setProperty('--home-bg', `url(${HOME_BG_URL})`)
       setThemeColor(HOME_STATUS_COLOR)
       setStatusBarStyle('black-translucent')
     } else if (splashActive) {
@@ -82,7 +81,13 @@ export default function App() {
       setThemeColor(DEFAULT_THEME_COLOR)
       setStatusBarStyle('default')
     }
-  }, [screen, homeBgReady, splashActive, homeLive])
+
+    if (wallpaperMounted) {
+      root.style.setProperty('--home-bg', `url(${HOME_BG_URL})`)
+    } else if (!homeLive) {
+      root.style.removeProperty('--home-bg')
+    }
+  }, [screen, homeBgReady, splashActive, homeLive, wallpaperMounted])
 
   useEffect(() => {
     if (!homeLive) {

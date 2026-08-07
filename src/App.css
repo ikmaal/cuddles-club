@@ -27,6 +27,8 @@
   background: transparent;
   color: #fad0c4;
   box-shadow: none;
+  /* Let wallpaper show through the home-indicator inset below the tab bar */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .app--home-bg .app__main,
@@ -158,6 +160,7 @@
   border-top: none;
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
+  padding-bottom: 0;
 }
 
 .tabbar--clear .tabbar__item,
