@@ -27,6 +27,10 @@ export function bindAppHeight() {
     document.documentElement.style.setProperty('--safe-bottom-px', `${safeBottom}px`)
     document.documentElement.style.setProperty('--app-height', `${layoutHeight}px`)
     document.documentElement.style.setProperty('--screen-height', `${layoutHeight}px`)
+    document.documentElement.style.setProperty(
+      '--wallpaper-height',
+      `${layoutHeight + safeBottom}px`,
+    )
   }
 
   set()

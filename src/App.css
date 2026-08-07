@@ -78,6 +78,9 @@
   margin-top: 0;
   flex-shrink: 0;
   z-index: 10;
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .app--home-bg .app__main.has-tabs {
