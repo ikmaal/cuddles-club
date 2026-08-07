@@ -12,7 +12,6 @@ import './App.css'
 
 const HOME_BG_URL = `${import.meta.env.BASE_URL}background.png`
 const HOME_STATUS_COLOR = '#272d88'
-const SPLASH_STATUS_COLOR = '#ffffff'
 const DEFAULT_THEME_COLOR = '#E85D75'
 
 function setThemeColor(color: string) {
@@ -49,24 +48,18 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    const wallpaperReady = screen === 'home' && homeBgReady
+    const onHome = screen === 'home'
     const root = document.documentElement
 
-    root.classList.toggle('home-bg', wallpaperReady)
-    if (wallpaperReady) {
+    root.classList.toggle('home-bg', onHome)
+    if (onHome) {
       root.style.setProperty('--home-bg', `url(${HOME_BG_URL})`)
+      setThemeColor(HOME_STATUS_COLOR)
     } else {
       root.style.removeProperty('--home-bg')
-    }
-
-    if (wallpaperReady) {
-      setThemeColor(HOME_STATUS_COLOR)
-    } else if (showSplash) {
-      setThemeColor(SPLASH_STATUS_COLOR)
-    } else {
       setThemeColor(DEFAULT_THEME_COLOR)
     }
-  }, [screen, homeBgReady, showSplash])
+  }, [screen])
 
   const finishSplash = useCallback(() => setShowSplash(false), [])
 
@@ -79,12 +72,12 @@ export default function App() {
 
   const goHome = () => goToScreen('home')
   const showTabs = !showSplash && ready && (screen === 'home' || screen === 'us')
-  const homeBg = screen === 'home' && ready && homeBgReady
+  const onHome = screen === 'home'
 
   return (
     <div
-      className={`app${homeBg ? ' app--home-bg' : ''}`}
-      style={homeBg ? { ['--home-bg' as string]: `url(${HOME_BG_URL})` } : undefined}
+      className={`app${onHome ? ' app--home-bg' : ''}`}
+      style={onHome ? { ['--home-bg' as string]: `url(${HOME_BG_URL})` } : undefined}
     >
       {showSplash ? (
         <SplashIntro canFinish={ready && homeBgReady} onDone={finishSplash} />

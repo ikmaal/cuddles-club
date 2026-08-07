@@ -59,7 +59,6 @@
   --font-body: 'Fredoka', system-ui, sans-serif;
 
   color: var(--ink);
-  background: var(--canvas);
   font-family: var(--font-body);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -96,17 +95,46 @@ body,
 body {
   min-width: 320px;
   overflow: hidden;
-  background: var(--canvas);
+  background-color: #272d88;
 }
 
-/* Match home wallpaper behind iOS safe areas (status bar / home indicator) */
-html.home-bg,
+html:not(.home-bg) {
+  background-color: var(--canvas);
+}
+
+html.home-bg #root {
+  background: transparent;
+}
+
+/* PWA: keep the shell clear on home so iOS samples navy/wallpaper in the status bar */
+html.home-bg .app {
+  background: transparent;
+  box-shadow: none;
+}
+
+html:not(.home-bg) body {
+  background-color: var(--canvas);
+  background-image: none;
+}
 html.home-bg body {
   background-color: #272d88;
   background-image: var(--home-bg);
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;
+}
+
+html.home-bg::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-color: #272d88;
+  background-image: var(--home-bg);
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  pointer-events: none;
 }
 
 button,
