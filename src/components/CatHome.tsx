@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { ScrollRegion } from './ScrollRegion'
 import type { CareResult } from '../hooks/useCat'
 import type { CatMood, CatState, Carer, CoupleProfile } from '../types'
 import { XP_PER_LEVEL } from '../types'
@@ -129,7 +130,7 @@ export function CatHome({
 
   return (
     <div className="cat-home">
-      <div className="cat-home__scroll">
+      <ScrollRegion className="cat-home__scroll">
         <div className="cat-stage">
           <div className="cat-stage__sky" aria-hidden />
           <div className="cat-stage__rug" aria-hidden />
@@ -322,7 +323,7 @@ export function CatHome({
             {cat.sleeping ? 'Wake' : 'Nap'}
           </button>
         </div>
-      </div>
+      </ScrollRegion>
     </div>
   )
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { CloudSyncCard } from '../components/CloudSyncCard'
+import { ScrollRegion } from '../components/ScrollRegion'
 import { useCouple } from '../context/CoupleContext'
 import { daysTogether } from '../hooks/useProfile'
 import type { CoupleProfile } from '../types'
@@ -27,7 +28,7 @@ export function UsScreen({ profile, onSave }: UsScreenProps) {
 
   return (
     <div className="screen screen--us">
-      <div className="screen__scroll">
+      <ScrollRegion className="screen__scroll">
         <header className="us-hero">
           <span className="us-hero__mark" aria-hidden>
             <img
@@ -72,13 +73,15 @@ export function UsScreen({ profile, onSave }: UsScreenProps) {
             />
           </label>
 
-          <label className="field">
+          <label className="field field--date">
             <span>Together since</span>
-            <input
-              type="date"
-              value={since}
-              onChange={(event) => setSince(event.target.value)}
-            />
+            <span className="field__control">
+              <input
+                type="date"
+                value={since}
+                onChange={(event) => setSince(event.target.value)}
+              />
+            </span>
           </label>
 
           <button type="submit" className="btn btn--primary btn--sm">
@@ -91,7 +94,7 @@ export function UsScreen({ profile, onSave }: UsScreenProps) {
             ? 'Your couple data syncs through Supabase when you are signed in.'
             : 'Without cloud sync, everything stays on this device only.'}
         </p>
-      </div>
+      </ScrollRegion>
     </div>
   )
 }

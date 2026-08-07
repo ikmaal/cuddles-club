@@ -23,11 +23,10 @@ export function bindAppHeight() {
     )
 
     const safeBottom = ensureProbe().offsetHeight
-    const fullHeight = layoutHeight + safeBottom
 
     document.documentElement.style.setProperty('--safe-bottom-px', `${safeBottom}px`)
     document.documentElement.style.setProperty('--app-height', `${layoutHeight}px`)
-    document.documentElement.style.setProperty('--screen-height', `${fullHeight}px`)
+    document.documentElement.style.setProperty('--screen-height', `${layoutHeight}px`)
   }
 
   set()

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { PlusIcon, TrashIcon } from '../components/Icons'
+import { ScrollRegion } from '../components/ScrollRegion'
 import { ScreenHeader } from '../components/ScreenHeader'
 import type { DateIdea } from '../types'
 
@@ -71,7 +72,7 @@ export function RouletteScreen({
         onBack={onBack}
       />
 
-      <div className="screen__scroll">
+      <ScrollRegion className="screen__scroll">
         <div className="surface spinner">
           <p className="spinner__eyebrow">
             {result ? 'Tonight’s plan' : spinning ? 'Spinning…' : 'Ready when you are'}
@@ -137,7 +138,7 @@ export function RouletteScreen({
             <p className="empty__body">Add a few ideas and the wheel will do the rest.</p>
           </div>
         ) : null}
-      </div>
+      </ScrollRegion>
     </div>
   )
 }

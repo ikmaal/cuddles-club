@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import { PhotoBooth } from '../components/PhotoBooth'
+import { ScrollRegion } from '../components/ScrollRegion'
 import { PlusIcon, StripIcon, TrashIcon } from '../components/Icons'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { StripViewer } from '../components/StripViewer'
@@ -124,7 +125,7 @@ export function StripsScreen({
         onChange={onFileChange}
       />
 
-      <div className="screen__scroll">
+      <ScrollRegion className="screen__scroll">
         <section className="album-cover" aria-label="Album cover">
           <div className="album-cover__spine" aria-hidden />
           <div className="album-cover__face">
@@ -301,7 +302,7 @@ export function StripsScreen({
             Tap a page to view the strip in 3D. Everything stays on this device.
           </p>
         ) : null}
-      </div>
+      </ScrollRegion>
 
       {boothOpen ? (
         <PhotoBooth

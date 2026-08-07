@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { ScrollRegion } from '../components/ScrollRegion'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { todayKey } from '../hooks/useStored'
 import type { AnswerEntry, CoupleProfile } from '../types'
@@ -47,7 +48,7 @@ export function QuestionScreen({
         onBack={onBack}
       />
 
-      <div className="screen__scroll">
+      <ScrollRegion className="screen__scroll">
         <div className="surface question-card">
           <p className="question-card__eyebrow">Today</p>
           <p className="question-card__text">{question}</p>
@@ -111,7 +112,7 @@ export function QuestionScreen({
             </ul>
           </>
         ) : null}
-      </div>
+      </ScrollRegion>
     </div>
   )
 }

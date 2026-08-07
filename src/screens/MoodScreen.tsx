@@ -1,4 +1,5 @@
 import { MOODS } from '../data'
+import { ScrollRegion } from '../components/ScrollRegion'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { todayKey } from '../hooks/useStored'
 import type { Carer, CoupleProfile, MoodEntry, MoodKey } from '../types'
@@ -42,7 +43,7 @@ export function MoodScreen({ moods, profile, onSet, onBack }: MoodScreenProps) {
         onBack={onBack}
       />
 
-      <div className="screen__scroll">
+      <ScrollRegion className="screen__scroll">
         {rows.map((row) => (
           <div key={row.who} className="surface mood-card">
             <div className="mood-card__head">
@@ -98,7 +99,7 @@ export function MoodScreen({ moods, profile, onSet, onBack }: MoodScreenProps) {
             Top row is {profile.nameYou}, bottom row is {profile.namePartner}.
           </p>
         </div>
-      </div>
+      </ScrollRegion>
     </div>
   )
 }

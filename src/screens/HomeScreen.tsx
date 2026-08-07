@@ -1,4 +1,5 @@
 import { SERVICES } from '../services'
+import { useOverscrollGuard } from '../hooks/useOverscrollGuard'
 import { daysTogether } from '../hooks/useProfile'
 import type { CoupleProfile, Screen } from '../types'
 
@@ -23,9 +24,10 @@ function initials(profile: CoupleProfile): string {
 
 export function HomeScreen({ profile, onOpen }: HomeScreenProps) {
   const days = daysTogether(profile.since)
+  const homeRef = useOverscrollGuard<HTMLDivElement>(false)
 
   return (
-    <div className="home">
+    <div className="home" ref={homeRef}>
       <header className="home__top">
         <span className="home__mark" aria-hidden>
           <img

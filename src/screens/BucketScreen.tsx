@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { PlusIcon, TrashIcon } from '../components/Icons'
+import { ScrollRegion } from '../components/ScrollRegion'
 import { ScreenHeader } from '../components/ScreenHeader'
 import type { BucketItem } from '../types'
 
@@ -41,7 +42,7 @@ export function BucketScreen({
         onBack={onBack}
       />
 
-      <div className="screen__scroll">
+      <ScrollRegion className="screen__scroll">
         <div className="surface progress-card">
           <div className="progress-card__top">
             <span>
@@ -135,7 +136,7 @@ export function BucketScreen({
             <p className="empty__body">Add the first thing you want to do together.</p>
           </div>
         ) : null}
-      </div>
+      </ScrollRegion>
     </div>
   )
 }

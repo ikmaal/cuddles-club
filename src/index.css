@@ -78,6 +78,7 @@
 
 html {
   height: -webkit-fill-available;
+  overscroll-behavior: none;
 }
 
 html,
@@ -85,7 +86,9 @@ body,
 #root {
   height: var(--app-height);
   min-height: var(--app-height);
+  max-height: var(--app-height);
   margin: 0;
+  overscroll-behavior: none;
 }
 
 #root {
@@ -93,6 +96,9 @@ body,
 }
 
 body {
+  position: fixed;
+  inset: 0;
+  width: 100%;
   min-width: 320px;
   overflow: hidden;
   background-color: var(--canvas);
@@ -120,15 +126,11 @@ html.home-bg body {
 html:has(.home-wallpaper),
 body:has(.home-wallpaper) {
   background-color: transparent;
-  height: var(--screen-height);
-  min-height: var(--screen-height);
 }
 
 body:has(.home-wallpaper) #root {
   position: relative;
   z-index: 1;
-  height: var(--screen-height);
-  min-height: var(--screen-height);
   background: transparent;
 }
 .home-wallpaper {

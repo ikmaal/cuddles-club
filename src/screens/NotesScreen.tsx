@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ScreenHeader } from '../components/ScreenHeader'
+import { ScrollRegion } from '../components/ScrollRegion'
 import { TrashIcon } from '../components/Icons'
 import { formatRelative } from '../hooks/useStored'
 import type { Carer, CoupleProfile, Note } from '../types'
@@ -39,7 +40,7 @@ export function NotesScreen({
         onBack={onBack}
       />
 
-      <div className="screen__scroll">
+      <ScrollRegion className="screen__scroll">
         <form className="surface composer" onSubmit={submit}>
           <div className="composer__who">
             <span>From</span>
@@ -114,7 +115,7 @@ export function NotesScreen({
             ))}
           </ul>
         )}
-      </div>
+      </ScrollRegion>
     </div>
   )
 }

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { TrashIcon } from '../components/Icons'
+import { ScrollRegion } from '../components/ScrollRegion'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { daysUntil } from '../hooks/useCoupleData'
 import type { Countdown } from '../types'
@@ -56,7 +57,7 @@ export function CountdownScreen({
         onBack={onBack}
       />
 
-      <div className="screen__scroll">
+      <ScrollRegion className="screen__scroll">
         <form className="surface form-card" onSubmit={submit}>
           <label className="field">
             <span>What is it?</span>
@@ -68,13 +69,15 @@ export function CountdownScreen({
             />
           </label>
 
-          <label className="field">
+          <label className="field field--date">
             <span>Date</span>
-            <input
-              type="date"
-              value={date}
-              onChange={(event) => setDate(event.target.value)}
-            />
+            <span className="field__control">
+              <input
+                type="date"
+                value={date}
+                onChange={(event) => setDate(event.target.value)}
+              />
+            </span>
           </label>
 
           <label className="switch">
@@ -140,7 +143,7 @@ export function CountdownScreen({
             ))}
           </ul>
         )}
-      </div>
+      </ScrollRegion>
     </div>
   )
 }
