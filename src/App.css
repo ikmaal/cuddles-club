@@ -3,12 +3,8 @@
 .app {
   position: relative;
   width: 100%;
-  height: 100%;
-  height: 100dvh;
-  height: -webkit-fill-available;
-  min-height: 100%;
-  min-height: 100dvh;
-  min-height: -webkit-fill-available;
+  height: var(--app-height);
+  min-height: var(--app-height);
   max-width: 520px;
   margin: 0 auto;
   display: flex;
@@ -26,16 +22,12 @@
 .app--home-bg {
   position: fixed;
   top: 0;
-  right: 0;
-  bottom: 0;
   left: 0;
+  right: 0;
   width: 100%;
   max-width: 520px;
-  height: auto;
-  min-height: 100%;
-  min-height: 100lvh;
-  min-height: 100dvh;
-  min-height: -webkit-fill-available;
+  height: var(--app-height);
+  min-height: var(--app-height);
   margin-left: auto;
   margin-right: auto;
   display: flex;
@@ -74,8 +66,17 @@
 }
 
 .app--home-bg .tabbar--clear {
-  margin-top: auto;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin-top: 0;
   flex-shrink: 0;
+  z-index: 2;
+}
+
+.app--home-bg .app__main.has-tabs {
+  padding-bottom: var(--home-tabbar-total);
 }
 
 .app--home-bg .home__mark {
