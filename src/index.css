@@ -113,11 +113,7 @@ html:not(.home-bg):not(.splash-active) body {
 
 html.home-bg,
 html.home-bg body {
-  background-color: #272d88;
-  background-image: var(--home-bg);
-  background-size: cover;
-  background-position: top center;
-  background-repeat: no-repeat;
+  background: transparent;
 }
 
 html.home-bg #root,
@@ -126,20 +122,19 @@ html.home-bg .app {
   box-shadow: none;
 }
 
-/* Full-viewport wallpaper — fixed layer + html fallback for iOS home-indicator gap */
+/* Wallpaper: anchor to top so navy stays in status bar; image fills through nav */
 .home-wallpaper {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  inset: 0;
   width: 100%;
-  height: calc(100% + env(safe-area-inset-bottom, 0px));
-  min-height: calc(100vh + env(safe-area-inset-bottom, 0px));
-  min-height: calc(100dvh + env(safe-area-inset-bottom, 0px));
+  height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
   z-index: 0;
   pointer-events: none;
   opacity: 0;
-  background-color: #272d88;
+  background-color: transparent;
   background-image: var(--home-bg);
   background-size: cover;
   background-position: top center;
@@ -154,11 +149,7 @@ html.home-bg .app {
 
 html:has(.home-wallpaper),
 body:has(.home-wallpaper) {
-  background-color: #272d88;
-  background-image: var(--home-bg);
-  background-size: cover;
-  background-position: top center;
-  background-repeat: no-repeat;
+  background: transparent;
 }
 
 body:has(.home-wallpaper) #root {
