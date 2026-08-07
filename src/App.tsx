@@ -26,14 +26,22 @@ export default function App() {
 
   const [screen, setScreen] = useState<Screen>('home')
   const [showSplash, setShowSplash] = useState(true)
+  const [homeBgReady, setHomeBgReady] = useState(false)
 
   useEffect(() => {
     const img = new Image()
     img.src = HOME_BG_URL
+    const markReady = () => setHomeBgReady(true)
+    if (img.complete) {
+      markReady()
+      return
+    }
+    img.onload = markReady
+    img.onerror = markReady
   }, [])
 
   useEffect(() => {
-    const active = screen === 'home' && ready && !showSplash
+    const active = screen === 'home' && ready && homeBgReady
     const root = document.documentElement
     const themeMeta = document.querySelector('meta[name="theme-color"]')
 
@@ -50,7 +58,7 @@ export default function App() {
       root.style.removeProperty('--home-bg')
       themeMeta?.setAttribute('content', DEFAULT_THEME_COLOR)
     }
-  }, [screen, ready, showSplash])
+  }, [screen, ready, homeBgReady])
 
   const finishSplash = useCallback(() => setShowSplash(false), [])
 
@@ -63,7 +71,7 @@ export default function App() {
 
   const goHome = () => goToScreen('home')
   const showTabs = !showSplash && ready && (screen === 'home' || screen === 'us')
-  const homeBg = screen === 'home' && !showSplash
+  const homeBg = screen === 'home' && ready && homeBgReady
 
   return (
     <div
@@ -71,7 +79,7 @@ export default function App() {
       style={homeBg ? { ['--home-bg' as string]: `url(${HOME_BG_URL})` } : undefined}
     >
       {showSplash ? (
-        <SplashIntro canFinish={ready} onDone={finishSplash} />
+        <SplashIntro canFinish={ready && homeBgReady} onDone={finishSplash} />
       ) : null}
 
       {ready ? (

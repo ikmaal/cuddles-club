@@ -57,6 +57,11 @@
   border: 1px solid #fad0c4;
 }
 
+/* Keep home UI hidden under the splash until it fades out */
+.app:has(.splash:not(.is-exiting)) .app__main {
+  visibility: hidden;
+}
+
 .app__main {
   flex: 1 1 0;
   min-height: 0;
