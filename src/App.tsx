@@ -12,7 +12,12 @@ import './App.css'
 
 const HOME_BG_URL = `${import.meta.env.BASE_URL}background.png`
 const HOME_STATUS_COLOR = '#272d88'
+const SPLASH_STATUS_COLOR = '#ffffff'
 const DEFAULT_THEME_COLOR = '#E85D75'
+
+function setThemeColor(color: string) {
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', color)
+}
 
 const TABS: { id: Screen; label: string; Icon: typeof HomeIcon }[] = [
   { id: 'home', label: 'Home', Icon: HomeIcon },
@@ -31,7 +36,10 @@ export default function App() {
   useEffect(() => {
     const img = new Image()
     img.src = HOME_BG_URL
-    const markReady = () => setHomeBgReady(true)
+    const markReady = () => {
+      setThemeColor(HOME_STATUS_COLOR)
+      setHomeBgReady(true)
+    }
     if (img.complete) {
       markReady()
       return
@@ -41,24 +49,24 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    const active = screen === 'home' && ready && homeBgReady
+    const wallpaperReady = screen === 'home' && homeBgReady
     const root = document.documentElement
-    const themeMeta = document.querySelector('meta[name="theme-color"]')
 
-    root.classList.toggle('home-bg', active)
-    if (active) {
+    root.classList.toggle('home-bg', wallpaperReady)
+    if (wallpaperReady) {
       root.style.setProperty('--home-bg', `url(${HOME_BG_URL})`)
-      themeMeta?.setAttribute('content', HOME_STATUS_COLOR)
     } else {
       root.style.removeProperty('--home-bg')
-      themeMeta?.setAttribute('content', DEFAULT_THEME_COLOR)
     }
-    return () => {
-      root.classList.remove('home-bg')
-      root.style.removeProperty('--home-bg')
-      themeMeta?.setAttribute('content', DEFAULT_THEME_COLOR)
+
+    if (wallpaperReady) {
+      setThemeColor(HOME_STATUS_COLOR)
+    } else if (showSplash) {
+      setThemeColor(SPLASH_STATUS_COLOR)
+    } else {
+      setThemeColor(DEFAULT_THEME_COLOR)
     }
-  }, [screen, ready, homeBgReady])
+  }, [screen, homeBgReady, showSplash])
 
   const finishSplash = useCallback(() => setShowSplash(false), [])
 
