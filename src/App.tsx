@@ -63,7 +63,7 @@ export default function App() {
 
   const goHome = () => goToScreen('home')
   const showTabs = !showSplash && ready && (screen === 'home' || screen === 'us')
-  const homeBg = screen === 'home'
+  const homeBg = screen === 'home' && !showSplash
 
   return (
     <div
