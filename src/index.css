@@ -111,10 +111,9 @@ html:not(.home-bg):not(.splash-active) body {
   background-color: var(--canvas);
 }
 
-/* Solid navy fallback for iOS status bar sampling — wallpaper paints via .app--home-bg::before */
 html.home-bg,
 html.home-bg body {
-  background-color: #272d88;
+  background-color: transparent;
   background-image: none;
 }
 
@@ -122,6 +121,27 @@ html.home-bg #root,
 html.home-bg .app {
   background: transparent;
   box-shadow: none;
+}
+
+/* Full-viewport wallpaper — body portal avoids iOS safe-area offset bugs */
+.home-wallpaper {
+  position: fixed;
+  top: calc(-1 * env(safe-area-inset-top, 0px));
+  right: 0;
+  bottom: calc(-1 * env(safe-area-inset-bottom, 0px));
+  left: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-color: #272d88;
+  background-image: var(--home-bg);
+  background-size: cover;
+  background-position: top center;
+  background-repeat: no-repeat;
+}
+
+body:has(.home-wallpaper) #root {
+  position: relative;
+  z-index: 1;
 }
 
 button,

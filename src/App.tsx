@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { HeartIcon, HomeIcon } from './components/Icons'
+import { HomeWallpaper } from './components/HomeWallpaper'
 import { SplashIntro } from './components/SplashIntro'
 import { useCouple } from './context/CoupleContext'
 import { usePhotostrips } from './hooks/usePhotostrips'
@@ -15,8 +16,16 @@ const HOME_STATUS_COLOR = '#272d88'
 const SPLASH_STATUS_COLOR = '#ffffff'
 const DEFAULT_THEME_COLOR = '#E85D75'
 
+type SplashPhase = 'active' | 'exiting' | 'done'
+
 function setThemeColor(color: string) {
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', color)
+}
+
+function setStatusBarStyle(style: 'default' | 'black-translucent') {
+  document
+    .querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')
+    ?.setAttribute('content', style)
 }
 
 const TABS: { id: Screen; label: string; Icon: typeof HomeIcon }[] = [
@@ -30,8 +39,12 @@ export default function App() {
   const strips = usePhotostrips()
 
   const [screen, setScreen] = useState<Screen>('home')
-  const [showSplash, setShowSplash] = useState(true)
+  const [splashPhase, setSplashPhase] = useState<SplashPhase>('active')
   const [homeBgReady, setHomeBgReady] = useState(false)
+
+  const splashActive = splashPhase !== 'done'
+  const wallpaperMounted = screen === 'home' && homeBgReady && splashPhase !== 'active'
+  const homeLive = screen === 'home' && homeBgReady && splashPhase === 'done'
 
   useEffect(() => {
     const img = new Image()
@@ -46,33 +59,32 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    const wallpaperLive = screen === 'home' && homeBgReady && !showSplash
     const root = document.documentElement
-    const statusBar = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')
 
-    root.classList.toggle('splash-active', showSplash)
-    root.classList.toggle('home-bg', wallpaperLive)
+    root.classList.toggle('splash-active', splashActive)
+    root.classList.toggle('home-bg', homeLive)
 
-    if (wallpaperLive) {
+    if (homeLive) {
       root.style.setProperty('--home-bg', `url(${HOME_BG_URL})`)
       setThemeColor(HOME_STATUS_COLOR)
-      statusBar?.setAttribute('content', 'black-translucent')
-    } else if (showSplash) {
+      setStatusBarStyle('black-translucent')
+    } else if (splashActive) {
       root.style.removeProperty('--home-bg')
       setThemeColor(SPLASH_STATUS_COLOR)
-      statusBar?.setAttribute('content', 'default')
+      setStatusBarStyle('default')
     } else if (screen === 'home') {
       root.style.removeProperty('--home-bg')
       setThemeColor(SPLASH_STATUS_COLOR)
-      statusBar?.setAttribute('content', 'default')
+      setStatusBarStyle('default')
     } else {
       root.style.removeProperty('--home-bg')
       setThemeColor(DEFAULT_THEME_COLOR)
-      statusBar?.setAttribute('content', 'default')
+      setStatusBarStyle('default')
     }
-  }, [screen, homeBgReady, showSplash])
+  }, [screen, homeBgReady, splashActive, homeLive])
 
-  const finishSplash = useCallback(() => setShowSplash(false), [])
+  const handleSplashExiting = useCallback(() => setSplashPhase('exiting'), [])
+  const finishSplash = useCallback(() => setSplashPhase('done'), [])
 
   const goToScreen = useCallback((next: Screen) => {
     if (document.activeElement instanceof HTMLElement) {
@@ -82,64 +94,70 @@ export default function App() {
   }, [])
 
   const goHome = () => goToScreen('home')
-  const showTabs = !showSplash && ready && (screen === 'home' || screen === 'us')
-  const wallpaperLive = screen === 'home' && homeBgReady && !showSplash
+  const showTabs = !splashActive && ready && (screen === 'home' || screen === 'us')
 
   return (
-    <div
-      className={`app${wallpaperLive ? ' app--home-bg' : ''}${showSplash ? ' app--splash' : ''}`}
-      style={wallpaperLive ? { ['--home-bg' as string]: `url(${HOME_BG_URL})` } : undefined}
-    >
-      {showSplash ? (
-        <SplashIntro canFinish={ready && homeBgReady} onDone={finishSplash} />
-      ) : null}
+    <>
+      {wallpaperMounted ? <HomeWallpaper imageUrl={HOME_BG_URL} /> : null}
 
-      {ready ? (
-        <>
-          <main className={`app__main ${showTabs ? 'has-tabs' : ''}`}>
-            {screen === 'home' ? (
-              <HomeScreen profile={profile} onOpen={goToScreen} />
+      <div
+        className={`app${homeLive ? ' app--home-bg' : ''}${splashActive ? ' app--splash' : ''}`}
+      >
+        {splashActive ? (
+          <SplashIntro
+            canFinish={ready && homeBgReady}
+            onExiting={handleSplashExiting}
+            onDone={finishSplash}
+          />
+        ) : null}
+
+        {ready ? (
+          <>
+            <main className={`app__main ${showTabs ? 'has-tabs' : ''}`}>
+              {screen === 'home' ? (
+                <HomeScreen profile={profile} onOpen={goToScreen} />
+              ) : null}
+
+              {screen === 'strips' ? (
+                <StripsScreen
+                  profile={profile}
+                  strips={strips.strips}
+                  ready={strips.ready}
+                  busy={strips.busy}
+                  error={strips.error}
+                  onAdd={strips.addFromFile}
+                  onAddBooth={strips.addFromDataUrl}
+                  onRename={strips.rename}
+                  onRemove={strips.remove}
+                  onClearError={() => strips.setError()}
+                  onBack={goHome}
+                />
+              ) : null}
+
+              {screen === 'us' ? (
+                <UsScreen profile={profile} onSave={updateProfile} />
+              ) : null}
+            </main>
+
+            {showTabs ? (
+              <nav className={`tabbar${screen === 'home' ? ' tabbar--clear' : ''}`} aria-label="Main">
+                {TABS.map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    className={`tabbar__item ${screen === tab.id ? 'is-active' : ''}`}
+                    onClick={() => goToScreen(tab.id)}
+                    aria-current={screen === tab.id ? 'page' : undefined}
+                  >
+                    <tab.Icon size={22} />
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
+              </nav>
             ) : null}
-
-            {screen === 'strips' ? (
-              <StripsScreen
-                profile={profile}
-                strips={strips.strips}
-                ready={strips.ready}
-                busy={strips.busy}
-                error={strips.error}
-                onAdd={strips.addFromFile}
-                onAddBooth={strips.addFromDataUrl}
-                onRename={strips.rename}
-                onRemove={strips.remove}
-                onClearError={() => strips.setError()}
-                onBack={goHome}
-              />
-            ) : null}
-
-            {screen === 'us' ? (
-              <UsScreen profile={profile} onSave={updateProfile} />
-            ) : null}
-          </main>
-
-          {showTabs ? (
-            <nav className={`tabbar${screen === 'home' ? ' tabbar--clear' : ''}`} aria-label="Main">
-              {TABS.map((tab) => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  className={`tabbar__item ${screen === tab.id ? 'is-active' : ''}`}
-                  onClick={() => goToScreen(tab.id)}
-                  aria-current={screen === tab.id ? 'page' : undefined}
-                >
-                  <tab.Icon size={22} />
-                  <span>{tab.label}</span>
-                </button>
-              ))}
-            </nav>
-          ) : null}
-        </>
-      ) : null}
-    </div>
+          </>
+        ) : null}
+      </div>
+    </>
   )
 }

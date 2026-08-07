@@ -3,13 +3,14 @@ import { useEffect, useRef, useState } from 'react'
 interface SplashIntroProps {
   /** When false, splash stays up even after the animation finishes. */
   canFinish: boolean
+  onExiting: () => void
   onDone: () => void
 }
 
 const SPLASH_MS = 2200
 const EXIT_MS = 480
 
-export function SplashIntro({ canFinish, onDone }: SplashIntroProps) {
+export function SplashIntro({ canFinish, onExiting, onDone }: SplashIntroProps) {
   const [exiting, setExiting] = useState(false)
   const [holdDone, setHoldDone] = useState(false)
   const finishedRef = useRef(false)
@@ -29,9 +30,10 @@ export function SplashIntro({ canFinish, onDone }: SplashIntroProps) {
     const exit = reduceMotion ? 100 : EXIT_MS
 
     setExiting(true)
+    onExiting()
     const doneTimer = window.setTimeout(() => onDone(), exit)
     return () => window.clearTimeout(doneTimer)
-  }, [holdDone, canFinish, onDone])
+  }, [holdDone, canFinish, onExiting, onDone])
 
   return (
     <div
