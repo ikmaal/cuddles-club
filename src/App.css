@@ -24,9 +24,26 @@
 }
 
 .app--home-bg {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+  min-height: 100%;
+  min-height: 100lvh;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
   background: transparent;
   color: #fad0c4;
   box-shadow: none;
+  overflow: hidden;
 }
 
 .app--home-bg .app__main,
@@ -54,6 +71,11 @@
 .app--home-bg .home__avatar {
   background: transparent;
   border: 1px solid #fad0c4;
+}
+
+.app--home-bg .tabbar--clear {
+  margin-top: auto;
+  flex-shrink: 0;
 }
 
 .app--home-bg .home__mark {

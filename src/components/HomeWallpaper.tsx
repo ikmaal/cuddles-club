@@ -7,10 +7,12 @@ interface HomeWallpaperProps {
 
 export function HomeWallpaper({ imageUrl, visible }: HomeWallpaperProps) {
   return createPortal(
-    <div
+    <img
       className={`home-wallpaper${visible ? ' is-visible' : ''}`}
-      style={{ ['--home-bg' as string]: `url(${imageUrl})` }}
-      aria-hidden
+      src={imageUrl}
+      alt=""
+      decoding="async"
+      draggable={false}
     />,
     document.body,
   )
