@@ -12,6 +12,7 @@ import './App.css'
 
 const HOME_BG_URL = `${import.meta.env.BASE_URL}background.png`
 const HOME_STATUS_COLOR = '#272d88'
+const SPLASH_STATUS_COLOR = '#ffffff'
 const DEFAULT_THEME_COLOR = '#E85D75'
 
 function setThemeColor(color: string) {
@@ -35,10 +36,7 @@ export default function App() {
   useEffect(() => {
     const img = new Image()
     img.src = HOME_BG_URL
-    const markReady = () => {
-      setThemeColor(HOME_STATUS_COLOR)
-      setHomeBgReady(true)
-    }
+    const markReady = () => setHomeBgReady(true)
     if (img.complete) {
       markReady()
       return
@@ -48,18 +46,31 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    const onHome = screen === 'home'
+    const wallpaperLive = screen === 'home' && homeBgReady && !showSplash
     const root = document.documentElement
+    const statusBar = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')
 
-    root.classList.toggle('home-bg', onHome)
-    if (onHome) {
+    root.classList.toggle('splash-active', showSplash)
+    root.classList.toggle('home-bg', wallpaperLive)
+
+    if (wallpaperLive) {
       root.style.setProperty('--home-bg', `url(${HOME_BG_URL})`)
       setThemeColor(HOME_STATUS_COLOR)
+      statusBar?.setAttribute('content', 'black-translucent')
+    } else if (showSplash) {
+      root.style.removeProperty('--home-bg')
+      setThemeColor(SPLASH_STATUS_COLOR)
+      statusBar?.setAttribute('content', 'default')
+    } else if (screen === 'home') {
+      root.style.removeProperty('--home-bg')
+      setThemeColor(SPLASH_STATUS_COLOR)
+      statusBar?.setAttribute('content', 'default')
     } else {
       root.style.removeProperty('--home-bg')
       setThemeColor(DEFAULT_THEME_COLOR)
+      statusBar?.setAttribute('content', 'default')
     }
-  }, [screen])
+  }, [screen, homeBgReady, showSplash])
 
   const finishSplash = useCallback(() => setShowSplash(false), [])
 
@@ -72,12 +83,12 @@ export default function App() {
 
   const goHome = () => goToScreen('home')
   const showTabs = !showSplash && ready && (screen === 'home' || screen === 'us')
-  const onHome = screen === 'home'
+  const wallpaperLive = screen === 'home' && homeBgReady && !showSplash
 
   return (
     <div
-      className={`app${onHome ? ' app--home-bg' : ''}`}
-      style={onHome ? { ['--home-bg' as string]: `url(${HOME_BG_URL})` } : undefined}
+      className={`app${wallpaperLive ? ' app--home-bg' : ''}${showSplash ? ' app--splash' : ''}`}
+      style={wallpaperLive ? { ['--home-bg' as string]: `url(${HOME_BG_URL})` } : undefined}
     >
       {showSplash ? (
         <SplashIntro canFinish={ready && homeBgReady} onDone={finishSplash} />

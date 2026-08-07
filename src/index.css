@@ -95,46 +95,33 @@ body,
 body {
   min-width: 320px;
   overflow: hidden;
-  background-color: #272d88;
-}
-
-html:not(.home-bg) {
   background-color: var(--canvas);
 }
 
-html.home-bg #root {
-  background: transparent;
+html.splash-active,
+html.splash-active body {
+  background-color: #ffffff;
 }
 
-/* PWA: keep the shell clear on home so iOS samples navy/wallpaper in the status bar */
+html:not(.home-bg):not(.splash-active) {
+  background-color: var(--canvas);
+}
+
+html:not(.home-bg):not(.splash-active) body {
+  background-color: var(--canvas);
+}
+
+/* Solid navy fallback for iOS status bar sampling — wallpaper paints via .app--home-bg::before */
+html.home-bg,
+html.home-bg body {
+  background-color: #272d88;
+  background-image: none;
+}
+
+html.home-bg #root,
 html.home-bg .app {
   background: transparent;
   box-shadow: none;
-}
-
-html:not(.home-bg) body {
-  background-color: var(--canvas);
-  background-image: none;
-}
-html.home-bg body {
-  background-color: #272d88;
-  background-image: var(--home-bg);
-  background-size: cover;
-  background-position: center top;
-  background-repeat: no-repeat;
-}
-
-html.home-bg::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background-color: #272d88;
-  background-image: var(--home-bg);
-  background-size: cover;
-  background-position: center top;
-  background-repeat: no-repeat;
-  pointer-events: none;
 }
 
 button,
