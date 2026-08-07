@@ -41,6 +41,7 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>('home')
   const [splashPhase, setSplashPhase] = useState<SplashPhase>('active')
   const [homeBgReady, setHomeBgReady] = useState(false)
+  const [homeVisible, setHomeVisible] = useState(false)
 
   const splashActive = splashPhase !== 'done'
   const wallpaperMounted = screen === 'home' && homeBgReady && splashPhase !== 'active'
@@ -83,6 +84,23 @@ export default function App() {
     }
   }, [screen, homeBgReady, splashActive, homeLive])
 
+  useEffect(() => {
+    if (!homeLive) {
+      setHomeVisible(false)
+      return
+    }
+
+    let raf2 = 0
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => setHomeVisible(true))
+    })
+
+    return () => {
+      cancelAnimationFrame(raf1)
+      if (raf2) cancelAnimationFrame(raf2)
+    }
+  }, [homeLive])
+
   const handleSplashExiting = useCallback(() => setSplashPhase('exiting'), [])
   const finishSplash = useCallback(() => setSplashPhase('done'), [])
 
@@ -98,10 +116,12 @@ export default function App() {
 
   return (
     <>
-      {wallpaperMounted ? <HomeWallpaper imageUrl={HOME_BG_URL} /> : null}
+      {wallpaperMounted ? (
+        <HomeWallpaper imageUrl={HOME_BG_URL} visible={homeVisible} />
+      ) : null}
 
       <div
-        className={`app${homeLive ? ' app--home-bg' : ''}${splashActive ? ' app--splash' : ''}`}
+        className={`app${homeLive ? ' app--home-bg' : ''}${homeVisible ? ' app--home-visible' : ''}${splashActive ? ' app--splash' : ''}`}
       >
         {splashActive ? (
           <SplashIntro

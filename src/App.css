@@ -26,6 +26,18 @@
 .app--home-bg {
   background: transparent;
   color: #fad0c4;
+  box-shadow: none;
+}
+
+.app--home-bg .app__main,
+.app--home-bg .tabbar {
+  opacity: 0;
+  transition: opacity 520ms ease;
+}
+
+.app--home-bg.app--home-visible .app__main,
+.app--home-bg.app--home-visible .tabbar {
+  opacity: 1;
 }
 
 .app--home-bg > * {
@@ -144,6 +156,8 @@
 .tabbar--clear {
   background: transparent;
   border-top: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .tabbar--clear .tabbar__item,
