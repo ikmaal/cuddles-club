@@ -98,10 +98,10 @@ export function StripsScreen({
   }
 
   return (
-    <div className="screen">
+    <div className="screen screen--strips">
       <ScreenHeader
         title="Photobooth"
-        subtitle="Our booth memories, kept together"
+        subtitle="Black & white booth nights, kept forever"
         onBack={onBack}
         action={
           <button
@@ -139,14 +139,14 @@ export function StripsScreen({
               )}
             </div>
             <div className="album-cover__info">
-              <p className="album-cover__eyebrow">Photobooth album</p>
+              <p className="album-cover__eyebrow">Film album</p>
               <h2>
                 {profile.nameYou} & {profile.namePartner}
               </h2>
               <p className="album-cover__blurb">
                 {strips.length > 0
-                  ? 'Every booth night, saved on one shelf.'
-                  : 'Start your first page with the booth or an upload.'}
+                  ? 'Every flash, every strip — filed in monochrome.'
+                  : 'Open the booth for four frames, or upload a strip you love.'}
               </p>
               <dl className="album-cover__stats">
                 <div>
@@ -231,15 +231,15 @@ export function StripsScreen({
           </div>
         ) : strips.length === 0 && !pendingFile ? (
           <div className="album-empty">
-            <p className="album-empty__title">This album is waiting for its first strip</p>
+            <p className="album-empty__title">No strips developed yet</p>
             <p className="album-empty__body">
-              Snap four photos in the booth, or tuck in a strip you already love.
+              Snap four frames in the booth, or upload a strip to start the album.
             </p>
           </div>
         ) : strips.length > 0 ? (
           <section className="album-shelf" aria-label="Album pages">
             <header className="album-shelf__head">
-              <h3>Inside the album</h3>
+              <h3>Contact sheets</h3>
               <p>{strips.length} page{strips.length === 1 ? '' : 's'}</p>
             </header>
             <ul className="album-pages">
@@ -299,7 +299,7 @@ export function StripsScreen({
 
         {strips.length > 0 ? (
           <p className="fineprint">
-            Tap a page to view the strip in 3D. Everything stays on this device.
+            Tap a page to view the strip in 3D. Kept on this device only.
           </p>
         ) : null}
       </ScrollRegion>

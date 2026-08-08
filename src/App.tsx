@@ -11,6 +11,7 @@ import type { Screen } from './types'
 import './App.css'
 
 const NAVY = '#272d88'
+const STRIPS_BLACK = '#0c0c0c'
 const SPLASH_STATUS_COLOR = '#ffffff'
 const DEFAULT_THEME_COLOR = '#E85D75'
 
@@ -50,9 +51,13 @@ export default function App() {
 
     root.classList.toggle('splash-active', splashActive)
     root.classList.toggle('home-bg', navyLive)
+    root.classList.toggle('strips-bg', screen === 'strips' && !splashActive)
 
     if (navyLive) {
       setThemeColor(NAVY)
+      setStatusBarStyle('black-translucent')
+    } else if (screen === 'strips' && !splashActive) {
+      setThemeColor(STRIPS_BLACK)
       setStatusBarStyle('black-translucent')
     } else if (splashActive) {
       setThemeColor(SPLASH_STATUS_COLOR)
@@ -61,7 +66,7 @@ export default function App() {
       setThemeColor(DEFAULT_THEME_COLOR)
       setStatusBarStyle('default')
     }
-  }, [splashActive, navyLive])
+  }, [splashActive, navyLive, screen])
 
   useEffect(() => {
     if (screen !== 'home' || splashPhase !== 'done') {
@@ -94,7 +99,7 @@ export default function App() {
 
   return (
     <div
-      className={`app${navyLive ? ' app--home-bg' : ''}${shellVisible ? ' app--home-visible' : ''}${splashActive ? ' app--splash' : ''}`}
+      className={`app${navyLive ? ' app--home-bg' : ''}${shellVisible ? ' app--home-visible' : ''}${screen === 'strips' && !splashActive ? ' app--strips' : ''}${splashActive ? ' app--splash' : ''}`}
     >
       {splashActive ? (
         <SplashIntro
@@ -108,7 +113,11 @@ export default function App() {
         <>
           <main className="app__main">
             {screen === 'home' ? (
-              <HomeScreen profile={profile} onOpen={goToScreen} />
+              <HomeScreen
+                profile={profile}
+                latestStrip={strips.strips[0] ?? null}
+                onOpen={goToScreen}
+              />
             ) : null}
 
             {screen === 'strips' ? (

@@ -127,6 +127,18 @@ html.home-bg .app {
   box-shadow: none;
 }
 
+html.strips-bg,
+html.strips-bg body,
+html.strips-bg #root {
+  background-color: #0c0c0c;
+  overscroll-behavior: none;
+}
+
+html.strips-bg .app {
+  background: #0c0c0c;
+  box-shadow: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .app--home-bg .app__main,
   .app--home-bg .tabbar {

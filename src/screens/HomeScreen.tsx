@@ -1,10 +1,12 @@
 import { SERVICES } from '../services'
 import { useOverscrollGuard } from '../hooks/useOverscrollGuard'
 import { daysTogether } from '../hooks/useProfile'
-import type { CoupleProfile, Screen } from '../types'
+import { formatRelative } from '../hooks/useStored'
+import type { CoupleProfile, Photostrip, Screen } from '../types'
 
 interface HomeScreenProps {
   profile: CoupleProfile
+  latestStrip: Photostrip | null
   onOpen: (screen: Screen) => void
 }
 
@@ -22,7 +24,7 @@ function initials(profile: CoupleProfile): string {
   return `${a}${b}`.toUpperCase()
 }
 
-export function HomeScreen({ profile, onOpen }: HomeScreenProps) {
+export function HomeScreen({ profile, latestStrip, onOpen }: HomeScreenProps) {
   const days = daysTogether(profile.since)
   const homeRef = useOverscrollGuard<HTMLDivElement>(false)
 
@@ -96,6 +98,42 @@ export function HomeScreen({ profile, onOpen }: HomeScreenProps) {
             </ul>
           </section>
         ) : null}
+
+        <section className="home-section home-lately" aria-label="Lately">
+          <div className="section-head section-head--tight">
+            <h2>Lately</h2>
+          </div>
+
+          {latestStrip ? (
+            <button
+              type="button"
+              className="home-activity home-activity--strip"
+              onClick={() => onOpen('strips')}
+            >
+              <span className="home-activity__frame" aria-hidden>
+                <img src={latestStrip.image} alt="" />
+              </span>
+              <span className="home-activity__copy">
+                <span className="home-activity__eyebrow">Photobooth</span>
+                <strong>{latestStrip.title}</strong>
+                <small>{formatRelative(latestStrip.createdAt)}</small>
+              </span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="home-activity home-activity--strip home-activity--empty"
+              onClick={() => onOpen('strips')}
+            >
+              <span className="home-activity__frame home-activity__frame--empty" aria-hidden />
+              <span className="home-activity__copy">
+                <span className="home-activity__eyebrow">Photobooth</span>
+                <strong>Nothing developed yet</strong>
+                <small>Open the booth for your first strip</small>
+              </span>
+            </button>
+          )}
+        </section>
       </div>
     </div>
   )

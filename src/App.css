@@ -485,6 +485,117 @@
   gap: 12px;
 }
 
+.home .section-head h2 {
+  color: #fad0c4;
+}
+
+.home-activity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 12px;
+  text-align: left;
+  transition: transform 140ms ease;
+}
+
+.home-activity:active {
+  transform: scale(0.985);
+}
+
+.home-activity--strip {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  width: 148px;
+  max-width: 148px;
+  margin-inline: 0;
+  margin-right: auto;
+  padding: 8px;
+  border-radius: 14px;
+  background: #0c0c0c;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.28);
+  text-align: left;
+}
+
+.home-activity__frame {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  padding: 10px 12px;
+  border-radius: 10px;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 45%, rgba(255, 255, 255, 0.05), transparent 70%),
+    #111;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.home-activity__frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
+  border-radius: 2px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+  filter: grayscale(0.15) contrast(1.04);
+}
+
+.home-activity__frame--empty {
+  background:
+    repeating-linear-gradient(
+      -12deg,
+      #141414 0,
+      #141414 10px,
+      #101010 10px,
+      #101010 20px
+    );
+}
+
+.home-activity__frame--empty::after {
+  content: 'STRIP';
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.28);
+}
+
+.home-activity--strip .home-activity__copy {
+  display: grid;
+  gap: 2px;
+  padding: 0 1px;
+  min-width: 0;
+}
+
+.home-activity--strip .home-activity__eyebrow {
+  font-size: 0.58rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.home-activity--strip .home-activity__copy strong {
+  font-size: 0.78rem;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.home-activity--strip .home-activity__copy small {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.home-activity--empty .home-activity__copy strong {
+  white-space: normal;
+}
+
 .home-section .metrics + .latest-note,
 .home-section .metrics + .nudge,
 .home-section .latest-note + .nudge {
@@ -3029,6 +3140,290 @@
   justify-content: flex-end;
   gap: 2px;
   padding: 0 2px;
+}
+
+/* ---------- Photobooth black & white theme ---------- */
+
+.app--strips {
+  background: #0c0c0c;
+  color: #f2f2f2;
+  box-shadow: none;
+}
+
+.screen--strips {
+  background:
+    radial-gradient(ellipse 90% 50% at 50% -10%, rgba(255, 255, 255, 0.06), transparent 55%),
+    #0c0c0c;
+  color: #f2f2f2;
+}
+
+.screen--strips .screen__scroll {
+  gap: 18px;
+}
+
+.screen--strips .screen-header {
+  background: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.screen--strips .screen-header__back {
+  color: #f2f2f2;
+}
+
+.screen--strips .screen-header__back:active {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.screen--strips .screen-header__text h1 {
+  color: #ffffff;
+  letter-spacing: 0.02em;
+}
+
+.screen--strips .screen-header__text p {
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.screen--strips .strip-add-btn {
+  background: #ffffff;
+  color: #0c0c0c;
+}
+
+.screen--strips .album-cover {
+  border-radius: 20px;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 24px 48px rgba(0, 0, 0, 0.55);
+}
+
+.screen--strips .album-cover__spine {
+  background:
+    linear-gradient(
+      90deg,
+      #050505 0%,
+      #1a1a1a 30%,
+      #2e2e2e 50%,
+      #1a1a1a 70%,
+      #080808 100%
+    );
+  box-shadow: inset -2px 0 8px rgba(0, 0, 0, 0.55);
+}
+
+.screen--strips .album-cover__face {
+  background:
+    radial-gradient(ellipse 100% 80% at 100% 0%, rgba(255, 255, 255, 0.08), transparent 50%),
+    linear-gradient(155deg, #1c1c1c 0%, #111111 48%, #080808 100%);
+  color: #f5f5f5;
+}
+
+.screen--strips .album-cover__peek {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 12px 28px rgba(0, 0, 0, 0.45);
+}
+
+.screen--strips .album-cover__peek img {
+  filter: grayscale(0.15) contrast(1.05);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55);
+}
+
+.screen--strips .album-cover__empty {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.screen--strips .album-cover__eyebrow {
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.14em;
+}
+
+.screen--strips .album-cover__face h2 {
+  color: #ffffff;
+}
+
+.screen--strips .album-cover__blurb {
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.screen--strips .album-cover__stats > div {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.screen--strips .album-cover__stats dt {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.screen--strips .album-cover__stats dd {
+  color: #ffffff;
+}
+
+.screen--strips .album-toolbar__btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #f2f2f2;
+  box-shadow: none;
+}
+
+.screen--strips .album-toolbar__btn:active {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.screen--strips .album-toolbar__btn--primary {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: #0c0c0c;
+}
+
+.screen--strips .album-toolbar__btn--primary:active {
+  background: #e8e8e8;
+}
+
+.screen--strips .strip-error {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 90, 90, 0.35);
+  color: #ffb4b0;
+}
+
+.screen--strips .album-compose {
+  background: #161616;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: none;
+}
+
+.screen--strips .album-compose__label {
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.1em;
+}
+
+.screen--strips .album-compose__preview {
+  background:
+    linear-gradient(180deg, #1a1a1a, #101010);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.screen--strips .album-compose__preview img {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.12) inset,
+    0 12px 28px rgba(0, 0, 0, 0.5);
+  filter: grayscale(0.2) contrast(1.04);
+}
+
+.screen--strips .field > span {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.screen--strips .field > input {
+  background: #0c0c0c;
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+}
+
+.screen--strips .field > input:focus {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.screen--strips .btn--primary {
+  background: #ffffff;
+  color: #0c0c0c;
+}
+
+.screen--strips .btn--ghost {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #f2f2f2;
+}
+
+.screen--strips .album-empty {
+  background: #141414;
+  border: 1px dashed rgba(255, 255, 255, 0.16);
+}
+
+.screen--strips .album-empty__title {
+  color: #ffffff;
+}
+
+.screen--strips .album-empty__body {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.screen--strips .empty__title {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.screen--strips .album-shelf__head h3 {
+  color: #ffffff;
+  letter-spacing: 0.02em;
+}
+
+.screen--strips .album-shelf__head p {
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.68rem;
+}
+
+.screen--strips .album-page__paper {
+  background:
+    linear-gradient(180deg, #f7f7f5 0%, #ecece8 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.65) inset,
+    0 14px 30px rgba(0, 0, 0, 0.45);
+}
+
+.screen--strips .album-page__mount {
+  background: #1a1a1a;
+  border-color: #000;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.screen--strips .album-page__strip {
+  background:
+    repeating-linear-gradient(
+      180deg,
+      #1a1a1a 0,
+      #1a1a1a 10px,
+      #222 10px,
+      #222 11px
+    );
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.screen--strips .album-page__strip::before,
+.screen--strips .album-page__strip::after {
+  background:
+    repeating-linear-gradient(
+      180deg,
+      #0c0c0c 0 4px,
+      #2a2a2a 4px 6px,
+      #0c0c0c 6px 10px
+    );
+}
+
+.screen--strips .album-page__strip img {
+  filter: grayscale(0.25) contrast(1.06);
+}
+
+.screen--strips .album-page__caption strong {
+  color: #111;
+}
+
+.screen--strips .album-page__caption small {
+  color: #666;
+}
+
+.screen--strips .ghost-icon {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.screen--strips .ghost-icon:active {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.screen--strips .fineprint {
+  color: rgba(255, 255, 255, 0.38);
 }
 
 /* Legacy strip grid (kept for compose fallback) */
