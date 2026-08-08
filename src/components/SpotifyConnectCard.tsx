@@ -20,7 +20,7 @@ export function SpotifyConnectCard() {
         </div>
         <p className="cloud-card__body">
           Add <code>VITE_SPOTIFY_CLIENT_ID</code> to connect Spotify and show what each of you is
-          listening to in Lately.
+          listening to in Activities.
         </p>
       </section>
     )
@@ -34,7 +34,7 @@ export function SpotifyConnectCard() {
       </div>
       <p className="cloud-card__body">
         {connected
-          ? `Connected as ${displayName}. Your listening updates on Home → Lately.`
+          ? `Connected as ${displayName}. Your listening updates on Home → Activities.`
           : 'Connect your Spotify so your partner can see what you’re listening to.'}
       </p>
       {!isCloud ? (

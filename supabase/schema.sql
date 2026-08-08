@@ -7,6 +7,8 @@ create table if not exists public.couples (
   member_a_name text not null default 'You',
   member_b_name text not null default 'Partner',
   since date,
+  home_photo_path text,
+  home_photo_updated_at bigint,
   created_at timestamptz not null default now()
 );
 
@@ -77,6 +79,13 @@ create table if not exists public.photostrips (
   id text primary key,
   couple_id uuid not null references public.couples (id) on delete cascade,
   title text not null,
+  storage_path text not null,
+  created_at bigint not null
+);
+
+create table if not exists public.booth_poses (
+  id text primary key,
+  couple_id uuid not null references public.couples (id) on delete cascade,
   storage_path text not null,
   created_at bigint not null
 );
@@ -230,6 +239,7 @@ alter table public.mood_entries enable row level security;
 alter table public.daily_answers enable row level security;
 alter table public.cat_states enable row level security;
 alter table public.photostrips enable row level security;
+alter table public.booth_poses enable row level security;
 alter table public.listening_status enable row level security;
 
 create policy "couples_select_member"
@@ -281,6 +291,11 @@ create policy "cat_all_member"
 
 create policy "strips_all_member"
   on public.photostrips for all
+  using (couple_id = public.user_couple_id())
+  with check (couple_id = public.user_couple_id());
+
+create policy "poses_all_member"
+  on public.booth_poses for all
   using (couple_id = public.user_couple_id())
   with check (couple_id = public.user_couple_id());
 

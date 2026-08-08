@@ -1,4 +1,5 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
+import { HomePhotoCropSheet } from '../components/HomePhotoCropSheet'
 import { SERVICES } from '../services'
 import { useSpotifyListening } from '../context/SpotifyListeningContext'
 import { useHomePhoto } from '../hooks/useHomePhoto'
@@ -111,15 +112,31 @@ function ListeningRow({
 export function HomeScreen({ profile, latestStrip, onOpen }: HomeScreenProps) {
   const days = daysTogether(profile.since)
   const homeRef = useOverscrollGuard<HTMLDivElement>(true)
-  const { photo, busy, setFromFile } = useHomePhoto()
+  const { photo, busy, saveDataUrl } = useHomePhoto()
   const photoInputRef = useRef<HTMLInputElement>(null)
+  const photoBtnRef = useRef<HTMLButtonElement>(null)
   const spotify = useSpotifyListening()
+  const [cropSrc, setCropSrc] = useState<string | null>(null)
+  const [cropAspect, setCropAspect] = useState(2.6)
 
-  async function onPhotoPicked(event: React.ChangeEvent<HTMLInputElement>) {
+  function closeCrop() {
+    if (cropSrc) URL.revokeObjectURL(cropSrc)
+    setCropSrc(null)
+  }
+
+  function onPhotoPicked(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     event.target.value = ''
-    if (!file) return
-    await setFromFile(file)
+    if (!file || !file.type.startsWith('image/')) return
+
+    const button = photoBtnRef.current
+    if (button && button.clientWidth > 0 && button.clientHeight > 0) {
+      setCropAspect(button.clientWidth / button.clientHeight)
+    } else {
+      setCropAspect(days === null ? 16 / 9 : 2.6)
+    }
+
+    setCropSrc(URL.createObjectURL(file))
   }
 
   return (
@@ -194,10 +211,11 @@ export function HomeScreen({ profile, latestStrip, onOpen }: HomeScreenProps) {
           ) : null}
 
           <button
+            ref={photoBtnRef}
             type="button"
             className={`home-photo${photo ? ' has-image' : ''}`}
             onClick={() => photoInputRef.current?.click()}
-            disabled={busy}
+            disabled={busy || Boolean(cropSrc)}
             aria-label={photo ? 'Change home photo' : 'Add a home photo'}
           >
             {photo ? (
@@ -207,7 +225,7 @@ export function HomeScreen({ profile, latestStrip, onOpen }: HomeScreenProps) {
                 <span className="home-photo__plus" aria-hidden>
                   +
                 </span>
-                <span>{busy ? 'Adding…' : 'Add photo'}</span>
+                <span>{busy ? 'Saving…' : 'Add photo'}</span>
               </span>
             )}
           </button>
@@ -217,13 +235,13 @@ export function HomeScreen({ profile, latestStrip, onOpen }: HomeScreenProps) {
             type="file"
             accept="image/*"
             className="sr-only"
-            onChange={(event) => void onPhotoPicked(event)}
+            onChange={onPhotoPicked}
           />
         </section>
 
-        <section className="home-section home-lately" aria-label="Lately">
+        <section className="home-section home-lately" aria-label="Activities">
           <div className="section-head section-head--tight">
-            <h2>Lately</h2>
+            <h2>Activities</h2>
           </div>
 
           <div className="home-lately__row">
@@ -272,6 +290,19 @@ export function HomeScreen({ profile, latestStrip, onOpen }: HomeScreenProps) {
           </div>
         </section>
       </div>
+
+      {cropSrc ? (
+        <HomePhotoCropSheet
+          src={cropSrc}
+          aspectRatio={cropAspect}
+          busy={busy}
+          onCancel={closeCrop}
+          onConfirm={async (dataUrl) => {
+            await saveDataUrl(dataUrl)
+            closeCrop()
+          }}
+        />
+      ) : null}
     </div>
   )
 }

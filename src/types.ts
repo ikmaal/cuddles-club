@@ -44,6 +44,13 @@ export interface Photostrip {
   createdAt: number
 }
 
+export interface BoothPosePhoto {
+  id: string
+  /** Data URL locally, or public storage URL when cloud-synced. */
+  image: string
+  createdAt: number
+}
+
 export interface Note {
   id: string
   text: string

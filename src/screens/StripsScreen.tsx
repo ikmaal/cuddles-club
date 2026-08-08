@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { PhotoBooth } from '../components/PhotoBooth'
 import { ScrollRegion } from '../components/ScrollRegion'
 import { PlusIcon, StripIcon, TrashIcon } from '../components/Icons'
@@ -6,6 +6,7 @@ import { ScreenHeader } from '../components/ScreenHeader'
 import { StripViewer } from '../components/StripViewer'
 import { formatRelative } from '../hooks/useStored'
 import type { CoupleProfile, Photostrip } from '../types'
+import { BoothPosesScreen } from './BoothPosesScreen'
 
 interface StripsScreenProps {
   profile: CoupleProfile
@@ -19,22 +20,6 @@ interface StripsScreenProps {
   onRemove: (id: string) => Promise<void>
   onClearError: () => void
   onBack: () => void
-}
-
-function formatAlbumDate(timestamp: number): string {
-  return new Date(timestamp).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
-}
-
-function albumDateRange(strips: Photostrip[]): string | null {
-  if (strips.length === 0) return null
-  const sorted = [...strips].sort((a, b) => a.createdAt - b.createdAt)
-  const first = formatAlbumDate(sorted[0].createdAt)
-  const last = formatAlbumDate(sorted[sorted.length - 1].createdAt)
-  return first === last ? first : `${first} – ${last}`
 }
 
 export function StripsScreen({
@@ -56,10 +41,14 @@ export function StripsScreen({
   const [preview, setPreview] = useState('')
   const [active, setActive] = useState<Photostrip | null>(null)
   const [boothOpen, setBoothOpen] = useState(false)
+  const [posesOpen, setPosesOpen] = useState(false)
 
   const coverStrip = strips[0] ?? null
-  const dateRange = useMemo(() => albumDateRange(strips), [strips])
   const photoCount = strips.length * 4
+
+  if (posesOpen) {
+    return <BoothPosesScreen onBack={() => setPosesOpen(false)} />
+  }
 
   function pickFile() {
     onClearError()
@@ -101,20 +90,7 @@ export function StripsScreen({
     <div className="screen screen--strips">
       <ScreenHeader
         title="Photobooth"
-        subtitle="Black & white booth nights, kept forever"
         onBack={onBack}
-        action={
-          <button
-            type="button"
-            className="strip-add-btn"
-            onClick={pickFile}
-            disabled={busy}
-            aria-label="Upload a photobooth strip"
-            title="Upload"
-          >
-            <PlusIcon size={20} />
-          </button>
-        }
       />
 
       <input
@@ -143,11 +119,6 @@ export function StripsScreen({
               <h2>
                 {profile.nameYou} & {profile.namePartner}
               </h2>
-              <p className="album-cover__blurb">
-                {strips.length > 0
-                  ? 'Every flash, every strip — filed in monochrome.'
-                  : 'Open the booth for four frames, or upload a strip you love.'}
-              </p>
               <dl className="album-cover__stats">
                 <div>
                   <dt>Strips</dt>
@@ -156,10 +127,6 @@ export function StripsScreen({
                 <div>
                   <dt>Photos</dt>
                   <dd>{ready ? photoCount : '—'}</dd>
-                </div>
-                <div>
-                  <dt>Span</dt>
-                  <dd>{dateRange ?? '—'}</dd>
                 </div>
               </dl>
             </div>
@@ -175,6 +142,13 @@ export function StripsScreen({
           >
             <StripIcon size={18} />
             Open booth
+          </button>
+          <button
+            type="button"
+            className="album-toolbar__btn"
+            onClick={() => setPosesOpen(true)}
+          >
+            Poses
           </button>
           <button
             type="button"
@@ -238,10 +212,6 @@ export function StripsScreen({
           </div>
         ) : strips.length > 0 ? (
           <section className="album-shelf" aria-label="Album pages">
-            <header className="album-shelf__head">
-              <h3>Contact sheets</h3>
-              <p>{strips.length} page{strips.length === 1 ? '' : 's'}</p>
-            </header>
             <ul className="album-pages">
               {strips.map((strip, index) => (
                 <li
@@ -295,12 +265,6 @@ export function StripsScreen({
               ))}
             </ul>
           </section>
-        ) : null}
-
-        {strips.length > 0 ? (
-          <p className="fineprint">
-            Tap a page to view the strip in 3D. Kept on this device only.
-          </p>
         ) : null}
       </ScrollRegion>
 

@@ -10,6 +10,7 @@ import {
 import { PHOTOSTRIP_BUCKET, supabase } from './supabase'
 import type {
   AnswerEntry,
+  BoothPosePhoto,
   BucketItem,
   CatState,
   Countdown,
@@ -28,6 +29,8 @@ export interface CoupleRow {
   member_a_name: string
   member_b_name: string
   since: string | null
+  home_photo_path?: string | null
+  home_photo_updated_at?: number | null
 }
 
 function requireClient() {
@@ -39,7 +42,7 @@ export async function fetchMembership(userId: string) {
   const client = requireClient()
   const { data, error } = await client
     .from('couple_members')
-    .select('couple_id, slot, couples(id, invite_code, member_a_name, member_b_name, since)')
+    .select('couple_id, slot, couples(id, invite_code, member_a_name, member_b_name, since, home_photo_path, home_photo_updated_at)')
     .eq('user_id', userId)
     .maybeSingle()
 
@@ -187,6 +190,66 @@ export async function publicStripUrl(storagePath: string): Promise<string> {
   const client = requireClient()
   const { data } = client.storage.from(PHOTOSTRIP_BUCKET).getPublicUrl(storagePath)
   return data.publicUrl
+}
+
+export function homePhotoPublicUrl(storagePath: string, updatedAt: number | null | undefined): string {
+  const client = requireClient()
+  const { data } = client.storage.from(PHOTOSTRIP_BUCKET).getPublicUrl(storagePath)
+  const stamp = updatedAt ? `?t=${updatedAt}` : ''
+  return `${data.publicUrl}${stamp}`
+}
+
+export async function fetchHomePhotoUrl(coupleId: string): Promise<string> {
+  const client = requireClient()
+  const { data, error } = await client
+    .from('couples')
+    .select('home_photo_path, home_photo_updated_at')
+    .eq('id', coupleId)
+    .maybeSingle()
+  if (error) throw error
+  if (!data?.home_photo_path) return ''
+  return homePhotoPublicUrl(data.home_photo_path, data.home_photo_updated_at)
+}
+
+export async function uploadHomePhoto(coupleId: string, imageDataUrl: string): Promise<string> {
+  const client = requireClient()
+  const storagePath = `${coupleId}/home-photo.jpg`
+  const blob = dataUrlToBlob(imageDataUrl)
+  const updatedAt = Date.now()
+
+  const { error: uploadError } = await client.storage
+    .from(PHOTOSTRIP_BUCKET)
+    .upload(storagePath, blob, {
+      contentType: 'image/jpeg',
+      upsert: true,
+      cacheControl: '60',
+    })
+  if (uploadError) throw uploadError
+
+  const { error } = await client
+    .from('couples')
+    .update({
+      home_photo_path: storagePath,
+      home_photo_updated_at: updatedAt,
+    })
+    .eq('id', coupleId)
+  if (error) throw error
+
+  return homePhotoPublicUrl(storagePath, updatedAt)
+}
+
+export async function clearHomePhoto(coupleId: string): Promise<void> {
+  const client = requireClient()
+  const storagePath = `${coupleId}/home-photo.jpg`
+  await client.storage.from(PHOTOSTRIP_BUCKET).remove([storagePath])
+  const { error } = await client
+    .from('couples')
+    .update({
+      home_photo_path: null,
+      home_photo_updated_at: null,
+    })
+    .eq('id', coupleId)
+  if (error) throw error
 }
 
 export async function seedCoupleDefaults(coupleId: string) {
@@ -383,5 +446,71 @@ export async function deletePhotostrip(strip: Photostrip, coupleId: string) {
   const storagePath = `${coupleId}/${strip.id}.jpg`
   await client.storage.from(PHOTOSTRIP_BUCKET).remove([storagePath])
   const { error } = await client.from('photostrips').delete().eq('id', strip.id)
+  if (error) throw error
+}
+
+export async function listBoothPoses(coupleId: string): Promise<BoothPosePhoto[]> {
+  const client = requireClient()
+  const { data, error } = await client
+    .from('booth_poses')
+    .select('*')
+    .eq('couple_id', coupleId)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+
+  return Promise.all(
+    (data ?? []).map(async (row) => ({
+      id: row.id as string,
+      createdAt: Number(row.created_at),
+      image: await publicStripUrl(row.storage_path as string),
+    })),
+  )
+}
+
+export async function uploadBoothPose(
+  coupleId: string,
+  id: string,
+  imageDataUrl: string,
+  createdAt: number,
+): Promise<BoothPosePhoto> {
+  const client = requireClient()
+  const storagePath = `${coupleId}/poses/${id}.jpg`
+  const blob = dataUrlToBlob(imageDataUrl)
+
+  const { error: uploadError } = await client.storage
+    .from(PHOTOSTRIP_BUCKET)
+    .upload(storagePath, blob, { contentType: 'image/jpeg', upsert: true })
+  if (uploadError) throw uploadError
+
+  const { error } = await client.from('booth_poses').upsert({
+    id,
+    couple_id: coupleId,
+    storage_path: storagePath,
+    created_at: createdAt,
+  })
+  if (error) throw error
+
+  return {
+    id,
+    createdAt,
+    image: await publicStripUrl(storagePath),
+  }
+}
+
+export async function uploadBoothPoseFile(
+  coupleId: string,
+  file: File,
+): Promise<BoothPosePhoto> {
+  const { compressImage } = await import('../stripsDb')
+  const id = createId()
+  const dataUrl = await compressImage(file, 1200, 0.84)
+  return uploadBoothPose(coupleId, id, dataUrl, Date.now())
+}
+
+export async function deleteBoothPose(pose: BoothPosePhoto, coupleId: string) {
+  const client = requireClient()
+  const storagePath = `${coupleId}/poses/${pose.id}.jpg`
+  await client.storage.from(PHOTOSTRIP_BUCKET).remove([storagePath])
+  const { error } = await client.from('booth_poses').delete().eq('id', pose.id)
   if (error) throw error
 }

@@ -1,8 +1,15 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { useCouple } from '../context/CoupleContext'
+import {
+  clearHomePhoto,
+  fetchHomePhotoUrl,
+  uploadHomePhoto,
+} from '../lib/supabaseData'
 
 const HOME_PHOTO_KEY = 'cuddles-club-home-photo-v1'
+const POLL_MS = 30_000
 
-function loadHomePhoto(): string {
+function loadLocalHomePhoto(): string {
   try {
     return localStorage.getItem(HOME_PHOTO_KEY) ?? ''
   } catch {
@@ -10,54 +17,119 @@ function loadHomePhoto(): string {
   }
 }
 
-function compressHomePhoto(file: File, maxEdge = 900, quality = 0.84): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file)
-    const img = new Image()
-    img.onload = () => {
-      URL.revokeObjectURL(url)
-      const scale = Math.min(1, maxEdge / Math.max(img.width, img.height))
-      const width = Math.max(1, Math.round(img.width * scale))
-      const height = Math.max(1, Math.round(img.height * scale))
-      const canvas = document.createElement('canvas')
-      canvas.width = width
-      canvas.height = height
-      const ctx = canvas.getContext('2d')
-      if (!ctx) {
-        reject(new Error('Could not prepare the image'))
-        return
-      }
-      ctx.drawImage(img, 0, 0, width, height)
-      resolve(canvas.toDataURL('image/jpeg', quality))
-    }
-    img.onerror = () => {
-      URL.revokeObjectURL(url)
-      reject(new Error('Could not read that image'))
-    }
-    img.src = url
-  })
+function saveLocalHomePhoto(dataUrl: string) {
+  localStorage.setItem(HOME_PHOTO_KEY, dataUrl)
+}
+
+function removeLocalHomePhoto() {
+  localStorage.removeItem(HOME_PHOTO_KEY)
 }
 
 export function useHomePhoto() {
-  const [photo, setPhoto] = useState(loadHomePhoto)
+  const { isCloud, coupleId } = useCouple()
+  const [photo, setPhoto] = useState(() => (isCloud ? '' : loadLocalHomePhoto()))
   const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
 
-  const setFromFile = useCallback(async (file: File) => {
-    if (!file.type.startsWith('image/')) return
-    setBusy(true)
+  const refreshFromCloud = useCallback(async () => {
+    if (!isCloud || !coupleId) return
     try {
-      const dataUrl = await compressHomePhoto(file)
-      localStorage.setItem(HOME_PHOTO_KEY, dataUrl)
-      setPhoto(dataUrl)
+      const url = await fetchHomePhotoUrl(coupleId)
+      setPhoto(url)
+      setError('')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not load home photo')
+    }
+  }, [coupleId, isCloud])
+
+  useEffect(() => {
+    if (!isCloud || !coupleId) {
+      setPhoto(loadLocalHomePhoto())
+      return
+    }
+
+    let cancelled = false
+
+    const sync = async () => {
+      try {
+        const cloudUrl = await fetchHomePhotoUrl(coupleId)
+        if (cancelled) return
+
+        if (!cloudUrl) {
+          const local = loadLocalHomePhoto()
+          if (local) {
+            const uploaded = await uploadHomePhoto(coupleId, local)
+            if (cancelled) return
+            setPhoto(uploaded)
+            removeLocalHomePhoto()
+            return
+          }
+        }
+
+        setPhoto(cloudUrl)
+        setError('')
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Could not load home photo')
+        }
+      }
+    }
+
+    void sync()
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === 'visible') void refreshFromCloud()
+    }, POLL_MS)
+
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void refreshFromCloud()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+
+    return () => {
+      cancelled = true
+      window.clearInterval(timer)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+  }, [coupleId, isCloud, refreshFromCloud])
+
+  const saveDataUrl = useCallback(
+    async (dataUrl: string) => {
+      setBusy(true)
+      setError('')
+      try {
+        if (isCloud && coupleId) {
+          const url = await uploadHomePhoto(coupleId, dataUrl)
+          setPhoto(url)
+        } else {
+          saveLocalHomePhoto(dataUrl)
+          setPhoto(dataUrl)
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Could not save home photo')
+        throw err
+      } finally {
+        setBusy(false)
+      }
+    },
+    [coupleId, isCloud],
+  )
+
+  const clear = useCallback(async () => {
+    setBusy(true)
+    setError('')
+    try {
+      if (isCloud && coupleId) {
+        await clearHomePhoto(coupleId)
+      }
+      removeLocalHomePhoto()
+      setPhoto('')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not remove home photo')
+      throw err
     } finally {
       setBusy(false)
     }
-  }, [])
+  }, [coupleId, isCloud])
 
-  const clear = useCallback(() => {
-    localStorage.removeItem(HOME_PHOTO_KEY)
-    setPhoto('')
-  }, [])
-
-  return { photo, busy, setFromFile, clear }
+  return { photo, busy, error, saveDataUrl, clear, isCloud }
 }
