@@ -255,9 +255,10 @@ export async function fetchNowPlaying(accessToken: string): Promise<SpotifyNowPl
     } | null
   }
 
-  // Only treat actively playing tracks as "now". Otherwise show recently played.
-  if (data.is_playing && data.item && data.currently_playing_type !== 'ad') {
-    return fromTrack(data.item, true)
+  // Prefer the current player item even when paused/stopped — Spotify's
+  // recently-played feed often lags and may skip the track you just left.
+  if (data.item && data.currently_playing_type !== 'ad') {
+    return fromTrack(data.item, Boolean(data.is_playing))
   }
 
   return fetchRecentlyPlayed(accessToken)
