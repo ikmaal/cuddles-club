@@ -1,4 +1,6 @@
+import { useRef } from 'react'
 import { SERVICES } from '../services'
+import { useHomePhoto } from '../hooks/useHomePhoto'
 import { useOverscrollGuard } from '../hooks/useOverscrollGuard'
 import { daysTogether } from '../hooks/useProfile'
 import { formatRelative } from '../hooks/useStored'
@@ -27,6 +29,15 @@ function initials(profile: CoupleProfile): string {
 export function HomeScreen({ profile, latestStrip, onOpen }: HomeScreenProps) {
   const days = daysTogether(profile.since)
   const homeRef = useOverscrollGuard<HTMLDivElement>(false)
+  const { photo, busy, setFromFile } = useHomePhoto()
+  const photoInputRef = useRef<HTMLInputElement>(null)
+
+  async function onPhotoPicked(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    await setFromFile(file)
+  }
 
   return (
     <div className="home" ref={homeRef}>
@@ -86,18 +97,46 @@ export function HomeScreen({ profile, latestStrip, onOpen }: HomeScreenProps) {
           </ul>
         </section>
 
-        {days !== null ? (
-          <section className="home-section" aria-label="Days together">
-            <ul className="metrics metrics--solo">
-              <li className="metric">
-                <span className="metric__value">{days}</span>
-                <span className="metric__label">
-                  {days === 1 ? 'Day together' : 'Days together'}
+        <section
+          className={`home-duo${days === null ? ' home-duo--photo-only' : ''}`}
+          aria-label="Together"
+        >
+          {days !== null ? (
+            <div className="metric home-duo__metric">
+              <span className="metric__value">{days}</span>
+              <span className="metric__label">
+                {days === 1 ? 'Day together' : 'Days together'}
+              </span>
+            </div>
+          ) : null}
+
+          <button
+            type="button"
+            className={`home-photo${photo ? ' has-image' : ''}`}
+            onClick={() => photoInputRef.current?.click()}
+            disabled={busy}
+            aria-label={photo ? 'Change home photo' : 'Add a home photo'}
+          >
+            {photo ? (
+              <img src={photo} alt="" />
+            ) : (
+              <span className="home-photo__empty">
+                <span className="home-photo__plus" aria-hidden>
+                  +
                 </span>
-              </li>
-            </ul>
-          </section>
-        ) : null}
+                <span>{busy ? 'Adding…' : 'Add photo'}</span>
+              </span>
+            )}
+          </button>
+
+          <input
+            ref={photoInputRef}
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={(event) => void onPhotoPicked(event)}
+          />
+        </section>
 
         <section className="home-section home-lately" aria-label="Lately">
           <div className="section-head section-head--tight">
