@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { HeartIcon, HomeIcon } from './components/Icons'
 import { SplashIntro } from './components/SplashIntro'
-import { TabBarPortal } from './components/TabBarPortal'
 import { useCouple } from './context/CoupleContext'
 import { usePhotostrips } from './hooks/usePhotostrips'
 import { useProfile } from './hooks/useProfile'
@@ -11,7 +10,7 @@ import { UsScreen } from './screens/UsScreen'
 import type { Screen } from './types'
 import './App.css'
 
-const HOME_NAVY = '#272d88'
+const NAVY = '#272d88'
 const SPLASH_STATUS_COLOR = '#ffffff'
 const DEFAULT_THEME_COLOR = '#E85D75'
 
@@ -42,16 +41,18 @@ export default function App() {
   const [homeVisible, setHomeVisible] = useState(false)
 
   const splashActive = splashPhase !== 'done'
-  const homeLive = screen === 'home' && splashPhase === 'done'
+  const navyLive = (screen === 'home' || screen === 'us') && splashPhase === 'done'
+  const shellVisible = screen === 'us' ? navyLive : homeVisible
+  const showTabs = !splashActive && ready && (screen === 'home' || screen === 'us')
 
   useEffect(() => {
     const root = document.documentElement
 
     root.classList.toggle('splash-active', splashActive)
-    root.classList.toggle('home-bg', homeLive)
+    root.classList.toggle('home-bg', navyLive)
 
-    if (homeLive) {
-      setThemeColor(HOME_NAVY)
+    if (navyLive) {
+      setThemeColor(NAVY)
       setStatusBarStyle('black-translucent')
     } else if (splashActive) {
       setThemeColor(SPLASH_STATUS_COLOR)
@@ -60,10 +61,10 @@ export default function App() {
       setThemeColor(DEFAULT_THEME_COLOR)
       setStatusBarStyle('default')
     }
-  }, [splashActive, homeLive])
+  }, [splashActive, navyLive])
 
   useEffect(() => {
-    if (!homeLive) {
+    if (screen !== 'home' || splashPhase !== 'done') {
       setHomeVisible(false)
       return
     }
@@ -77,7 +78,7 @@ export default function App() {
       cancelAnimationFrame(raf1)
       if (raf2) cancelAnimationFrame(raf2)
     }
-  }, [homeLive])
+  }, [screen, splashPhase])
 
   const handleSplashExiting = useCallback(() => setSplashPhase('exiting'), [])
   const finishSplash = useCallback(() => setSplashPhase('done'), [])
@@ -90,11 +91,10 @@ export default function App() {
   }, [])
 
   const goHome = () => goToScreen('home')
-  const showTabs = !splashActive && ready && (screen === 'home' || screen === 'us')
 
   return (
     <div
-      className={`app${homeLive ? ' app--home-bg' : ''}${homeVisible ? ' app--home-visible' : ''}${splashActive ? ' app--splash' : ''}`}
+      className={`app${navyLive ? ' app--home-bg' : ''}${shellVisible ? ' app--home-visible' : ''}${splashActive ? ' app--splash' : ''}`}
     >
       {splashActive ? (
         <SplashIntro
@@ -106,7 +106,7 @@ export default function App() {
 
       {ready ? (
         <>
-          <main className={`app__main ${showTabs ? 'has-tabs' : ''}`}>
+          <main className="app__main">
             {screen === 'home' ? (
               <HomeScreen profile={profile} onOpen={goToScreen} />
             ) : null}
@@ -133,25 +133,20 @@ export default function App() {
           </main>
 
           {showTabs ? (
-            <TabBarPortal>
-              <nav
-                className={`tabbar${screen === 'home' ? ' tabbar--clear' : ''}${homeLive && !homeVisible ? ' is-pending' : ''}`}
-                aria-label="Main"
-              >
-                {TABS.map((tab) => (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    className={`tabbar__item ${screen === tab.id ? 'is-active' : ''}`}
-                    onClick={() => goToScreen(tab.id)}
-                    aria-current={screen === tab.id ? 'page' : undefined}
-                  >
-                    <tab.Icon size={22} />
-                    <span>{tab.label}</span>
-                  </button>
-                ))}
-              </nav>
-            </TabBarPortal>
+            <nav className="tabbar tabbar--clear" aria-label="Main">
+              {TABS.map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  className={`tabbar__item ${screen === tab.id ? 'is-active' : ''}`}
+                  onClick={() => goToScreen(tab.id)}
+                  aria-current={screen === tab.id ? 'page' : undefined}
+                >
+                  <tab.Icon size={22} />
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </nav>
           ) : null}
         </>
       ) : null}

@@ -35,18 +35,21 @@
 }
 
 .app--home-bg .app__main {
+  position: relative;
+  z-index: 1;
   overscroll-behavior: none;
   opacity: 0;
   transition: opacity 520ms ease;
 }
 
-.app--home-bg.app--home-visible .app__main {
+.app--home-bg.app--home-visible .app__main,
+.app--home-bg.app--home-visible .tabbar {
   opacity: 1;
 }
 
-.app--home-bg .app__main {
-  position: relative;
-  z-index: 1;
+.app--home-bg .tabbar {
+  opacity: 0;
+  transition: opacity 520ms ease;
 }
 
 .app--home-bg .home__hello,
@@ -64,12 +67,9 @@
   border: 1px solid #fad0c4;
 }
 
-.app__main.has-tabs {
-  padding-bottom: var(--home-tabbar-total);
-}
-
 /* Hide home UI until splash is fully finished (including exit fade) */
-.app:has(.splash) .app__main {
+.app:has(.splash) .app__main,
+.app:has(.splash) .tabbar {
   visibility: hidden;
 }
 
@@ -156,25 +156,18 @@
 /* ---------- Bottom tabs ---------- */
 
 .tabbar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: relative;
+  z-index: 10;
+  flex: 0 0 56px;
   width: 100%;
-  max-width: 520px;
-  margin: 0 auto;
+  height: 56px;
+  margin: 0;
   display: flex;
   align-items: stretch;
   background: var(--foam);
   border-top: 1px solid var(--outline);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  z-index: 100;
-  transform: translateZ(0);
-}
-
-.tabbar.is-pending {
-  opacity: 0;
-  pointer-events: none;
+  padding: 0;
+  padding-bottom: 0;
 }
 
 .tabbar--clear {
@@ -196,7 +189,7 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
-  height: 56px;
+  height: 100%;
   padding: 0;
   color: var(--stone);
   font-size: 0.72rem;
@@ -208,6 +201,10 @@
 
 .tabbar__item.is-active {
   color: var(--rose-deep);
+}
+
+.tabbar--clear .tabbar__item.is-active {
+  color: #ffffff;
 }
 
 /* ---------- Home hub ---------- */
@@ -1512,6 +1509,11 @@
 
 /* ---------- Us ---------- */
 
+.screen--us {
+  background: transparent;
+  color: #fad0c4;
+}
+
 .us-hero {
   flex: 0 0 auto;
   display: flex;
@@ -1520,8 +1522,9 @@
   text-align: center;
   padding: 24px 20px 22px;
   padding-top: max(24px, env(safe-area-inset-top));
-  background: linear-gradient(170deg, #ffe4ea, #ffffff);
-  border-bottom: 1px solid var(--outline);
+  background: transparent;
+  border-bottom: none;
+  color: #fad0c4;
 }
 
 .us-hero__mark {
@@ -1531,6 +1534,7 @@
   height: 52px;
   border-radius: 17px;
   overflow: hidden;
+  border: 1px solid #fad0c4;
 }
 
 .us-hero__mark img {
@@ -1546,12 +1550,14 @@
   font-size: 1.4rem;
   font-weight: 700;
   line-height: 1.25;
+  color: #fad0c4;
 }
 
 .us-hero p {
   margin: 0;
   font-size: 0.85rem;
-  color: var(--ink-soft);
+  color: #fad0c4;
+  opacity: 0.82;
   line-height: 1.4;
 }
 
@@ -1562,6 +1568,82 @@
 
 .screen--us .screen__scroll > :not(.us-hero) {
   margin-inline: 16px;
+}
+
+.screen--us .surface,
+.screen--us .cloud-card,
+.screen--us .form-card {
+  background: #ebb8b3;
+  border-color: transparent;
+  box-shadow: none;
+  color: #1a1a1a;
+}
+
+.screen--us .section-head h2,
+.screen--us .field > span {
+  color: #3d4f8f;
+}
+
+.screen--us .field > input,
+.screen--us .field > textarea,
+.screen--us .field__control {
+  background: rgba(255, 255, 255, 0.55);
+  border-color: transparent;
+  color: #1a1a1a;
+}
+
+.screen--us .field__control input {
+  color: #1a1a1a;
+}
+
+.screen--us .cloud-card__body {
+  color: #3d4f8f;
+}
+
+.screen--us .cloud-card__body strong {
+  color: #1a1a1a;
+}
+
+.screen--us .cloud-card__invite {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.screen--us .cloud-card__invite span {
+  color: #3d4f8f;
+}
+
+.screen--us .cloud-card__invite strong {
+  color: #272d88;
+}
+
+.screen--us .cloud-card__tabs button {
+  background: rgba(255, 255, 255, 0.45);
+  color: #3d4f8f;
+}
+
+.screen--us .cloud-card__tabs button.is-active {
+  background: #272d88;
+  color: #fad0c4;
+}
+
+.screen--us .btn--ghost {
+  background: rgba(255, 255, 255, 0.45);
+  color: #272d88;
+}
+
+.screen--us .btn--primary {
+  background: #272d88;
+  color: #fad0c4;
+}
+
+.screen--us .tag-positive {
+  background: rgba(39, 45, 136, 0.14);
+  color: #272d88;
+}
+
+.screen--us .fineprint {
+  color: #fad0c4;
+  opacity: 0.75;
 }
 
 .form-card .section-head {
