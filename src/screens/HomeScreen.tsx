@@ -110,9 +110,11 @@ export function HomeScreen({ profile, latestStrip, onOpen }: HomeScreenProps) {
               className="home-activity home-activity--strip"
               onClick={() => onOpen('strips')}
             >
-              <span className="home-activity__frame" aria-hidden>
-                <img src={latestStrip.image} alt="" />
-              </span>
+              <img
+                className="home-activity__strip"
+                src={latestStrip.image}
+                alt=""
+              />
               <span className="home-activity__copy">
                 <span className="home-activity__eyebrow">Photobooth</span>
                 <strong>{latestStrip.title}</strong>
@@ -125,7 +127,6 @@ export function HomeScreen({ profile, latestStrip, onOpen }: HomeScreenProps) {
               className="home-activity home-activity--strip home-activity--empty"
               onClick={() => onOpen('strips')}
             >
-              <span className="home-activity__frame home-activity__frame--empty" aria-hidden />
               <span className="home-activity__copy">
                 <span className="home-activity__eyebrow">Photobooth</span>
                 <strong>Nothing developed yet</strong>
