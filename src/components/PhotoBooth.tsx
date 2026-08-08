@@ -6,6 +6,7 @@ import {
   STRIP_DESIGNS,
   type StripDesignId,
 } from '../stripDesigns'
+import { ScrollRegion } from './ScrollRegion'
 
 interface PhotoBoothProps {
   busy: boolean
@@ -313,7 +314,7 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
       ) : null}
 
       {phase === 'pick-design' || phase === 'denied' ? (
-        <div className="booth__designs">
+        <ScrollRegion className="booth__designs">
           {phase === 'denied' ? (
             <div className="booth__denied-panel">
               <p className="booth__denied-title">Camera blocked</p>
@@ -369,7 +370,7 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
               </button>
             </>
           )}
-        </div>
+        </ScrollRegion>
       ) : null}
 
       {phase === 'review' ? (

@@ -58,7 +58,7 @@
   --safe-top: env(safe-area-inset-top, 0px);
   --app-height: 100dvh;
   --screen-height: 100dvh;
-  --wallpaper-height: calc(var(--app-height) + var(--safe-bottom));
+  --home-navy: #272d88;
   --home-tabbar-total: calc(56px + var(--safe-bottom));
   --font-display: 'Fredoka', system-ui, sans-serif;
   --font-body: 'Fredoka', system-ui, sans-serif;
@@ -119,52 +119,18 @@ html:not(.home-bg):not(.splash-active) body {
 }
 
 html.home-bg,
-html.home-bg body {
-  background-color: #c45a6a;
+html.home-bg body,
+html.home-bg #root {
+  background-color: var(--home-navy);
   overscroll-behavior: none;
 }
 
-html:has(.home-wallpaper),
-body:has(.home-wallpaper) {
-  background-color: #c45a6a;
-}
-
-body:has(.home-wallpaper) #root {
-  position: relative;
-  z-index: 1;
-  background: transparent;
-}
-.home-wallpaper {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  height: var(--wallpaper-height);
-  min-height: var(--wallpaper-height);
-  object-fit: cover;
-  object-position: top center;
-  z-index: 0;
-  pointer-events: none;
-  user-select: none;
-  -webkit-user-drag: none;
-  opacity: 0;
-  transition: opacity 520ms ease;
-  transform: translateZ(0);
-}
-
-.home-wallpaper.is-visible {
-  opacity: 1;
-}
-
-html.home-bg #root,
 html.home-bg .app {
-  background: transparent;
+  background: var(--home-navy);
   box-shadow: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .home-wallpaper,
   .app--home-bg .app__main,
   .app--home-bg .tabbar {
     transition-duration: 100ms;

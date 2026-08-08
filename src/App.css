@@ -29,7 +29,7 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  background: transparent;
+  background: var(--home-navy, #272d88);
   color: #fad0c4;
   box-shadow: none;
   overflow: hidden;
@@ -3284,7 +3284,9 @@
   gap: 14px;
   padding: 4px 16px calc(20px + var(--safe-bottom));
   overflow-y: auto;
+  overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
   position: relative;
   z-index: 2;
   background: #1a1214;

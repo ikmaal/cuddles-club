@@ -47,18 +47,33 @@ export function bindOverscrollContain(element: HTMLElement): () => void {
   }
 }
 
+function isInsideScrollRegion(target: EventTarget | null): boolean {
+  if (!(target instanceof Element)) return false
+
+  let node: Element | null = target
+  while (node && node !== document.documentElement) {
+    if (node instanceof HTMLElement) {
+      // Home manages its own touch lock.
+      if (node.classList.contains('home')) return true
+
+      const { overflowY } = window.getComputedStyle(node)
+      const scrollable =
+        overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay'
+      if (scrollable && node.scrollHeight > node.clientHeight + 1) {
+        return true
+      }
+    }
+    node = node.parentElement
+  }
+
+  return false
+}
+
 /** Prevent document-level pull on iOS when touch is outside scroll regions. */
 export function bindDocumentOverscrollLock(): () => void {
   const onTouchMove = (event: TouchEvent) => {
     if (isInteractive(event.target)) return
-
-    const scrollable =
-      event.target instanceof Element
-        ? event.target.closest('.screen__scroll, .home, .cat-home__scroll')
-        : null
-
-    if (scrollable instanceof HTMLElement) return
-
+    if (isInsideScrollRegion(event.target)) return
     event.preventDefault()
   }
 
