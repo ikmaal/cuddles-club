@@ -36,6 +36,8 @@ function ListeningRow({
 }) {
   const isPartner = card.who === 'partner'
   const shortName = card.name.trim().split(/\s+/)[0] || card.name
+  const hasTrack = Boolean(card.trackName)
+  const statusLabel = card.isPlaying ? 'Listening now' : 'Recently played'
   const title = card.trackName
     ? card.trackName
     : card.connected
@@ -43,10 +45,10 @@ function ListeningRow({
       : isPartner
         ? 'Waiting'
         : 'Connect'
-  const subtitle = card.artists
-    ? card.artists
+  const subtitle = hasTrack
+    ? [shortName, card.artists].filter(Boolean).join(' · ')
     : card.connected
-      ? 'No track yet'
+      ? shortName
       : isPartner
         ? 'Us tab'
         : 'Spotify'
@@ -55,7 +57,8 @@ function ListeningRow({
     'home-activity',
     'home-listening',
     card.isPlaying ? 'is-playing' : '',
-    !card.trackName ? 'is-idle' : '',
+    hasTrack && !card.isPlaying ? 'is-recent' : '',
+    !hasTrack ? 'is-idle' : '',
   ]
     .filter(Boolean)
     .join(' ')
@@ -70,7 +73,9 @@ function ListeningRow({
         </span>
       )}
       <span className="home-listening__copy">
-        <span className="home-listening__eyebrow">{shortName}</span>
+        <span className="home-listening__eyebrow">
+          {hasTrack ? statusLabel : shortName}
+        </span>
         <strong>{title}</strong>
         <small>{subtitle}</small>
       </span>

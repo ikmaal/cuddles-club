@@ -255,11 +255,12 @@ export async function fetchNowPlaying(accessToken: string): Promise<SpotifyNowPl
     } | null
   }
 
-  if (!data.item || data.currently_playing_type === 'ad') {
-    return fetchRecentlyPlayed(accessToken)
+  // Only treat actively playing tracks as "now". Otherwise show recently played.
+  if (data.is_playing && data.item && data.currently_playing_type !== 'ad') {
+    return fromTrack(data.item, true)
   }
 
-  return fromTrack(data.item, Boolean(data.is_playing))
+  return fetchRecentlyPlayed(accessToken)
 }
 
 async function fetchRecentlyPlayed(accessToken: string): Promise<SpotifyNowPlaying> {
