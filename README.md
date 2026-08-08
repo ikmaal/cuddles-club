@@ -44,6 +44,23 @@ cp .env.example .env
 7. For GitHub Pages, add the same values as repository secrets:
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY`
+   - `VITE_SPOTIFY_CLIENT_ID` (optional — enables Spotify listening on Home)
+
+## Spotify setup (optional)
+
+Shows what each of you is listening to under **Lately**.
+
+1. Create an app in the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard).
+2. Add these **Redirect URIs** (exact match):
+   - `http://127.0.0.1:5173/cuddles-club/` (local — Spotify rejects `localhost`)
+   - `https://ikmaal.github.io/cuddles-club/`
+3. Copy the **Client ID** into `.env` as `VITE_SPOTIFY_CLIENT_ID` (and the same GitHub Actions secret for deploy).
+4. In Supabase SQL Editor, run [`supabase/listening_status.sql`](supabase/listening_status.sql) if your project already had the older schema.
+5. On the **Us** tab, connect Spotify on each phone (and stay signed into cloud sync so your partner can see you).
+
+For local testing, open the app at `http://127.0.0.1:5173/cuddles-club/` (or tap Connect from `localhost` — the app hops to `127.0.0.1` automatically).
+
+No client secret is needed — the app uses Authorization Code + PKCE.
 
 ## Run locally
 

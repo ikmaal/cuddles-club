@@ -87,3 +87,29 @@ export interface AnswerEntry {
   partner: string
   answeredAt: number
 }
+
+export interface ListeningStatus {
+  slot: 'a' | 'b'
+  spotifyUserId: string | null
+  displayName: string
+  trackId: string | null
+  trackName: string | null
+  artists: string | null
+  albumName: string | null
+  albumArtUrl: string | null
+  trackUrl: string | null
+  isPlaying: boolean
+  updatedAt: number
+}
+
+export interface ListeningCard {
+  who: 'you' | 'partner'
+  name: string
+  trackName: string | null
+  artists: string | null
+  albumArtUrl: string | null
+  trackUrl: string | null
+  isPlaying: boolean
+  updatedAt: number
+  connected: boolean
+}

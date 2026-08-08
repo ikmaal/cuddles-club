@@ -1,10 +1,14 @@
 import { useRef } from 'react'
 import { SERVICES } from '../services'
+import {
+  listeningEyebrow,
+  useSpotifyListening,
+} from '../context/SpotifyListeningContext'
 import { useHomePhoto } from '../hooks/useHomePhoto'
 import { useOverscrollGuard } from '../hooks/useOverscrollGuard'
 import { daysTogether } from '../hooks/useProfile'
 import { formatRelative } from '../hooks/useStored'
-import type { CoupleProfile, Photostrip, Screen } from '../types'
+import type { CoupleProfile, ListeningCard, Photostrip, Screen } from '../types'
 
 interface HomeScreenProps {
   profile: CoupleProfile
@@ -26,11 +30,80 @@ function initials(profile: CoupleProfile): string {
   return `${a}${b}`.toUpperCase()
 }
 
+function ListeningRow({
+  card,
+  onConnect,
+}: {
+  card: ListeningCard
+  onConnect?: () => void
+}) {
+  const eyebrow = listeningEyebrow(card)
+  const isPartner = card.who === 'partner'
+  const title = card.trackName
+    ? card.trackName
+    : card.connected
+      ? 'Nothing playing lately'
+      : isPartner
+        ? 'Not connected yet'
+        : 'Connect Spotify'
+  const subtitle = card.artists
+    ? card.artists
+    : card.connected
+      ? card.updatedAt
+        ? formatRelative(card.updatedAt)
+        : 'Open Spotify and play something'
+      : isPartner
+        ? 'They can connect Spotify on the Us tab'
+        : 'So Lately can show what you’re into'
+
+  const body = (
+    <>
+      {card.albumArtUrl ? (
+        <img className="home-listening__art" src={card.albumArtUrl} alt="" />
+      ) : (
+        <span className="home-listening__art home-listening__art--empty" aria-hidden />
+      )}
+      <span className="home-listening__copy">
+        <span className="home-listening__eyebrow">
+          {card.name} · {eyebrow}
+        </span>
+        <strong>{title}</strong>
+        <small>{subtitle}</small>
+      </span>
+      {card.isPlaying ? <span className="home-listening__live" aria-label="Playing" /> : null}
+    </>
+  )
+
+  if (card.trackUrl) {
+    return (
+      <a
+        className="home-activity home-listening"
+        href={card.trackUrl}
+        target="_blank"
+        rel="noreferrer"
+      >
+        {body}
+      </a>
+    )
+  }
+
+  if (!card.connected && onConnect) {
+    return (
+      <button type="button" className="home-activity home-listening" onClick={onConnect}>
+        {body}
+      </button>
+    )
+  }
+
+  return <div className="home-activity home-listening">{body}</div>
+}
+
 export function HomeScreen({ profile, latestStrip, onOpen }: HomeScreenProps) {
   const days = daysTogether(profile.since)
-  const homeRef = useOverscrollGuard<HTMLDivElement>(false)
+  const homeRef = useOverscrollGuard<HTMLDivElement>(true)
   const { photo, busy, setFromFile } = useHomePhoto()
   const photoInputRef = useRef<HTMLInputElement>(null)
+  const spotify = useSpotifyListening()
 
   async function onPhotoPicked(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
@@ -141,6 +214,18 @@ export function HomeScreen({ profile, latestStrip, onOpen }: HomeScreenProps) {
         <section className="home-section home-lately" aria-label="Lately">
           <div className="section-head section-head--tight">
             <h2>Lately</h2>
+          </div>
+
+          <div className="home-listening-list" aria-label="Listening">
+            <ListeningRow
+              card={spotify.you}
+              onConnect={
+                spotify.configured && !spotify.connected
+                  ? () => onOpen('us')
+                  : undefined
+              }
+            />
+            <ListeningRow card={spotify.partner} />
           </div>
 
           {latestStrip ? (

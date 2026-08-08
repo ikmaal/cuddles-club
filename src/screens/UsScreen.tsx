@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { CloudSyncCard } from '../components/CloudSyncCard'
 import { ScrollRegion } from '../components/ScrollRegion'
+import { SpotifyConnectCard } from '../components/SpotifyConnectCard'
 import { useCouple } from '../context/CoupleContext'
 import { daysTogether } from '../hooks/useProfile'
 import type { CoupleProfile } from '../types'
@@ -49,6 +50,8 @@ export function UsScreen({ profile, onSave }: UsScreenProps) {
         </header>
 
         <CloudSyncCard />
+
+        <SpotifyConnectCard />
 
         <form className="surface form-card" onSubmit={submit}>
           <div className="section-head section-head--tight">

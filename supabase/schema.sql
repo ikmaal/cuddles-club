@@ -81,6 +81,22 @@ create table if not exists public.photostrips (
   created_at bigint not null
 );
 
+create table if not exists public.listening_status (
+  couple_id uuid not null references public.couples (id) on delete cascade,
+  slot text not null check (slot in ('a', 'b')),
+  spotify_user_id text,
+  display_name text not null default '',
+  track_id text,
+  track_name text,
+  artists text,
+  album_name text,
+  album_art_url text,
+  track_url text,
+  is_playing boolean not null default false,
+  updated_at bigint not null,
+  primary key (couple_id, slot)
+);
+
 -- Helpers
 create or replace function public.user_couple_id()
 returns uuid
@@ -214,6 +230,7 @@ alter table public.mood_entries enable row level security;
 alter table public.daily_answers enable row level security;
 alter table public.cat_states enable row level security;
 alter table public.photostrips enable row level security;
+alter table public.listening_status enable row level security;
 
 create policy "couples_select_member"
   on public.couples for select
@@ -266,6 +283,35 @@ create policy "strips_all_member"
   on public.photostrips for all
   using (couple_id = public.user_couple_id())
   with check (couple_id = public.user_couple_id());
+
+create policy "listening_select_member"
+  on public.listening_status for select
+  using (couple_id = public.user_couple_id());
+
+create policy "listening_insert_own"
+  on public.listening_status for insert
+  with check (
+    couple_id = public.user_couple_id()
+    and slot = public.user_couple_slot()
+  );
+
+create policy "listening_update_own"
+  on public.listening_status for update
+  using (
+    couple_id = public.user_couple_id()
+    and slot = public.user_couple_slot()
+  )
+  with check (
+    couple_id = public.user_couple_id()
+    and slot = public.user_couple_slot()
+  );
+
+create policy "listening_delete_own"
+  on public.listening_status for delete
+  using (
+    couple_id = public.user_couple_id()
+    and slot = public.user_couple_slot()
+  );
 
 -- Storage bucket for photostrip images (create bucket named "photostrips" in Dashboard → Storage, set to public)
 insert into storage.buckets (id, name, public)

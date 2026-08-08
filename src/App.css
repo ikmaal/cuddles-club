@@ -118,9 +118,10 @@
 .home__scroll {
   flex: 1 1 auto;
   min-height: 0;
-  overflow: hidden;
+  overflow-y: auto;
   overscroll-behavior: none;
-  touch-action: manipulation;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -682,6 +683,85 @@
 
 .home-activity--empty .home-activity__copy strong {
   white-space: normal;
+}
+
+.home-lately {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.home-listening-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.home-listening {
+  background: #ebb8b3;
+  border: none;
+  border-radius: 16px;
+  color: #3d4f8f;
+  text-decoration: none;
+  box-shadow: none;
+}
+
+a.home-listening:hover,
+a.home-listening:focus-visible {
+  color: #3d4f8f;
+}
+
+.home-listening__art {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: rgba(61, 79, 143, 0.12);
+}
+
+.home-listening__art--empty {
+  display: block;
+}
+
+.home-listening__copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.home-listening__eyebrow {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: rgba(61, 79, 143, 0.72);
+}
+
+.home-listening__copy strong {
+  font-size: 0.92rem;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #3d4f8f;
+}
+
+.home-listening__copy small {
+  font-size: 0.75rem;
+  color: rgba(61, 79, 143, 0.78);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.home-listening__live {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #00804a;
+  box-shadow: 0 0 0 4px rgba(0, 128, 74, 0.18);
+  align-self: center;
 }
 
 .home-section .metrics + .latest-note,
