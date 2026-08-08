@@ -3,8 +3,7 @@
 .app {
   position: relative;
   width: 100%;
-  height: var(--app-height);
-  min-height: var(--app-height);
+  height: 100%;
   max-width: 520px;
   margin: 0 auto;
   display: flex;
@@ -23,9 +22,7 @@
   position: relative;
   width: 100%;
   max-width: 520px;
-  height: var(--app-height);
-  min-height: var(--app-height);
-  max-height: var(--app-height);
+  height: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -66,29 +63,12 @@
   border: 1px solid #fad0c4;
 }
 
-.app--home-bg .tabbar--clear {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  max-width: 520px;
-  margin-left: auto;
-  margin-right: auto;
-  margin-top: 0;
-  flex-shrink: 0;
-  z-index: 10;
-  background: transparent;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-}
-
-.app--home-bg .app__main.has-tabs {
-  padding-bottom: var(--home-tabbar-total);
-}
-
 .app--home-bg .home__mark {
   border: 1px solid #fad0c4;
+}
+
+.app__main.has-tabs {
+  padding-bottom: var(--home-tabbar-total);
 }
 
 /* Hide home UI until splash is fully finished (including exit fade) */
@@ -167,7 +147,7 @@
 .home.has-tabs .home__scroll,
 .app__main.has-tabs .home__scroll,
 .app__main.has-tabs .screen--us .screen__scroll {
-  padding-bottom: calc(12px + var(--safe-bottom));
+  padding-bottom: 12px;
 }
 
 .home__scroll > *,
@@ -180,19 +160,27 @@
 /* ---------- Bottom tabs ---------- */
 
 .tabbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
   flex: 0 0 auto;
   display: flex;
   background: var(--foam);
   border-top: 1px solid var(--outline);
-  padding-bottom: var(--safe-bottom);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  z-index: 10;
 }
 
 .tabbar--clear {
-  background: transparent;
+  background: var(--home-navy, #272d88);
   border-top: none;
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
-  padding-bottom: var(--safe-bottom);
 }
 
 .tabbar--clear .tabbar__item,
@@ -1568,7 +1556,7 @@
 
 .screen--us .screen__scroll {
   gap: 16px;
-  padding: 0 0 calc(12px + var(--safe-bottom));
+  padding: 0 0 12px;
 }
 
 .screen--us .screen__scroll > :not(.us-hero) {

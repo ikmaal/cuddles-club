@@ -78,22 +78,8 @@
 }
 
 html {
-  height: -webkit-fill-available;
+  height: 100%;
   overscroll-behavior: none;
-}
-
-html,
-body,
-#root {
-  height: var(--app-height);
-  min-height: var(--app-height);
-  max-height: var(--app-height);
-  margin: 0;
-  overscroll-behavior: none;
-}
-
-#root {
-  width: 100%;
 }
 
 body {
@@ -101,8 +87,15 @@ body {
   inset: 0;
   width: 100%;
   min-width: 320px;
+  margin: 0;
   overflow: hidden;
+  overscroll-behavior: none;
   background-color: var(--canvas);
+}
+
+#root {
+  width: 100%;
+  height: 100%;
 }
 
 html.splash-active,

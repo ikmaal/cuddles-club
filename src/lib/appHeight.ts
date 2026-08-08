@@ -1,4 +1,4 @@
-/** Measure layout height + safe-area for iOS standalone PWAs. */
+/** Keep --app-height in sync with the visible viewport for iOS PWAs. */
 export function bindAppHeight() {
   let probe: HTMLDivElement | null = null
 
@@ -15,11 +15,16 @@ export function bindAppHeight() {
   }
 
   const set = () => {
+    // Prefer the laid-out body size (inset:0 fixed), then fall back to viewport metrics.
+    const bodyHeight = document.body?.getBoundingClientRect().height ?? 0
     const vv = window.visualViewport
-    const layoutHeight = Math.max(
-      window.innerHeight,
-      document.documentElement.clientHeight,
-      vv?.height ?? 0,
+    const layoutHeight = Math.round(
+      Math.max(
+        bodyHeight,
+        window.innerHeight,
+        document.documentElement.clientHeight,
+        vv?.height ?? 0,
+      ),
     )
 
     const safeBottom = ensureProbe().offsetHeight
