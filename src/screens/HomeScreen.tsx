@@ -1,9 +1,6 @@
 import { useRef } from 'react'
 import { SERVICES } from '../services'
-import {
-  listeningEyebrow,
-  useSpotifyListening,
-} from '../context/SpotifyListeningContext'
+import { useSpotifyListening } from '../context/SpotifyListeningContext'
 import { useHomePhoto } from '../hooks/useHomePhoto'
 import { useOverscrollGuard } from '../hooks/useOverscrollGuard'
 import { daysTogether } from '../hooks/useProfile'
@@ -37,51 +34,59 @@ function ListeningRow({
   card: ListeningCard
   onConnect?: () => void
 }) {
-  const eyebrow = listeningEyebrow(card)
   const isPartner = card.who === 'partner'
+  const shortName = card.name.trim().split(/\s+/)[0] || card.name
   const title = card.trackName
     ? card.trackName
     : card.connected
-      ? 'Nothing playing lately'
+      ? 'Quiet for now'
       : isPartner
-        ? 'Not connected yet'
-        : 'Connect Spotify'
+        ? 'Waiting'
+        : 'Connect'
   const subtitle = card.artists
     ? card.artists
     : card.connected
-      ? card.updatedAt
-        ? formatRelative(card.updatedAt)
-        : 'Open Spotify and play something'
+      ? 'No track yet'
       : isPartner
-        ? 'They can connect Spotify on the Us tab'
-        : 'So Lately can show what you’re into'
+        ? 'Us tab'
+        : 'Spotify'
+
+  const className = [
+    'home-activity',
+    'home-listening',
+    card.isPlaying ? 'is-playing' : '',
+    !card.trackName ? 'is-idle' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   const body = (
     <>
       {card.albumArtUrl ? (
         <img className="home-listening__art" src={card.albumArtUrl} alt="" />
       ) : (
-        <span className="home-listening__art home-listening__art--empty" aria-hidden />
+        <span className="home-listening__art home-listening__art--empty" aria-hidden>
+          ♪
+        </span>
       )}
       <span className="home-listening__copy">
-        <span className="home-listening__eyebrow">
-          {card.name} · {eyebrow}
-        </span>
+        <span className="home-listening__eyebrow">{shortName}</span>
         <strong>{title}</strong>
         <small>{subtitle}</small>
       </span>
-      {card.isPlaying ? <span className="home-listening__live" aria-label="Playing" /> : null}
+      {card.isPlaying ? (
+        <span className="home-listening__eq" aria-label="Playing">
+          <i />
+          <i />
+          <i />
+        </span>
+      ) : null}
     </>
   )
 
   if (card.trackUrl) {
     return (
-      <a
-        className="home-activity home-listening"
-        href={card.trackUrl}
-        target="_blank"
-        rel="noreferrer"
-      >
+      <a className={className} href={card.trackUrl} target="_blank" rel="noreferrer">
         {body}
       </a>
     )
@@ -89,13 +94,13 @@ function ListeningRow({
 
   if (!card.connected && onConnect) {
     return (
-      <button type="button" className="home-activity home-listening" onClick={onConnect}>
+      <button type="button" className={className} onClick={onConnect}>
         {body}
       </button>
     )
   }
 
-  return <div className="home-activity home-listening">{body}</div>
+  return <div className={className}>{body}</div>
 }
 
 export function HomeScreen({ profile, latestStrip, onOpen }: HomeScreenProps) {
@@ -216,48 +221,50 @@ export function HomeScreen({ profile, latestStrip, onOpen }: HomeScreenProps) {
             <h2>Lately</h2>
           </div>
 
-          <div className="home-listening-list" aria-label="Listening">
-            <ListeningRow
-              card={spotify.you}
-              onConnect={
-                spotify.configured && !spotify.connected
-                  ? () => onOpen('us')
-                  : undefined
-              }
-            />
-            <ListeningRow card={spotify.partner} />
-          </div>
+          <div className="home-lately__row">
+            {latestStrip ? (
+              <button
+                type="button"
+                className="home-activity home-activity--strip"
+                onClick={() => onOpen('strips')}
+              >
+                <img
+                  className="home-activity__strip"
+                  src={latestStrip.image}
+                  alt=""
+                />
+                <span className="home-activity__copy">
+                  <span className="home-activity__eyebrow">Photobooth</span>
+                  <strong>{latestStrip.title}</strong>
+                  <small>{formatRelative(latestStrip.createdAt)}</small>
+                </span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="home-activity home-activity--strip home-activity--empty"
+                onClick={() => onOpen('strips')}
+              >
+                <span className="home-activity__copy">
+                  <span className="home-activity__eyebrow">Photobooth</span>
+                  <strong>Nothing developed yet</strong>
+                  <small>Open the booth for your first strip</small>
+                </span>
+              </button>
+            )}
 
-          {latestStrip ? (
-            <button
-              type="button"
-              className="home-activity home-activity--strip"
-              onClick={() => onOpen('strips')}
-            >
-              <img
-                className="home-activity__strip"
-                src={latestStrip.image}
-                alt=""
+            <div className="home-listening-list" aria-label="Listening">
+              <ListeningRow
+                card={spotify.you}
+                onConnect={
+                  spotify.configured && !spotify.connected
+                    ? () => onOpen('us')
+                    : undefined
+                }
               />
-              <span className="home-activity__copy">
-                <span className="home-activity__eyebrow">Photobooth</span>
-                <strong>{latestStrip.title}</strong>
-                <small>{formatRelative(latestStrip.createdAt)}</small>
-              </span>
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="home-activity home-activity--strip home-activity--empty"
-              onClick={() => onOpen('strips')}
-            >
-              <span className="home-activity__copy">
-                <span className="home-activity__eyebrow">Photobooth</span>
-                <strong>Nothing developed yet</strong>
-                <small>Open the booth for your first strip</small>
-              </span>
-            </button>
-          )}
+              <ListeningRow card={spotify.partner} />
+            </div>
+          </div>
         </section>
       </div>
     </div>
