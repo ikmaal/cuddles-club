@@ -1,9 +1,10 @@
 /* ---------- Shell ---------- */
 
 .app {
-  position: relative;
+  position: absolute;
+  inset: 0;
   width: 100%;
-  height: 100%;
+  height: auto;
   max-width: 520px;
   margin: 0 auto;
   display: flex;
@@ -19,10 +20,11 @@
 }
 
 .app--home-bg {
-  position: relative;
+  position: absolute;
+  inset: 0;
   width: 100%;
+  height: auto;
   max-width: 520px;
-  height: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -34,20 +36,15 @@
 
 .app--home-bg .app__main {
   overscroll-behavior: none;
-}
-
-.app--home-bg .app__main,
-.app--home-bg .tabbar {
   opacity: 0;
   transition: opacity 520ms ease;
 }
 
-.app--home-bg.app--home-visible .app__main,
-.app--home-bg.app--home-visible .tabbar {
+.app--home-bg.app--home-visible .app__main {
   opacity: 1;
 }
 
-.app--home-bg > * {
+.app--home-bg .app__main {
   position: relative;
   z-index: 1;
 }
@@ -72,8 +69,7 @@
 }
 
 /* Hide home UI until splash is fully finished (including exit fade) */
-.app:has(.splash) .app__main,
-.app:has(.splash) .tabbar {
+.app:has(.splash) .app__main {
   visibility: hidden;
 }
 
@@ -166,14 +162,19 @@
   right: 0;
   width: 100%;
   max-width: 520px;
-  margin-left: auto;
-  margin-right: auto;
-  flex: 0 0 auto;
+  margin: 0 auto;
   display: flex;
+  align-items: stretch;
   background: var(--foam);
   border-top: 1px solid var(--outline);
   padding-bottom: env(safe-area-inset-bottom, 0px);
-  z-index: 10;
+  z-index: 100;
+  transform: translateZ(0);
+}
+
+.tabbar.is-pending {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .tabbar--clear {
@@ -195,8 +196,8 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
-  min-height: 56px;
-  padding: 8px 0 10px;
+  height: 56px;
+  padding: 0;
   color: var(--stone);
   font-size: 0.72rem;
   font-weight: 600;

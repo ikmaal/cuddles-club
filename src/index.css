@@ -59,7 +59,7 @@
   --app-height: 100dvh;
   --screen-height: 100dvh;
   --home-navy: #272d88;
-  --home-tabbar-total: calc(56px + var(--safe-bottom));
+  --home-tabbar-total: calc(56px + env(safe-area-inset-bottom, 0px));
   --font-display: 'Fredoka', system-ui, sans-serif;
   --font-body: 'Fredoka', system-ui, sans-serif;
 
@@ -94,8 +94,10 @@ body {
 }
 
 #root {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  height: 100%;
+  height: auto;
 }
 
 html.splash-active,
@@ -124,8 +126,7 @@ html.home-bg .app {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .app--home-bg .app__main,
-  .app--home-bg .tabbar {
+  .app--home-bg .app__main {
     transition-duration: 100ms;
   }
 }

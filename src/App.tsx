@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { HeartIcon, HomeIcon } from './components/Icons'
 import { SplashIntro } from './components/SplashIntro'
+import { TabBarPortal } from './components/TabBarPortal'
 import { useCouple } from './context/CoupleContext'
 import { usePhotostrips } from './hooks/usePhotostrips'
 import { useProfile } from './hooks/useProfile'
@@ -132,20 +133,25 @@ export default function App() {
           </main>
 
           {showTabs ? (
-            <nav className={`tabbar${screen === 'home' ? ' tabbar--clear' : ''}`} aria-label="Main">
-              {TABS.map((tab) => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  className={`tabbar__item ${screen === tab.id ? 'is-active' : ''}`}
-                  onClick={() => goToScreen(tab.id)}
-                  aria-current={screen === tab.id ? 'page' : undefined}
-                >
-                  <tab.Icon size={22} />
-                  <span>{tab.label}</span>
-                </button>
-              ))}
-            </nav>
+            <TabBarPortal>
+              <nav
+                className={`tabbar${screen === 'home' ? ' tabbar--clear' : ''}${homeLive && !homeVisible ? ' is-pending' : ''}`}
+                aria-label="Main"
+              >
+                {TABS.map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    className={`tabbar__item ${screen === tab.id ? 'is-active' : ''}`}
+                    onClick={() => goToScreen(tab.id)}
+                    aria-current={screen === tab.id ? 'page' : undefined}
+                  >
+                    <tab.Icon size={22} />
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
+              </nav>
+            </TabBarPortal>
           ) : null}
         </>
       ) : null}
