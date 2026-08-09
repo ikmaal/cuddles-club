@@ -98,7 +98,11 @@ interface CoupleContextValue {
   setMood: (who: Carer, mood: MoodKey) => Promise<void>
   saveAnswer: (question: string, you: string, partner: string) => Promise<void>
   setCat: (updater: (prev: CatState) => CatState) => void
-  addStripFromFile: (file: File, title: string) => Promise<Photostrip | null>
+  addStripFromFile: (
+    file: File,
+    title: string,
+    takenAt?: number,
+  ) => Promise<Photostrip | null>
   addStripFromDataUrl: (image: string, title: string) => Promise<boolean>
   renameStrip: (id: string, title: string) => Promise<void>
   removeStrip: (id: string) => Promise<void>
@@ -553,17 +557,17 @@ export function CoupleProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const addStripFromFile = useCallback(
-    async (file: File, title: string) => {
+    async (file: File, title: string, takenAt = Date.now()) => {
       setStripsBusy(true)
       setStripsError('')
       try {
         if (isCloud && coupleId) {
-          const strip = await uploadPhotostripFile(coupleId, file, title)
+          const strip = await uploadPhotostripFile(coupleId, file, title, takenAt)
           setStrips((prev) => [strip, ...prev])
           return strip
         }
         const { createStripFromFile, putStrip } = await import('../stripsDb')
-        const strip = await createStripFromFile(file, title)
+        const strip = await createStripFromFile(file, title, takenAt)
         await putStrip(strip)
         setStrips((prev) => [strip, ...prev])
         return strip
@@ -605,7 +609,7 @@ export function CoupleProvider({ children }: { children: ReactNode }) {
 
   const renameStrip = useCallback(
     async (id: string, title: string) => {
-      const next = title.trim().slice(0, 40)
+      const next = title.trim().slice(0, 60)
       if (!next) return
       setStrips((prev) => prev.map((s) => (s.id === id ? { ...s, title: next } : s)))
       if (isCloud) {

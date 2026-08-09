@@ -321,13 +321,14 @@ export function compressImage(file: File, maxEdge = 1400, quality = 0.82): Promi
 export async function createStripFromFile(
   file: File,
   title: string,
+  takenAt = Date.now(),
 ): Promise<Photostrip> {
   const image = await compressImage(file)
   return {
     id: createId(),
     title: title.trim() || defaultTitle(file.name),
     image,
-    createdAt: Date.now(),
+    createdAt: takenAt,
   }
 }
 

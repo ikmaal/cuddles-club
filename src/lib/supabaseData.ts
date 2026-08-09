@@ -449,6 +449,7 @@ export async function uploadPhotostripFile(
   coupleId: string,
   file: File,
   title: string,
+  takenAt = Date.now(),
 ): Promise<Photostrip> {
   const id = createId()
   const dataUrl = await new Promise<string>((resolve, reject) => {
@@ -457,7 +458,7 @@ export async function uploadPhotostripFile(
     reader.onerror = () => reject(new Error('Could not read file'))
     reader.readAsDataURL(file)
   })
-  return uploadPhotostrip(coupleId, id, title, dataUrl, Date.now())
+  return uploadPhotostrip(coupleId, id, title, dataUrl, takenAt)
 }
 
 export async function renamePhotostrip(id: string, title: string) {
