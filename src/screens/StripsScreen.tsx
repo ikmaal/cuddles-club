@@ -1,10 +1,9 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { PhotoBooth } from '../components/PhotoBooth'
 import { ScrollRegion } from '../components/ScrollRegion'
-import { PlusIcon, StripIcon, TrashIcon } from '../components/Icons'
+import { CameraIcon, PlusIcon, PoseIcon, StripIcon } from '../components/Icons'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { StripViewer } from '../components/StripViewer'
-import { formatRelative } from '../hooks/useStored'
 import type { CoupleProfile, Photostrip } from '../types'
 import { BoothPosesScreen } from './BoothPosesScreen'
 
@@ -67,8 +66,17 @@ export function StripsScreen({
   const [posesOpen, setPosesOpen] = useState(false)
 
   const coverStrip = strips[0] ?? null
-  const photoCount = strips.length * 4
   const canSaveUpload = Boolean(takenWhen && takenWhere.trim())
+
+  useEffect(() => {
+    if (!active) return
+    const next = strips.find((strip) => strip.id === active.id)
+    if (!next) {
+      setActive(null)
+      return
+    }
+    if (next !== active) setActive(next)
+  }, [strips, active])
 
   if (posesOpen) {
     return <BoothPosesScreen onBack={() => setPosesOpen(false)} />
@@ -151,42 +159,41 @@ export function StripsScreen({
                   <dt>Strips</dt>
                   <dd>{ready ? strips.length : '—'}</dd>
                 </div>
-                <div>
-                  <dt>Photos</dt>
-                  <dd>{ready ? photoCount : '—'}</dd>
-                </div>
               </dl>
+              <div className="album-toolbar">
+                <button
+                  type="button"
+                  className="album-toolbar__btn album-toolbar__btn--primary"
+                  onClick={openBooth}
+                  disabled={busy}
+                  aria-label="Open booth"
+                  title="Open booth"
+                >
+                  <CameraIcon size={18} />
+                </button>
+                <button
+                  type="button"
+                  className="album-toolbar__btn"
+                  onClick={() => setPosesOpen(true)}
+                  aria-label="Poses"
+                  title="Poses"
+                >
+                  <PoseIcon size={18} />
+                </button>
+                <button
+                  type="button"
+                  className="album-toolbar__btn"
+                  onClick={pickFile}
+                  disabled={busy}
+                  aria-label="Upload strip"
+                  title="Upload strip"
+                >
+                  <PlusIcon size={18} />
+                </button>
+              </div>
             </div>
           </div>
         </section>
-
-        <div className="album-toolbar">
-          <button
-            type="button"
-            className="album-toolbar__btn album-toolbar__btn--primary"
-            onClick={openBooth}
-            disabled={busy}
-          >
-            <StripIcon size={18} />
-            Open booth
-          </button>
-          <button
-            type="button"
-            className="album-toolbar__btn"
-            onClick={() => setPosesOpen(true)}
-          >
-            Poses
-          </button>
-          <button
-            type="button"
-            className="album-toolbar__btn"
-            onClick={pickFile}
-            disabled={busy}
-          >
-            <PlusIcon size={18} />
-            Upload strip
-          </button>
-        </div>
 
         {error ? (
           <p className="strip-error" role="alert">
@@ -253,56 +260,22 @@ export function StripsScreen({
             </p>
           </div>
         ) : strips.length > 0 ? (
-          <section className="album-shelf" aria-label="Album pages">
+          <section className="album-shelf" aria-label="Photostrips">
             <ul className="album-pages">
-              {strips.map((strip, index) => (
-                <li
-                  key={strip.id}
-                  className="album-page"
-                  style={{ '--page-tilt': `${((index % 3) - 1) * 0.6}deg` } as React.CSSProperties}
-                >
+              {strips.map((strip) => (
+                <li key={strip.id} className="album-page">
                   <button
                     type="button"
                     className="album-page__open"
                     onClick={() => setActive(strip)}
+                    aria-label={strip.title}
                   >
-                    <span className="album-page__paper">
-                      <span className="album-page__mount album-page__mount--tl" aria-hidden />
-                      <span className="album-page__mount album-page__mount--tr" aria-hidden />
-                      <span className="album-page__strip">
-                        <img src={strip.image} alt="" />
-                      </span>
-                      <span className="album-page__caption">
-                        <strong>{strip.title}</strong>
-                        <small>{formatRelative(strip.createdAt)}</small>
-                      </span>
-                    </span>
+                    <img
+                      className="album-page__image"
+                      src={strip.image}
+                      alt=""
+                    />
                   </button>
-                  <div className="album-page__actions">
-                    <button
-                      type="button"
-                      className="ghost-icon"
-                      onClick={() => {
-                        const next = window.prompt('Rename this strip', strip.title)
-                        if (next) void onRename(strip.id, next)
-                      }}
-                      aria-label={`Rename ${strip.title}`}
-                    >
-                      ✎
-                    </button>
-                    <button
-                      type="button"
-                      className="ghost-icon"
-                      onClick={() => {
-                        if (window.confirm(`Remove “${strip.title}”?`)) {
-                          void onRemove(strip.id)
-                        }
-                      }}
-                      aria-label={`Delete ${strip.title}`}
-                    >
-                      <TrashIcon size={18} />
-                    </button>
-                  </div>
                 </li>
               ))}
             </ul>
@@ -318,7 +291,14 @@ export function StripsScreen({
         />
       ) : null}
 
-      {active ? <StripViewer strip={active} onClose={() => setActive(null)} /> : null}
+      {active ? (
+        <StripViewer
+          strip={active}
+          onClose={() => setActive(null)}
+          onRename={onRename}
+          onRemove={onRemove}
+        />
+      ) : null}
     </div>
   )
 }

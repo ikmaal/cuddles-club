@@ -94,6 +94,33 @@ export function StripIcon({ size }: IconProps) {
   )
 }
 
+export function CameraIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="M4 8.5h3.2l1.4-2.2h6.8L16.8 8.5H20a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 20 19.5H4A1.5 1.5 0 0 1 2.5 18v-8A1.5 1.5 0 0 1 4 8.5z" />
+      <circle cx="12" cy="13.5" r="3.2" />
+      <path d="M18.2 10.8h.01" strokeWidth="2.4" />
+    </Frame>
+  )
+}
+
+/** Two people striking a photobooth pose. */
+export function PoseIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <circle cx="8.2" cy="5.8" r="2.1" />
+      <path d="M8.2 8.4v5.2" />
+      <path d="M5.2 11.2 8.2 9.6l3 1.6" />
+      <path d="M5.8 20.2 8.2 14.2l2.4 6" />
+      <circle cx="16.4" cy="6.2" r="2.1" />
+      <path d="M16.4 8.8v4.8" />
+      <path d="M16.4 10.4 20 8.2" />
+      <path d="M14.2 20.2 16.4 14.2l2.2 6" />
+      <path d="M12 2.8v2.4M10.8 4h2.4" strokeWidth="1.7" />
+    </Frame>
+  )
+}
+
 export function GridIcon({ size }: IconProps) {
   return (
     <Frame size={size}>

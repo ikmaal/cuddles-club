@@ -1,15 +1,19 @@
 import { useEffect, useRef, useState } from 'react'
+import { PencilIcon, TrashIcon } from './Icons'
+import { formatRelative } from '../hooks/useStored'
 import type { Photostrip } from '../types'
 
 interface StripViewerProps {
   strip: Photostrip
   onClose: () => void
+  onRename: (id: string, title: string) => Promise<void>
+  onRemove: (id: string) => Promise<void>
 }
 
 const MIN_ZOOM = 0.7
 const MAX_ZOOM = 2.4
 
-export function StripViewer({ strip, onClose }: StripViewerProps) {
+export function StripViewer({ strip, onClose, onRename, onRemove }: StripViewerProps) {
   const [rotateX, setRotateX] = useState(-8)
   const [rotateY, setRotateY] = useState(-18)
   const [zoom, setZoom] = useState(1)
@@ -87,6 +91,17 @@ export function StripViewer({ strip, onClose }: StripViewerProps) {
     setZoom(1)
   }
 
+  function rename() {
+    const next = window.prompt('Rename this strip', strip.title)
+    if (next) void onRename(strip.id, next)
+  }
+
+  function remove() {
+    if (!window.confirm(`Remove “${strip.title}”?`)) return
+    void onRemove(strip.id)
+    onClose()
+  }
+
   return (
     <div className="strip-viewer" role="dialog" aria-modal aria-label={strip.title}>
       <header className="strip-viewer__bar">
@@ -95,11 +110,26 @@ export function StripViewer({ strip, onClose }: StripViewerProps) {
         </button>
         <div className="strip-viewer__title">
           <strong>{strip.title}</strong>
-          <span>Drag to spin · pinch or scroll to zoom</span>
+          <span>{formatRelative(strip.createdAt)} · Drag to spin · pinch or scroll to zoom</span>
         </div>
-        <button type="button" className="strip-viewer__text-btn" onClick={reset}>
-          Reset
-        </button>
+        <div className="strip-viewer__actions">
+          <button
+            type="button"
+            className="strip-viewer__icon-btn"
+            onClick={rename}
+            aria-label="Edit strip"
+          >
+            <PencilIcon size={18} />
+          </button>
+          <button
+            type="button"
+            className="strip-viewer__icon-btn strip-viewer__icon-btn--danger"
+            onClick={remove}
+            aria-label="Delete strip"
+          >
+            <TrashIcon size={18} />
+          </button>
+        </div>
       </header>
 
       <div
@@ -120,6 +150,7 @@ export function StripViewer({ strip, onClose }: StripViewerProps) {
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={endDrag}
+        onDoubleClick={reset}
       >
         <div
           className="strip-viewer__scene"
