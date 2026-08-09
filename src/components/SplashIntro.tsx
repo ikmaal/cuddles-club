@@ -43,15 +43,6 @@ export function SplashIntro({ canFinish, onExiting, onDone }: SplashIntroProps) 
       aria-busy={!canFinish || !holdDone}
       aria-label="Welcome to Cuddles Club"
     >
-      <div className="splash__sparkles" aria-hidden>
-        <span className="splash__spark splash__spark--1" />
-        <span className="splash__spark splash__spark--2" />
-        <span className="splash__spark splash__spark--3" />
-        <span className="splash__spark splash__spark--4" />
-        <span className="splash__spark splash__spark--5" />
-        <span className="splash__spark splash__spark--6" />
-      </div>
-
       <div className="splash__stage">
         <div className="splash__frame">
           <img

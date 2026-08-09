@@ -42,16 +42,20 @@ export default function App() {
   const [homeVisible, setHomeVisible] = useState(false)
 
   const splashActive = splashPhase !== 'done'
+  const homeLive = screen === 'home' && splashPhase === 'done'
   const navyLive = (screen === 'home' || screen === 'us') && splashPhase === 'done'
   const shellVisible = screen === 'us' ? navyLive : homeVisible
   const showTabs = !splashActive && ready && (screen === 'home' || screen === 'us')
 
   useEffect(() => {
     const root = document.documentElement
+    const wallpaper = `url("${import.meta.env.BASE_URL}background.png")`
 
     root.classList.toggle('splash-active', splashActive)
     root.classList.toggle('home-bg', navyLive)
+    root.classList.toggle('home-image', homeLive)
     root.classList.toggle('strips-bg', screen === 'strips' && !splashActive)
+    root.style.setProperty('--home-wallpaper', wallpaper)
 
     if (navyLive) {
       setThemeColor(NAVY)
@@ -66,7 +70,7 @@ export default function App() {
       setThemeColor(DEFAULT_THEME_COLOR)
       setStatusBarStyle('default')
     }
-  }, [splashActive, navyLive, screen])
+  }, [splashActive, navyLive, homeLive, screen])
 
   useEffect(() => {
     if (screen !== 'home' || splashPhase !== 'done') {
@@ -99,7 +103,7 @@ export default function App() {
 
   return (
     <div
-      className={`app${navyLive ? ' app--home-bg' : ''}${shellVisible ? ' app--home-visible' : ''}${screen === 'strips' && !splashActive ? ' app--strips' : ''}${splashActive ? ' app--splash' : ''}`}
+      className={`app${navyLive ? ' app--home-bg' : ''}${homeLive ? ' app--home-image' : ''}${shellVisible ? ' app--home-visible' : ''}${screen === 'strips' && !splashActive ? ' app--strips' : ''}${splashActive ? ' app--splash' : ''}`}
     >
       {splashActive ? (
         <SplashIntro

@@ -146,6 +146,24 @@ export function TrashIcon({ size }: IconProps) {
   )
 }
 
+export function PencilIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="M12.5 5.5 18.5 11.5" />
+      <path d="M4.5 19.5 5.7 14.3 15.2 4.8a2 2 0 0 1 2.8 0l1.2 1.2a2 2 0 0 1 0 2.8L9.7 18.3z" />
+      <path d="M4.5 19.5h5" />
+    </Frame>
+  )
+}
+
+export function CheckIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="m5.5 12.5 4.2 4.2 8.8-9.4" />
+    </Frame>
+  )
+}
+
 export function ChevronIcon({ size }: IconProps) {
   return (
     <Frame size={size}>
