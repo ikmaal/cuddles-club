@@ -1,11 +1,19 @@
 import { useEffect, useRef, useState } from 'react'
 import { composeCuteStrip } from '../composeStrip'
+import {
+  createCustomStripFrameFromFile,
+  deleteCustomStripFrame,
+  listCustomStripFrames,
+  putCustomStripFrame,
+} from '../customFramesDb'
 import { loadStripDesignPreviews } from '../stripDesignPreviews'
 import {
   DEFAULT_STRIP_DESIGN,
   STRIP_DESIGNS,
   type StripDesignId,
 } from '../stripDesigns'
+import type { CustomStripFrame } from '../types'
+import { PlusIcon, TrashIcon } from './Icons'
 import { ScrollRegion } from './ScrollRegion'
 
 interface PhotoBoothProps {
@@ -23,6 +31,10 @@ type Phase =
   | 'review'
   | 'denied'
 
+type DesignChoice =
+  | { kind: 'builtin'; id: StripDesignId }
+  | { kind: 'custom'; id: string }
+
 const TOTAL_SHOTS = 4
 const COUNTDOWN_FROM = 5
 const COUNTDOWN_TICK_MS = 1000
@@ -31,6 +43,7 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const shotsRef = useRef<string[]>([])
+  const frameInputRef = useRef<HTMLInputElement>(null)
 
   const [phase, setPhase] = useState<Phase>('pick-design')
   const [count, setCount] = useState(COUNTDOWN_FROM)
@@ -39,7 +52,12 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
   const [title, setTitle] = useState('')
   const [error, setError] = useState('')
   const [composing, setComposing] = useState(false)
-  const [design, setDesign] = useState<StripDesignId>(DEFAULT_STRIP_DESIGN)
+  const [designChoice, setDesignChoice] = useState<DesignChoice>({
+    kind: 'builtin',
+    id: DEFAULT_STRIP_DESIGN,
+  })
+  const [customFrames, setCustomFrames] = useState<CustomStripFrame[]>([])
+  const [frameBusy, setFrameBusy] = useState(false)
   const [designPreviews, setDesignPreviews] = useState<Partial<Record<StripDesignId, string>>>(
     {},
   )
@@ -56,6 +74,20 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
       })
       .finally(() => {
         if (alive) setPreviewsLoading(false)
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  useEffect(() => {
+    let alive = true
+    void listCustomStripFrames()
+      .then((frames) => {
+        if (alive) setCustomFrames(frames)
+      })
+      .catch(() => {
+        // Custom frames are optional
       })
     return () => {
       alive = false
@@ -211,10 +243,15 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
     try {
       streamRef.current?.getTracks().forEach((track) => track.stop())
       streamRef.current = null
+      const customFrame =
+        designChoice.kind === 'custom'
+          ? customFrames.find((frame) => frame.id === designChoice.id)
+          : undefined
       const image = await composeCuteStrip(finalShots, {
         title: 'Cuddles Club',
         takenAt: Date.now(),
-        design,
+        design: designChoice.kind === 'builtin' ? designChoice.id : DEFAULT_STRIP_DESIGN,
+        customFrameImage: customFrame?.image,
       })
       setComposed(image)
       setTitle(defaultBoothTitle())
@@ -279,8 +316,50 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
     if (ok) onClose()
   }
 
+  async function onCustomFramePicked(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file || !file.type.startsWith('image/')) return
+
+    setFrameBusy(true)
+    setError('')
+    try {
+      const frame = await createCustomStripFrameFromFile(file)
+      await putCustomStripFrame(frame)
+      setCustomFrames((prev) => [frame, ...prev.filter((item) => item.id !== frame.id)])
+      setDesignChoice({ kind: 'custom', id: frame.id })
+    } catch {
+      setError('Could not save that frame design. Try a smaller image.')
+    } finally {
+      setFrameBusy(false)
+    }
+  }
+
+  async function removeCustomFrame(id: string) {
+    if (!window.confirm('Remove this custom frame?')) return
+    try {
+      await deleteCustomStripFrame(id)
+      setCustomFrames((prev) => prev.filter((frame) => frame.id !== id))
+      setDesignChoice((prev) =>
+        prev.kind === 'custom' && prev.id === id
+          ? { kind: 'builtin', id: DEFAULT_STRIP_DESIGN }
+          : prev,
+      )
+    } catch {
+      setError('Could not remove that frame.')
+    }
+  }
+
   const shotIndex = shots.length
-  const selectedDesign = STRIP_DESIGNS.find((item) => item.id === design)
+  const selectedBuiltin =
+    designChoice.kind === 'builtin'
+      ? STRIP_DESIGNS.find((item) => item.id === designChoice.id)
+      : undefined
+  const selectedCustom =
+    designChoice.kind === 'custom'
+      ? customFrames.find((frame) => frame.id === designChoice.id)
+      : undefined
+  const selectedLabel = selectedCustom?.label ?? selectedBuiltin?.label
   const showLiveCamera =
     phase === 'ready' || phase === 'countdown' || phase === 'flash' || phase === 'boot'
 
@@ -299,8 +378,8 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
                 ? 'Your strip is ready'
                 : phase === 'countdown' || phase === 'flash'
                   ? `Shot ${Math.min(shotIndex + 1, TOTAL_SHOTS)} of ${TOTAL_SHOTS}`
-                  : selectedDesign
-                    ? `${selectedDesign.label} · 4 snaps`
+                  : selectedLabel
+                    ? `${selectedLabel} · 4 snaps`
                     : 'Four snaps · one strip'}
           </span>
         </div>
@@ -313,6 +392,14 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
         </p>
       ) : null}
 
+      <input
+        ref={frameInputRef}
+        type="file"
+        accept="image/*"
+        className="sr-only"
+        onChange={(event) => void onCustomFramePicked(event)}
+      />
+
       {phase === 'pick-design' || phase === 'denied' ? (
         <ScrollRegion className="booth__designs">
           {phase === 'denied' ? (
@@ -324,18 +411,21 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
             </div>
           ) : (
             <>
-              <p className="booth__designs-lead">
-                Choose a style for your strip before the camera starts.
-              </p>
               <ul className="booth__design-grid" role="listbox" aria-label="Strip designs">
                 {STRIP_DESIGNS.map((item) => (
                   <li key={item.id}>
                     <button
                       type="button"
                       role="option"
-                      aria-selected={design === item.id}
-                      className={`booth__design-card ${design === item.id ? 'is-selected' : ''}`}
-                      onClick={() => setDesign(item.id)}
+                      aria-selected={
+                        designChoice.kind === 'builtin' && designChoice.id === item.id
+                      }
+                      className={`booth__design-card ${
+                        designChoice.kind === 'builtin' && designChoice.id === item.id
+                          ? 'is-selected'
+                          : ''
+                      }`}
+                      onClick={() => setDesignChoice({ kind: 'builtin', id: item.id })}
                     >
                       <span className="booth__design-preview-wrap" aria-hidden>
                         {designPreviews[item.id] ? (
@@ -360,11 +450,61 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
                     </button>
                   </li>
                 ))}
+
+                {customFrames.map((frame) => (
+                  <li key={frame.id} className="booth__design-item">
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={
+                        designChoice.kind === 'custom' && designChoice.id === frame.id
+                      }
+                      className={`booth__design-card ${
+                        designChoice.kind === 'custom' && designChoice.id === frame.id
+                          ? 'is-selected'
+                          : ''
+                      }`}
+                      onClick={() => setDesignChoice({ kind: 'custom', id: frame.id })}
+                    >
+                      <span className="booth__design-preview-wrap" aria-hidden>
+                        <img className="booth__design-preview" src={frame.image} alt="" />
+                      </span>
+                      <span className="booth__design-copy">
+                        <strong>{frame.label}</strong>
+                        <small>Your frame</small>
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      className="booth__design-delete"
+                      onClick={() => void removeCustomFrame(frame.id)}
+                      aria-label={`Remove ${frame.label}`}
+                    >
+                      <TrashIcon size={16} />
+                    </button>
+                  </li>
+                ))}
+
+                <li>
+                  <button
+                    type="button"
+                    className="booth__design-card booth__design-card--add"
+                    onClick={() => frameInputRef.current?.click()}
+                    disabled={frameBusy}
+                    aria-label={frameBusy ? 'Uploading frame' : 'Add your own frame design'}
+                    title="Add your frame"
+                  >
+                    <span className="booth__design-add-icon" aria-hidden>
+                      <PlusIcon size={28} />
+                    </span>
+                  </button>
+                </li>
               </ul>
               <button
                 type="button"
                 className="btn btn--primary booth__design-continue"
                 onClick={continueToBooth}
+                disabled={designChoice.kind === 'custom' && !selectedCustom}
               >
                 Continue to booth
               </button>
@@ -475,7 +615,7 @@ export function PhotoBooth({ busy, onSave, onClose }: PhotoBoothProps) {
 
           {phase === 'countdown' || phase === 'flash' ? (
             <p className="booth__hint">
-              Hold still — {selectedDesign?.label.toLowerCase()} magic incoming
+              Hold still — {selectedLabel?.toLowerCase() ?? 'booth'} magic incoming
             </p>
           ) : null}
         </div>

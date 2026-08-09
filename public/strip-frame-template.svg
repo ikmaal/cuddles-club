@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="1260" viewBox="0 0 420 1260" fill="none">
+  <title>Cuddles Club photostrip frame template</title>
+  <desc>
+    Canvas 420x1260 (1:3). Four photo windows are where booth shots are placed.
+    Design around them - anything inside the dashed boxes will be covered by photos.
+  </desc>
+
+  <!-- Paper -->
+  <rect width="420" height="1260" fill="#f7f2ec"/>
+
+  <!-- Safe outer margin guide -->
+  <rect x="12" y="12" width="396" height="1236" rx="20" stroke="#d8cfc2" stroke-width="2" stroke-dasharray="6 6" fill="none"/>
+
+  <!-- Header / footer zones (decorate freely) -->
+  <rect x="48" y="16" width="324" height="68" rx="10" fill="#efe7dc"/>
+  <text x="210" y="56" text-anchor="middle" fill="#8a7a6c" font-family="Georgia, serif" font-size="18" font-weight="700">Header area</text>
+
+  <rect x="48" y="1190" width="324" height="54" rx="10" fill="#efe7dc"/>
+  <text x="210" y="1224" text-anchor="middle" fill="#8a7a6c" font-family="Georgia, serif" font-size="16" font-weight="700">Footer area</text>
+
+  <!-- Photo windows -->
+  <g>
+    <!-- Window 1 -->
+    <rect x="48" y="92" width="324" height="259" rx="8" fill="#ffffff" stroke="#e85d75" stroke-width="3" stroke-dasharray="10 8"/>
+    <text x="210" y="230" text-anchor="middle" fill="#e85d75" font-family="system-ui, sans-serif" font-size="22" font-weight="700">PHOTO 1</text>
+    <text x="210" y="258" text-anchor="middle" fill="#a0897c" font-family="system-ui, sans-serif" font-size="13">48, 92 - 324x259</text>
+
+    <!-- Window 2 -->
+    <rect x="48" y="369" width="324" height="259" rx="8" fill="#ffffff" stroke="#e85d75" stroke-width="3" stroke-dasharray="10 8"/>
+    <text x="210" y="507" text-anchor="middle" fill="#e85d75" font-family="system-ui, sans-serif" font-size="22" font-weight="700">PHOTO 2</text>
+    <text x="210" y="535" text-anchor="middle" fill="#a0897c" font-family="system-ui, sans-serif" font-size="13">48, 369 - 324x259</text>
+
+    <!-- Window 3 -->
+    <rect x="48" y="646" width="324" height="259" rx="8" fill="#ffffff" stroke="#e85d75" stroke-width="3" stroke-dasharray="10 8"/>
+    <text x="210" y="784" text-anchor="middle" fill="#e85d75" font-family="system-ui, sans-serif" font-size="22" font-weight="700">PHOTO 3</text>
+    <text x="210" y="812" text-anchor="middle" fill="#a0897c" font-family="system-ui, sans-serif" font-size="13">48, 646 - 324x259</text>
+
+    <!-- Window 4 -->
+    <rect x="48" y="923" width="324" height="259" rx="8" fill="#ffffff" stroke="#e85d75" stroke-width="3" stroke-dasharray="10 8"/>
+    <text x="210" y="1061" text-anchor="middle" fill="#e85d75" font-family="system-ui, sans-serif" font-size="22" font-weight="700">PHOTO 4</text>
+    <text x="210" y="1089" text-anchor="middle" fill="#a0897c" font-family="system-ui, sans-serif" font-size="13">48, 923 - 324x259</text>
+  </g>
+
+  <!-- Side gutters tip -->
+  <text x="24" y="640" fill="#b59f90" font-family="system-ui, sans-serif" font-size="11" transform="rotate(-90 24 640)">Side borders - decorate here</text>
+  <text x="408" y="640" fill="#b59f90" font-family="system-ui, sans-serif" font-size="11" transform="rotate(90 408 640)">Side borders - decorate here</text>
+</svg>

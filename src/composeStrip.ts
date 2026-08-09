@@ -11,6 +11,8 @@ export async function composeCuteStrip(
     title?: string
     takenAt?: number
     design?: StripDesignId
+    /** Custom full-bleed frame artwork. When set, overrides built-in designs. */
+    customFrameImage?: string
   },
 ): Promise<string> {
   if (shots.length !== 4) {
@@ -24,6 +26,11 @@ export async function composeCuteStrip(
   canvas.height = STRIP_H
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('Could not create the strip')
+
+  if (options?.customFrameImage) {
+    await drawCustomFrameStrip(ctx, images, options.customFrameImage)
+    return canvas.toDataURL('image/jpeg', 0.92)
+  }
 
   switch (design) {
     case 'classic':
@@ -45,6 +52,23 @@ export async function composeCuteStrip(
   }
 
   return canvas.toDataURL('image/jpeg', 0.92)
+}
+
+async function drawCustomFrameStrip(
+  ctx: CanvasRenderingContext2D,
+  images: HTMLImageElement[],
+  frameDataUrl: string,
+) {
+  const frame = await loadImage(frameDataUrl)
+  ctx.fillStyle = '#ffffff'
+  ctx.fillRect(0, 0, STRIP_W, STRIP_H)
+  drawCover(ctx, frame, 0, 0, STRIP_W, STRIP_H)
+
+  const layout = frameLayout(92, 78)
+  images.forEach((img, index) => {
+    const y = layout.top + index * (layout.frameH + layout.gap)
+    drawMatteFrame(ctx, img, layout.insetX, y, layout.frameW, layout.frameH, index, 'classic')
+  })
 }
 
 /* ---------- Cute (original) ---------- */

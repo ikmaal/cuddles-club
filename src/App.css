@@ -4235,6 +4235,53 @@ a.home-listening:focus-visible {
   box-shadow: 0 0 0 1px rgba(232, 93, 117, 0.25);
 }
 
+.booth__design-item {
+  position: relative;
+}
+
+.booth__design-delete {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(12, 12, 12, 0.72);
+  color: #ffd2cc;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.booth__design-delete:active {
+  background: rgba(212, 46, 28, 0.55);
+}
+
+.booth__design-card--add {
+  min-height: 100%;
+  justify-content: center;
+  align-items: center;
+  border-style: dashed;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 16px;
+}
+
+.booth__design-card--add:disabled {
+  opacity: 0.55;
+}
+
+.booth__design-add-icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
 .booth__design-preview-wrap {
   display: flex;
   justify-content: center;

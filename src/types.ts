@@ -51,6 +51,14 @@ export interface BoothPosePhoto {
   createdAt: number
 }
 
+export interface CustomStripFrame {
+  id: string
+  label: string
+  /** Full-bleed strip artwork used as the booth frame background. */
+  image: string
+  createdAt: number
+}
+
 export interface Note {
   id: string
   text: string
