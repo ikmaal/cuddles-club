@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useCouple } from '../context/CoupleContext'
 import {
   clearHomePhoto,
@@ -30,46 +30,63 @@ export function useHomePhoto() {
   const [photo, setPhoto] = useState(() => (isCloud ? '' : loadLocalHomePhoto()))
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [photoKey, setPhotoKey] = useState(0)
+  const writeGen = useRef(0)
+  const photoRef = useRef(photo)
+
+  const showPhoto = useCallback((next: string) => {
+    if (photoRef.current === next) return
+    photoRef.current = next
+    setPhoto(next)
+    setPhotoKey((value) => value + 1)
+  }, [])
 
   const refreshFromCloud = useCallback(async () => {
     if (!isCloud || !coupleId) return
+    const gen = writeGen.current
     try {
       const url = await fetchHomePhotoUrl(coupleId)
-      setPhoto(url)
+      if (gen !== writeGen.current) return
+      showPhoto(url)
       setError('')
     } catch (err) {
+      if (gen !== writeGen.current) return
       setError(err instanceof Error ? err.message : 'Could not load home photo')
     }
-  }, [coupleId, isCloud])
+  }, [coupleId, isCloud, showPhoto])
 
   useEffect(() => {
     if (!isCloud || !coupleId) {
-      setPhoto(loadLocalHomePhoto())
+      showPhoto(loadLocalHomePhoto())
       return
     }
 
     let cancelled = false
 
     const sync = async () => {
+      const gen = writeGen.current
       try {
         const cloudUrl = await fetchHomePhotoUrl(coupleId)
-        if (cancelled) return
+        if (cancelled || gen !== writeGen.current) return
 
         if (!cloudUrl) {
           const local = loadLocalHomePhoto()
           if (local) {
+            writeGen.current += 1
+            const uploadGen = writeGen.current
+            showPhoto(local)
             const uploaded = await uploadHomePhoto(coupleId, local)
-            if (cancelled) return
-            setPhoto(uploaded)
+            if (cancelled || uploadGen !== writeGen.current) return
+            showPhoto(uploaded)
             removeLocalHomePhoto()
             return
           }
         }
 
-        setPhoto(cloudUrl)
+        showPhoto(cloudUrl)
         setError('')
       } catch (err) {
-        if (!cancelled) {
+        if (!cancelled && gen === writeGen.current) {
           setError(err instanceof Error ? err.message : 'Could not load home photo')
         }
       }
@@ -90,46 +107,55 @@ export function useHomePhoto() {
       window.clearInterval(timer)
       document.removeEventListener('visibilitychange', onVisible)
     }
-  }, [coupleId, isCloud, refreshFromCloud])
+  }, [coupleId, isCloud, refreshFromCloud, showPhoto])
 
   const saveDataUrl = useCallback(
     async (dataUrl: string) => {
+      const gen = ++writeGen.current
       setBusy(true)
       setError('')
+      // Show the cropped photo immediately so replaces never look stuck on the old image.
+      showPhoto(dataUrl)
       try {
         if (isCloud && coupleId) {
           const url = await uploadHomePhoto(coupleId, dataUrl)
-          setPhoto(url)
+          if (gen !== writeGen.current) return
+          showPhoto(url)
         } else {
           saveLocalHomePhoto(dataUrl)
-          setPhoto(dataUrl)
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Could not save home photo')
+        if (gen === writeGen.current) {
+          setError(err instanceof Error ? err.message : 'Could not save home photo')
+        }
         throw err
       } finally {
-        setBusy(false)
+        if (gen === writeGen.current) setBusy(false)
       }
     },
-    [coupleId, isCloud],
+    [coupleId, isCloud, showPhoto],
   )
 
   const clear = useCallback(async () => {
+    const gen = ++writeGen.current
     setBusy(true)
     setError('')
     try {
       if (isCloud && coupleId) {
         await clearHomePhoto(coupleId)
       }
+      if (gen !== writeGen.current) return
       removeLocalHomePhoto()
-      setPhoto('')
+      showPhoto('')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not remove home photo')
+      if (gen === writeGen.current) {
+        setError(err instanceof Error ? err.message : 'Could not remove home photo')
+      }
       throw err
     } finally {
-      setBusy(false)
+      if (gen === writeGen.current) setBusy(false)
     }
-  }, [coupleId, isCloud])
+  }, [coupleId, isCloud, showPhoto])
 
-  return { photo, busy, error, saveDataUrl, clear, isCloud }
+  return { photo, photoKey, busy, error, saveDataUrl, clear, isCloud }
 }

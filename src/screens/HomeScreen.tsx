@@ -112,7 +112,7 @@ function ListeningRow({
 export function HomeScreen({ profile, latestStrip, onOpen }: HomeScreenProps) {
   const days = daysTogether(profile.since)
   const homeRef = useOverscrollGuard<HTMLDivElement>(true)
-  const { photo, busy, saveDataUrl } = useHomePhoto()
+  const { photo, photoKey, busy, saveDataUrl } = useHomePhoto()
   const photoInputRef = useRef<HTMLInputElement>(null)
   const photoBtnRef = useRef<HTMLButtonElement>(null)
   const spotify = useSpotifyListening()
@@ -219,7 +219,7 @@ export function HomeScreen({ profile, latestStrip, onOpen }: HomeScreenProps) {
             aria-label={photo ? 'Change home photo' : 'Add a home photo'}
           >
             {photo ? (
-              <img src={photo} alt="" />
+              <img key={photoKey} src={photo} alt="" />
             ) : (
               <span className="home-photo__empty">
                 <span className="home-photo__plus" aria-hidden>

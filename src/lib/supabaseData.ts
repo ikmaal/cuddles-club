@@ -213,16 +213,24 @@ export async function fetchHomePhotoUrl(coupleId: string): Promise<string> {
 
 export async function uploadHomePhoto(coupleId: string, imageDataUrl: string): Promise<string> {
   const client = requireClient()
-  const storagePath = `${coupleId}/home-photo.jpg`
-  const blob = dataUrlToBlob(imageDataUrl)
   const updatedAt = Date.now()
+  // Unique path each save so CDN/browser caches cannot keep showing the previous photo.
+  const storagePath = `${coupleId}/home-photo-${updatedAt}.jpg`
+  const blob = dataUrlToBlob(imageDataUrl)
+
+  const { data: existing, error: existingError } = await client
+    .from('couples')
+    .select('home_photo_path')
+    .eq('id', coupleId)
+    .maybeSingle()
+  if (existingError) throw existingError
 
   const { error: uploadError } = await client.storage
     .from(PHOTOSTRIP_BUCKET)
     .upload(storagePath, blob, {
       contentType: 'image/jpeg',
-      upsert: true,
-      cacheControl: '60',
+      upsert: false,
+      cacheControl: '3600',
     })
   if (uploadError) throw uploadError
 
@@ -233,15 +241,32 @@ export async function uploadHomePhoto(coupleId: string, imageDataUrl: string): P
       home_photo_updated_at: updatedAt,
     })
     .eq('id', coupleId)
-  if (error) throw error
+  if (error) {
+    await client.storage.from(PHOTOSTRIP_BUCKET).remove([storagePath])
+    throw error
+  }
+
+  const previous = existing?.home_photo_path
+  if (previous && previous !== storagePath) {
+    await client.storage.from(PHOTOSTRIP_BUCKET).remove([previous])
+  }
 
   return homePhotoPublicUrl(storagePath, updatedAt)
 }
 
 export async function clearHomePhoto(coupleId: string): Promise<void> {
   const client = requireClient()
-  const storagePath = `${coupleId}/home-photo.jpg`
-  await client.storage.from(PHOTOSTRIP_BUCKET).remove([storagePath])
+  const { data, error: readError } = await client
+    .from('couples')
+    .select('home_photo_path')
+    .eq('id', coupleId)
+    .maybeSingle()
+  if (readError) throw readError
+
+  if (data?.home_photo_path) {
+    await client.storage.from(PHOTOSTRIP_BUCKET).remove([data.home_photo_path])
+  }
+
   const { error } = await client
     .from('couples')
     .update({
