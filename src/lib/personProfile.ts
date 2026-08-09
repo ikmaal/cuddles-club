@@ -4,9 +4,10 @@ export const defaultPersonProfile = (): PersonProfile => ({
   photo: '',
   birthday: '',
   favoriteColor: '',
-  nickname: '',
   loveLanguage: '',
   favoriteFood: '',
+  favoriteDrink: '',
+  favoriteMovie: '',
   hometown: '',
   bio: '',
 })
@@ -40,9 +41,10 @@ export function normalizePerson(input?: Partial<PersonProfile> | null): PersonPr
     photo: typeof input.photo === 'string' ? input.photo : '',
     birthday: typeof input.birthday === 'string' ? input.birthday.slice(0, 10) : '',
     favoriteColor: normalizeHex(input.favoriteColor),
-    nickname: typeof input.nickname === 'string' ? input.nickname.trim().slice(0, 24) : '',
     loveLanguage: typeof input.loveLanguage === 'string' ? input.loveLanguage.trim().slice(0, 40) : '',
     favoriteFood: typeof input.favoriteFood === 'string' ? input.favoriteFood.trim().slice(0, 40) : '',
+    favoriteDrink: typeof input.favoriteDrink === 'string' ? input.favoriteDrink.trim().slice(0, 40) : '',
+    favoriteMovie: typeof input.favoriteMovie === 'string' ? input.favoriteMovie.trim().slice(0, 40) : '',
     hometown: typeof input.hometown === 'string' ? input.hometown.trim().slice(0, 40) : '',
     bio: typeof input.bio === 'string' ? input.bio.trim().slice(0, 160) : '',
   }

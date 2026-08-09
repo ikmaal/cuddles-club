@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { CameraIcon, CheckIcon, PencilIcon } from './Icons'
+import { CardBuddy } from './CardBuddy'
 import {
   COLOR_PRESETS,
   LOVE_LANGUAGES,
@@ -117,7 +118,7 @@ export function PersonProfileCard({
         <span className="person-card__wash" />
         <span className="person-card__pattern" />
         <span className="person-card__orbit" />
-        <span className="person-card__seal">{who === 'you' ? '★' : '♥'}</span>
+        <span className="person-card__shine" />
       </div>
 
       <header className="person-card__id-bar">
@@ -166,34 +167,22 @@ export function PersonProfileCard({
 
             <div className="person-card__titles">
               <p className="person-card__field-label">Preferred name</p>
-              {editing ? (
-                <label className="person-card__name-field">
-                  <span className="sr-only">Name</span>
-                  <input
-                    value={draftName}
-                    onChange={(event) => setDraftName(event.target.value)}
-                    maxLength={18}
-                    placeholder={who === 'you' ? 'Your name' : 'Partner name'}
-                  />
-                </label>
-              ) : (
-                <h2>{displayName}</h2>
-              )}
-              {editing ? (
-                <label className="person-card__nick-field">
-                  <span className="sr-only">Nickname</span>
-                  <input
-                    value={draft.nickname}
-                    onChange={(event) => updateDraft('nickname', event.target.value)}
-                    maxLength={24}
-                    placeholder="Nickname"
-                  />
-                </label>
-              ) : person.nickname ? (
-                <p className="person-card__nickname">AKA “{person.nickname}”</p>
-              ) : (
-                <p className="person-card__nickname person-card__nickname--empty">No nickname yet</p>
-              )}
+              <div className="person-card__name-row">
+                {editing ? (
+                  <label className="person-card__name-field">
+                    <span className="sr-only">Name</span>
+                    <input
+                      value={draftName}
+                      onChange={(event) => setDraftName(event.target.value)}
+                      maxLength={18}
+                      placeholder={who === 'you' ? 'Your name' : 'Partner name'}
+                    />
+                  </label>
+                ) : (
+                  <h2>{displayName}</h2>
+                )}
+                {who === 'you' ? <CardBuddy who={who} /> : null}
+              </div>
             </div>
           </div>
 
@@ -264,8 +253,22 @@ export function PersonProfileCard({
 
             {person.favoriteFood ? (
               <div className="person-card__fact">
-                <span>Fuel</span>
+                <span>Favourite food</span>
                 <strong>{person.favoriteFood}</strong>
+              </div>
+            ) : null}
+
+            {person.favoriteDrink ? (
+              <div className="person-card__fact">
+                <span>Favourite drink</span>
+                <strong>{person.favoriteDrink}</strong>
+              </div>
+            ) : null}
+
+            {person.favoriteMovie ? (
+              <div className="person-card__fact">
+                <span>Favourite movie</span>
+                <strong>{person.favoriteMovie}</strong>
               </div>
             ) : null}
 
@@ -276,12 +279,19 @@ export function PersonProfileCard({
               </div>
             ) : null}
 
-            {person.bio ? <p className="person-card__bio">{person.bio}</p> : null}
+            {person.bio ? (
+              <div className="person-card__fact person-card__fact--swatch">
+                <span>Fun fact</span>
+                <strong>{person.bio}</strong>
+              </div>
+            ) : null}
 
             {!person.favoriteColor &&
             !birthdayLabel &&
             !person.loveLanguage &&
             !person.favoriteFood &&
+            !person.favoriteDrink &&
+            !person.favoriteMovie &&
             !person.hometown &&
             !person.bio ? (
               <p className="person-card__empty">
@@ -353,6 +363,26 @@ export function PersonProfileCard({
             </label>
 
             <label className="field">
+              <span>Favourite drink</span>
+              <input
+                value={draft.favoriteDrink}
+                onChange={(event) => updateDraft('favoriteDrink', event.target.value)}
+                maxLength={40}
+                placeholder="e.g. iced matcha"
+              />
+            </label>
+
+            <label className="field">
+              <span>Favourite movie</span>
+              <input
+                value={draft.favoriteMovie}
+                onChange={(event) => updateDraft('favoriteMovie', event.target.value)}
+                maxLength={40}
+                placeholder="e.g. La La Land"
+              />
+            </label>
+
+            <label className="field">
               <span>Hometown</span>
               <input
                 value={draft.hometown}
@@ -363,13 +393,13 @@ export function PersonProfileCard({
             </label>
 
             <label className="field">
-              <span>About</span>
+              <span>Fun fact</span>
               <textarea
                 value={draft.bio}
                 onChange={(event) => updateDraft('bio', event.target.value)}
                 maxLength={160}
                 rows={3}
-                placeholder="A little note about them"
+                placeholder="Something fun about them"
               />
             </label>
           </div>

@@ -2347,31 +2347,80 @@ a.home-listening:focus-visible {
   height: 160px;
 }
 
-.person-card__seal {
-  position: absolute;
-  right: 18px;
-  bottom: 42px;
-  width: 54px;
-  height: 54px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-size: 1.2rem;
-  color: color-mix(in srgb, var(--person-accent) 70%, #272d88);
-  background:
-    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.75), transparent 55%),
-    color-mix(in srgb, var(--person-accent) 18%, rgba(255, 255, 255, 0.35));
-  border: 1.5px solid color-mix(in srgb, var(--person-accent) 40%, #fff);
-  box-shadow: 0 8px 18px rgba(39, 45, 136, 0.12);
-  opacity: 0.72;
-  transform: rotate(-12deg);
+.person-card__name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 
-.person-card--partner .person-card__seal {
-  right: auto;
-  left: 16px;
-  bottom: 44px;
-  transform: rotate(10deg);
+.person-card__name-row h2,
+.person-card__name-row .person-card__name-field {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.card-buddy {
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 8px rgba(39, 45, 136, 0.14));
+}
+
+.person-card__shine {
+  position: absolute;
+  inset: -40% -60%;
+  background: linear-gradient(
+    115deg,
+    transparent 32%,
+    rgba(255, 255, 255, 0.08) 42%,
+    rgba(255, 255, 255, 0.55) 49%,
+    rgba(255, 236, 210, 0.35) 52%,
+    rgba(255, 255, 255, 0.12) 58%,
+    transparent 68%
+  );
+  transform: translateX(-55%) rotate(8deg);
+  animation: person-card-shine 4.8s ease-in-out infinite;
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+}
+
+.person-card--partner .person-card__shine {
+  animation-delay: 1.4s;
+}
+
+@keyframes person-card-shine {
+  0%,
+  55% {
+    transform: translateX(-60%) rotate(8deg);
+    opacity: 0;
+  }
+  62% {
+    opacity: 1;
+  }
+  78% {
+    transform: translateX(55%) rotate(8deg);
+    opacity: 0.85;
+  }
+  88%,
+  100% {
+    transform: translateX(65%) rotate(8deg);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .person-card__shine {
+    animation: none;
+    opacity: 0;
+  }
+
+  .person-card__id-chip {
+    animation: none;
+  }
 }
 
 .person-card__id-bar,
@@ -2446,9 +2495,23 @@ a.home-listening:focus-visible {
   padding: 4px;
   background:
     linear-gradient(135deg, #f3e7a8, #c9f0ef 40%, #f7c4d8 70%, #d5c7ff);
+  background-size: 180% 180%;
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.55),
     0 4px 10px rgba(0, 0, 0, 0.18);
+  animation: person-card-chip 3.6s ease-in-out infinite;
+}
+
+@keyframes person-card-chip {
+  0%,
+  100% {
+    background-position: 0% 40%;
+    filter: saturate(1);
+  }
+  50% {
+    background-position: 100% 60%;
+    filter: saturate(1.25) brightness(1.08);
+  }
 }
 
 .person-card__id-chip span {
@@ -2560,20 +2623,7 @@ a.home-listening:focus-visible {
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
-.person-card__nickname {
-  margin: 0;
-  font-size: 0.86rem;
-  color: var(--person-soft);
-  line-height: 1.35;
-}
-
-.person-card__nickname--empty {
-  opacity: 0.7;
-  font-style: italic;
-}
-
-.person-card__name-field input,
-.person-card__nick-field input {
+.person-card__name-field input {
   width: 100%;
   min-width: 0;
   height: 36px;
@@ -2584,9 +2634,6 @@ a.home-listening:focus-visible {
   color: #1a1a1a;
   font: inherit;
   box-shadow: inset 0 0 0 1px rgba(39, 45, 136, 0.08);
-}
-
-.person-card__name-field input {
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 1.1rem;
@@ -2634,19 +2681,19 @@ a.home-listening:focus-visible {
   margin-top: 14px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 10px 16px;
 }
 
 .person-card__fact {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  padding: 10px 11px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
-  backdrop-filter: blur(6px);
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .person-card__fact--swatch,
@@ -2684,21 +2731,21 @@ a.home-listening:focus-visible {
 }
 
 .person-card__bio {
-  margin: 0;
-  padding: 12px 14px;
-  border-radius: 14px;
-  background: color-mix(in srgb, var(--person-accent) 14%, rgba(255, 255, 255, 0.45));
+  margin: 2px 0 0;
+  padding: 0;
+  border-radius: 0;
+  background: none;
   color: var(--person-ink);
   font-size: 0.9rem;
   line-height: 1.45;
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  border: none;
 }
 
 .person-card__empty {
   margin: 0;
-  padding: 12px 14px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.42);
+  padding: 0;
+  border-radius: 0;
+  background: none;
   color: var(--person-soft);
   font-size: 0.88rem;
   line-height: 1.4;

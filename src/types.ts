@@ -5,11 +5,12 @@ export interface PersonProfile {
   birthday: string
   /** Hex color, e.g. #e85d75 */
   favoriteColor: string
-  nickname: string
   loveLanguage: string
   favoriteFood: string
+  favoriteDrink: string
+  favoriteMovie: string
   hometown: string
-  /** Short about / bio */
+  /** Short fun fact */
   bio: string
 }
 
