@@ -181,7 +181,7 @@ export function PersonProfileCard({
                 ) : (
                   <h2>{displayName}</h2>
                 )}
-                {who === 'you' ? <CardBuddy who={who} /> : null}
+                <CardBuddy who={who} />
               </div>
             </div>
           </div>
