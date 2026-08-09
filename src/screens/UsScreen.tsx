@@ -6,6 +6,7 @@ import { PersonProfileCard } from '../components/PersonProfileCard'
 import { ScrollRegion } from '../components/ScrollRegion'
 import { SpotifyConnectCard } from '../components/SpotifyConnectCard'
 import { useCouple } from '../context/CoupleContext'
+import { cardMemberSlot } from '../components/CardBuddy'
 import { normalizeCoupleProfile } from '../storage'
 import type { CoupleProfile, PersonProfile } from '../types'
 
@@ -15,7 +16,7 @@ interface UsScreenProps {
 }
 
 export function UsScreen({ profile, onSave }: UsScreenProps) {
-  const { isCloud } = useCouple()
+  const { isCloud, slot } = useCouple()
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [since, setSince] = useState(profile.since)
   const [saved, setSaved] = useState(false)
@@ -104,6 +105,7 @@ export function UsScreen({ profile, onSave }: UsScreenProps) {
       <ScrollRegion className="screen__scroll us-profiles">
         <PersonProfileCard
           who="you"
+          memberSlot={cardMemberSlot('you', slot)}
           name={safeProfile.nameYou}
           person={safeProfile.you}
           busy={busy}
@@ -111,6 +113,7 @@ export function UsScreen({ profile, onSave }: UsScreenProps) {
         />
         <PersonProfileCard
           who="partner"
+          memberSlot={cardMemberSlot('partner', slot)}
           name={safeProfile.namePartner}
           person={safeProfile.partner}
           busy={busy}

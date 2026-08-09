@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { CameraIcon, CheckIcon, PencilIcon } from './Icons'
 import { CardBuddy } from './CardBuddy'
+import type { MemberSlot } from '../lib/coupleSlot'
 import {
   COLOR_PRESETS,
   LOVE_LANGUAGES,
@@ -13,6 +14,8 @@ import type { PersonProfile } from '../types'
 
 interface PersonProfileCardProps {
   who: 'you' | 'partner'
+  /** Absolute couple slot for this card (keeps buddy GIFs fixed across phones). */
+  memberSlot: MemberSlot
   name: string
   person: PersonProfile
   busy?: boolean
@@ -29,6 +32,7 @@ function memberSerial(who: 'you' | 'partner', name: string): string {
 
 export function PersonProfileCard({
   who,
+  memberSlot,
   name,
   person,
   busy = false,
@@ -181,7 +185,7 @@ export function PersonProfileCard({
                 ) : (
                   <h2>{displayName}</h2>
                 )}
-                <CardBuddy who={who} />
+                <CardBuddy memberSlot={memberSlot} />
               </div>
             </div>
           </div>
