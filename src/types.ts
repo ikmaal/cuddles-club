@@ -1,8 +1,25 @@
+export interface PersonProfile {
+  /** Data URL locally, or public storage URL when cloud-synced. */
+  photo: string
+  /** ISO date YYYY-MM-DD */
+  birthday: string
+  /** Hex color, e.g. #e85d75 */
+  favoriteColor: string
+  nickname: string
+  loveLanguage: string
+  favoriteFood: string
+  hometown: string
+  /** Short about / bio */
+  bio: string
+}
+
 export interface CoupleProfile {
   nameYou: string
   namePartner: string
   /** ISO date the two of you got together. Powers the days-together counter. */
   since: string
+  you: PersonProfile
+  partner: PersonProfile
 }
 
 export type Carer = 'you' | 'partner'

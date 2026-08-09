@@ -1,4 +1,10 @@
-import type { Carer, CoupleProfile, MoodEntry, MoodKey } from '../types'
+import {
+  detailsFromJson,
+  normalizePerson,
+  personDetailsOnly,
+  type PersonDetailsPayload,
+} from './personProfile'
+import type { Carer, CoupleProfile, MoodEntry, MoodKey, PersonProfile } from '../types'
 
 export type MemberSlot = 'a' | 'b'
 
@@ -16,18 +22,26 @@ export function profileFromCouple(
   memberBName: string,
   since: string | null,
   mySlot: MemberSlot,
+  memberA?: Partial<PersonProfile> | null,
+  memberB?: Partial<PersonProfile> | null,
 ): CoupleProfile {
+  const personA = normalizePerson(memberA)
+  const personB = normalizePerson(memberB)
   if (mySlot === 'a') {
     return {
       nameYou: memberAName,
       namePartner: memberBName,
       since: since ?? '',
+      you: personA,
+      partner: personB,
     }
   }
   return {
     nameYou: memberBName,
     namePartner: memberAName,
     since: since ?? '',
+    you: personB,
+    partner: personA,
   }
 }
 
@@ -47,6 +61,35 @@ export function profileToCoupleNames(
     member_b_name: profile.nameYou,
     since: profile.since || null,
   }
+}
+
+export function profileToCoupleDetails(
+  profile: CoupleProfile,
+  mySlot: MemberSlot,
+): { member_a_details: PersonDetailsPayload; member_b_details: PersonDetailsPayload } {
+  if (mySlot === 'a') {
+    return {
+      member_a_details: personDetailsOnly(profile.you),
+      member_b_details: personDetailsOnly(profile.partner),
+    }
+  }
+  return {
+    member_a_details: personDetailsOnly(profile.partner),
+    member_b_details: personDetailsOnly(profile.you),
+  }
+}
+
+export function coupleDetailsToPersons(
+  memberADetails: unknown,
+  memberBDetails: unknown,
+  memberAPhoto: string,
+  memberBPhoto: string,
+  mySlot: MemberSlot,
+): { you: PersonProfile; partner: PersonProfile } {
+  const personA = normalizePerson({ ...detailsFromJson(memberADetails), photo: memberAPhoto })
+  const personB = normalizePerson({ ...detailsFromJson(memberBDetails), photo: memberBPhoto })
+  if (mySlot === 'a') return { you: personA, partner: personB }
+  return { you: personB, partner: personA }
 }
 
 export function moodRowToEntry(

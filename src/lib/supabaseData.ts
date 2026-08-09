@@ -1,8 +1,10 @@
 import { STARTER_BUCKET, STARTER_IDEAS } from '../data'
 import {
+  coupleDetailsToPersons,
   moodEntryToRow,
   moodRowToEntry,
   profileFromCouple,
+  profileToCoupleDetails,
   profileToCoupleNames,
   slotToCarer,
   type MemberSlot,
@@ -31,7 +33,14 @@ export interface CoupleRow {
   since: string | null
   home_photo_path?: string | null
   home_photo_updated_at?: number | null
+  member_a_photo_path?: string | null
+  member_b_photo_path?: string | null
+  member_a_details?: Record<string, unknown> | null
+  member_b_details?: Record<string, unknown> | null
 }
+
+const COUPLE_SELECT =
+  'id, invite_code, member_a_name, member_b_name, since, home_photo_path, home_photo_updated_at, member_a_photo_path, member_b_photo_path, member_a_details, member_b_details'
 
 function requireClient() {
   if (!supabase) throw new Error('Supabase is not configured')
@@ -42,7 +51,7 @@ export async function fetchMembership(userId: string) {
   const client = requireClient()
   const { data, error } = await client
     .from('couple_members')
-    .select('couple_id, slot, couples(id, invite_code, member_a_name, member_b_name, since, home_photo_path, home_photo_updated_at)')
+    .select(`couple_id, slot, couples(${COUPLE_SELECT})`)
     .eq('user_id', userId)
     .maybeSingle()
 
@@ -80,27 +89,129 @@ export async function updateCoupleProfile(
   coupleId: string,
   profile: CoupleProfile,
   mySlot: MemberSlot,
-) {
+): Promise<CoupleProfile> {
   const client = requireClient()
   const names = profileToCoupleNames(profile, mySlot)
+  const details = profileToCoupleDetails(profile, mySlot)
+
+  const { data: existing, error: existingError } = await client
+    .from('couples')
+    .select('member_a_photo_path, member_b_photo_path')
+    .eq('id', coupleId)
+    .maybeSingle()
+  if (existingError) throw existingError
+
+  const memberAPhoto =
+    mySlot === 'a' ? profile.you.photo : profile.partner.photo
+  const memberBPhoto =
+    mySlot === 'a' ? profile.partner.photo : profile.you.photo
+
+  const nextAPath = await syncMemberPhotoPath(
+    coupleId,
+    'a',
+    memberAPhoto,
+    existing?.member_a_photo_path ?? null,
+  )
+  const nextBPath = await syncMemberPhotoPath(
+    coupleId,
+    'b',
+    memberBPhoto,
+    existing?.member_b_photo_path ?? null,
+  )
+
   const { error } = await client
     .from('couples')
     .update({
       member_a_name: names.member_a_name,
       member_b_name: names.member_b_name,
       since: names.since,
+      member_a_details: details.member_a_details,
+      member_b_details: details.member_b_details,
+      member_a_photo_path: nextAPath,
+      member_b_photo_path: nextBPath,
     })
     .eq('id', coupleId)
   if (error) throw error
+
+  return coupleToProfile(
+    {
+      id: coupleId,
+      invite_code: '',
+      member_a_name: names.member_a_name,
+      member_b_name: names.member_b_name,
+      since: names.since,
+      member_a_photo_path: nextAPath,
+      member_b_photo_path: nextBPath,
+      member_a_details: details.member_a_details,
+      member_b_details: details.member_b_details,
+    },
+    mySlot,
+  )
 }
 
 export function coupleToProfile(couple: CoupleRow, mySlot: MemberSlot): CoupleProfile {
-  return profileFromCouple(
+  const stamp = Date.now()
+  const photoA = couple.member_a_photo_path
+    ? homePhotoPublicUrl(couple.member_a_photo_path, stamp)
+    : ''
+  const photoB = couple.member_b_photo_path
+    ? homePhotoPublicUrl(couple.member_b_photo_path, stamp)
+    : ''
+  const people = coupleDetailsToPersons(
+    couple.member_a_details,
+    couple.member_b_details,
+    photoA,
+    photoB,
+    mySlot,
+  )
+  const base = profileFromCouple(
     couple.member_a_name,
     couple.member_b_name,
     couple.since,
     mySlot,
   )
+  return {
+    ...base,
+    you: people.you,
+    partner: people.partner,
+  }
+}
+
+async function syncMemberPhotoPath(
+  coupleId: string,
+  member: 'a' | 'b',
+  photo: string,
+  previousPath: string | null,
+): Promise<string | null> {
+  const client = requireClient()
+
+  if (!photo) {
+    if (previousPath) {
+      await client.storage.from(PHOTOSTRIP_BUCKET).remove([previousPath])
+    }
+    return null
+  }
+
+  if (!photo.startsWith('data:')) {
+    return previousPath
+  }
+
+  const updatedAt = Date.now()
+  const storagePath = `${coupleId}/member-${member}-photo-${updatedAt}.jpg`
+  const blob = dataUrlToBlob(photo)
+
+  const { error: uploadError } = await client.storage.from(PHOTOSTRIP_BUCKET).upload(storagePath, blob, {
+    contentType: 'image/jpeg',
+    upsert: false,
+    cacheControl: '3600',
+  })
+  if (uploadError) throw uploadError
+
+  if (previousPath && previousPath !== storagePath) {
+    await client.storage.from(PHOTOSTRIP_BUCKET).remove([previousPath])
+  }
+
+  return storagePath
 }
 
 export async function loadAllCoupleData(coupleId: string, mySlot: MemberSlot) {

@@ -9,6 +9,10 @@ create table if not exists public.couples (
   since date,
   home_photo_path text,
   home_photo_updated_at bigint,
+  member_a_photo_path text,
+  member_b_photo_path text,
+  member_a_details jsonb not null default '{}'::jsonb,
+  member_b_details jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now()
 );
 

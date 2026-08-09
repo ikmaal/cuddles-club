@@ -12,7 +12,7 @@ import type { Session, User } from '@supabase/supabase-js'
 import { STARTER_BUCKET, STARTER_IDEAS } from '../data'
 import { applyDecay, defaultCat } from '../hooks/useCat.logic'
 import { createId, todayKey } from '../hooks/useStored'
-import { defaultProfile, loadProfile, saveProfile } from '../storage'
+import { defaultProfile, loadProfile, normalizeCoupleProfile, saveProfile } from '../storage'
 import {
   coupleToProfile,
   createCoupleSpace,
@@ -331,6 +331,7 @@ export function CoupleProvider({ children }: { children: ReactNode }) {
     try {
       const couple = (await createCoupleSpace()) as CoupleRow
       await seedCoupleDefaults(couple.id)
+      await updateCoupleProfile(couple.id, profile, 'a')
       await loadCloud(user.id)
       return true
     } catch (err) {
@@ -339,7 +340,7 @@ export function CoupleProvider({ children }: { children: ReactNode }) {
     } finally {
       setAuthBusy(false)
     }
-  }, [user, loadCloud])
+  }, [user, loadCloud, profile])
 
   const joinSpace = useCallback(
     async (code: string) => {
@@ -362,14 +363,15 @@ export function CoupleProvider({ children }: { children: ReactNode }) {
 
   const updateProfile = useCallback(
     async (next: CoupleProfile) => {
-      const merged = {
+      const merged = normalizeCoupleProfile({
+        ...next,
         nameYou: next.nameYou.trim().slice(0, 18) || 'You',
         namePartner: next.namePartner.trim().slice(0, 18) || 'Partner',
-        since: next.since,
-      }
+      })
       setProfile(merged)
       if (isCloud && coupleId && slot) {
-        await updateCoupleProfile(coupleId, merged, slot)
+        const synced = await updateCoupleProfile(coupleId, merged, slot)
+        setProfile(synced)
       }
     },
     [isCloud, coupleId, slot],
