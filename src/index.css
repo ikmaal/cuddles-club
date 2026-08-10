@@ -157,6 +157,18 @@ html.strips-bg .app {
   box-shadow: none;
 }
 
+html.moments-bg,
+html.moments-bg body,
+html.moments-bg #root {
+  background-color: #efe4d4;
+  overscroll-behavior: none;
+}
+
+html.moments-bg .app {
+  background: #efe4d4;
+  box-shadow: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .app--home-bg .app__main,
   .app--home-bg .tabbar {

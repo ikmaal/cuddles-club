@@ -52,12 +52,20 @@ export interface CatState {
 
 export const XP_PER_LEVEL = 100
 
-export type Screen = 'home' | 'strips' | 'us'
+export type Screen = 'home' | 'strips' | 'us' | 'moments'
 
 export interface Photostrip {
   id: string
   title: string
   /** Compressed JPEG data URL for the strip face. */
+  image: string
+  createdAt: number
+}
+
+export interface Moment {
+  id: string
+  caption: string
+  /** Polaroid frame JPEG data URL (photo + vintage filter + border). */
   image: string
   createdAt: number
 }

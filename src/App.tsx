@@ -2,9 +2,11 @@ import { useCallback, useEffect, useState } from 'react'
 import { HeartIcon, HomeIcon } from './components/Icons'
 import { SplashIntro } from './components/SplashIntro'
 import { useCouple } from './context/CoupleContext'
+import { useMoments } from './hooks/useMoments'
 import { usePhotostrips } from './hooks/usePhotostrips'
 import { useProfile } from './hooks/useProfile'
 import { HomeScreen } from './screens/HomeScreen'
+import { MomentsScreen } from './screens/MomentsScreen'
 import { StripsScreen } from './screens/StripsScreen'
 import { UsScreen } from './screens/UsScreen'
 import type { Screen } from './types'
@@ -12,6 +14,7 @@ import './App.css'
 
 const NAVY = '#272d88'
 const STRIPS_BLACK = '#0c0c0c'
+const MOMENTS_CREAM = '#efe4d4'
 const SPLASH_STATUS_COLOR = '#ffffff'
 const DEFAULT_THEME_COLOR = '#E85D75'
 
@@ -36,6 +39,7 @@ export default function App() {
   const { ready } = useCouple()
   const { profile, updateProfile } = useProfile()
   const strips = usePhotostrips()
+  const moments = useMoments()
 
   const [screen, setScreen] = useState<Screen>('home')
   const [splashPhase, setSplashPhase] = useState<SplashPhase>('active')
@@ -44,6 +48,7 @@ export default function App() {
   const splashActive = splashPhase !== 'done'
   const homeLive = screen === 'home' && splashPhase === 'done'
   const navyLive = (screen === 'home' || screen === 'us') && splashPhase === 'done'
+  const momentsLive = screen === 'moments' && splashPhase === 'done'
   const shellVisible = screen === 'us' ? navyLive : homeVisible
   const showTabs = !splashActive && ready && (screen === 'home' || screen === 'us')
 
@@ -55,6 +60,7 @@ export default function App() {
     root.classList.toggle('home-bg', navyLive)
     root.classList.toggle('home-image', homeLive)
     root.classList.toggle('strips-bg', screen === 'strips' && !splashActive)
+    root.classList.toggle('moments-bg', momentsLive)
     root.style.setProperty('--home-wallpaper', wallpaper)
 
     if (navyLive) {
@@ -63,6 +69,9 @@ export default function App() {
     } else if (screen === 'strips' && !splashActive) {
       setThemeColor(STRIPS_BLACK)
       setStatusBarStyle('black-translucent')
+    } else if (momentsLive) {
+      setThemeColor(MOMENTS_CREAM)
+      setStatusBarStyle('default')
     } else if (splashActive) {
       setThemeColor(SPLASH_STATUS_COLOR)
       setStatusBarStyle('default')
@@ -70,7 +79,7 @@ export default function App() {
       setThemeColor(DEFAULT_THEME_COLOR)
       setStatusBarStyle('default')
     }
-  }, [splashActive, navyLive, homeLive, screen])
+  }, [splashActive, navyLive, homeLive, momentsLive, screen])
 
   useEffect(() => {
     if (screen !== 'home' || splashPhase !== 'done') {
@@ -103,7 +112,7 @@ export default function App() {
 
   return (
     <div
-      className={`app${navyLive ? ' app--home-bg' : ''}${homeLive ? ' app--home-image' : ''}${shellVisible ? ' app--home-visible' : ''}${screen === 'strips' && !splashActive ? ' app--strips' : ''}${splashActive ? ' app--splash' : ''}`}
+      className={`app${navyLive ? ' app--home-bg' : ''}${homeLive ? ' app--home-image' : ''}${shellVisible ? ' app--home-visible' : ''}${screen === 'strips' && !splashActive ? ' app--strips' : ''}${momentsLive ? ' app--moments' : ''}${splashActive ? ' app--splash' : ''}`}
     >
       {splashActive ? (
         <SplashIntro
@@ -136,6 +145,19 @@ export default function App() {
                 onRename={strips.rename}
                 onRemove={strips.remove}
                 onClearError={() => strips.setError()}
+                onBack={goHome}
+              />
+            ) : null}
+
+            {screen === 'moments' ? (
+              <MomentsScreen
+                moments={moments.moments}
+                ready={moments.ready}
+                busy={moments.busy}
+                error={moments.error}
+                onAdd={moments.addPolaroid}
+                onRemove={moments.remove}
+                onClearError={() => moments.setError('')}
                 onBack={goHome}
               />
             ) : null}

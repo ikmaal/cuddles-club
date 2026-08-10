@@ -207,3 +207,21 @@ export function SettingsIcon({ size }: IconProps) {
     </Frame>
   )
 }
+
+export function PolaroidIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      {/* Outer polaroid body */}
+      <path
+        d="M6.2 3.2h11.6c.7 0 1.2.5 1.2 1.2v15.2c0 .7-.5 1.2-1.2 1.2H6.2c-.7 0-1.2-.5-1.2-1.2V4.4c0-.7.5-1.2 1.2-1.2z"
+        fill="currentColor"
+        fillOpacity="0.14"
+        stroke="currentColor"
+      />
+      {/* Photo window */}
+      <rect x="7.2" y="4.6" width="9.6" height="9.6" rx="0.6" fill="currentColor" fillOpacity="0.28" stroke="none" />
+      {/* Caption band hint */}
+      <path d="M8.2 17.2h7.6" opacity="0.45" />
+    </Frame>
+  )
+}
