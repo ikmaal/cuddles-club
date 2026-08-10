@@ -2378,6 +2378,15 @@ a.home-listening:focus-visible {
   cursor: pointer;
   border-radius: 12px;
   line-height: 0;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.card-buddy__btn:focus,
+.card-buddy__btn:focus-visible {
+  outline: none;
+  outline-offset: 0;
+  box-shadow: none;
 }
 
 .card-buddy__btn img {
