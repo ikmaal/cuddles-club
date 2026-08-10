@@ -143,7 +143,7 @@ export function PolaroidCamera({ busy = false, onSave, onClose }: PolaroidCamera
                   : 'Instant camera'}
           </h2>
         </div>
-        {live && phase !== 'denied' ? (
+        {live ? (
           <button
             type="button"
             className="polaroid-cam__text-btn"
