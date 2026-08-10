@@ -2370,6 +2370,28 @@ a.home-listening:focus-visible {
   filter: drop-shadow(0 4px 8px rgba(39, 45, 136, 0.14));
 }
 
+.card-buddy__btn {
+  pointer-events: auto;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 12px;
+  line-height: 0;
+}
+
+.card-buddy__btn img {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+}
+
+.card-buddy__btn:active {
+  transform: scale(0.94);
+}
+
 .person-card__shine {
   position: absolute;
   inset: -40% -60%;

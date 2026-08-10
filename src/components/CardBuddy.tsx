@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import type { MemberSlot } from '../lib/coupleSlot'
 
 interface CardBuddyProps {
@@ -8,20 +9,49 @@ interface CardBuddyProps {
 
 const BUDDY_SRC: Record<MemberSlot, string> = {
   // Space creator is slot A — keep Dudu fixed to that person on every phone.
-  a: 'dudu-naughty.gif',
+  a: 'dudu-underwear.gif',
   b: 'beam-love.gif',
 }
 
+const BUDDY_SOUND: Record<MemberSlot, string> = {
+  a: 'dudu-sound.mp3',
+  b: 'bubu-sound.mp3',
+}
+
+const BUDDY_LABEL: Record<MemberSlot, string> = {
+  a: 'Play Dudu sound',
+  b: 'Play Bubu sound',
+}
+
 export function CardBuddy({ memberSlot, className }: CardBuddyProps) {
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const src = `${import.meta.env.BASE_URL}${BUDDY_SRC[memberSlot]}`
+  const soundSrc = `${import.meta.env.BASE_URL}${BUDDY_SOUND[memberSlot]}`
+  const classNames = `card-buddy card-buddy--${memberSlot} card-buddy--sound${
+    className ? ` ${className}` : ''
+  }`
+
+  function playSound() {
+    const audio = audioRef.current
+    if (!audio) return
+    audio.currentTime = 0
+    void audio.play().catch(() => {
+      // Click is a user gesture; ignore rare play() failures.
+    })
+  }
+
   return (
-    <img
-      className={`card-buddy card-buddy--${memberSlot}${className ? ` ${className}` : ''}`}
-      src={`${import.meta.env.BASE_URL}${BUDDY_SRC[memberSlot]}`}
-      alt=""
-      width={56}
-      height={56}
-      decoding="async"
-    />
+    <>
+      <button
+        type="button"
+        className={`${classNames} card-buddy__btn`}
+        onClick={playSound}
+        aria-label={BUDDY_LABEL[memberSlot]}
+      >
+        <img src={src} alt="" width={56} height={56} decoding="async" />
+      </button>
+      <audio ref={audioRef} src={soundSrc} preload="auto" />
+    </>
   )
 }
 
