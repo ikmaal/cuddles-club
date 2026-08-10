@@ -1,13 +1,11 @@
-/** Proportions matched to a classic instant print (thin sides/top, deep caption band). */
+/** Proportions matched to a classic instant print (thin sides/top, compact caption band). */
 export const POLAROID_W = 750
-export const PHOTO_INSET = 34
-export const PHOTO_TOP = 34
+export const PHOTO_INSET = 22
+export const PHOTO_TOP = 22
 export const PHOTO_SIZE = POLAROID_W - PHOTO_INSET * 2
-/** Bottom white caption strip — ~28% of total height. */
-export const CAPTION_BAND = Math.round(POLAROID_W * 0.37)
+/** Bottom white strip — room to write with the marker. */
+export const CAPTION_BAND = Math.round(POLAROID_W * 0.18)
 export const POLAROID_H = PHOTO_TOP + PHOTO_SIZE + CAPTION_BAND
-/** Y-ratio where the photo ends / caption band begins (for re-stamping captions). */
-export const CAPTION_BAND_TOP_RATIO = (PHOTO_TOP + PHOTO_SIZE) / POLAROID_H
 
 /**
  * Capture a clean camera frame and mount it inside a polaroid paper frame.
@@ -16,8 +14,6 @@ export const CAPTION_BAND_TOP_RATIO = (PHOTO_TOP + PHOTO_SIZE) / POLAROID_H
 export async function composePolaroid(
   source: CanvasImageSource,
   options?: {
-    caption?: string
-    takenAt?: number
     mirror?: boolean
     sourceWidth?: number
     sourceHeight?: number
@@ -27,8 +23,6 @@ export async function composePolaroid(
 ): Promise<string> {
   const mirror = options?.mirror ?? false
   const flash = options?.flash ?? true
-  const takenAt = options?.takenAt ?? Date.now()
-  const caption = options?.caption?.trim() ?? ''
 
   const srcW =
     options?.sourceWidth ??
@@ -91,25 +85,6 @@ export async function composePolaroid(
 
   ctx.drawImage(photo, PHOTO_INSET, PHOTO_TOP)
 
-  ctx.fillStyle = '#2a2a2a'
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  const captionCenterY = PHOTO_TOP + PHOTO_SIZE + CAPTION_BAND / 2
-
-  if (caption) {
-    ctx.font = '600 36px "Fredoka", system-ui, sans-serif'
-    ctx.fillText(truncate(caption, 28), POLAROID_W / 2, captionCenterY - 16)
-    ctx.font = '500 20px "Fredoka", system-ui, sans-serif'
-    ctx.globalAlpha = 0.5
-    ctx.fillText(formatMomentDate(takenAt), POLAROID_W / 2, captionCenterY + 24)
-    ctx.globalAlpha = 1
-  } else {
-    ctx.font = '500 24px "Fredoka", system-ui, sans-serif'
-    ctx.globalAlpha = 0.5
-    ctx.fillText(formatMomentDate(takenAt), POLAROID_W / 2, captionCenterY)
-    ctx.globalAlpha = 1
-  }
-
   ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)'
   ctx.lineWidth = 2
   ctx.strokeRect(1, 1, POLAROID_W - 2, POLAROID_H - 2)
@@ -151,16 +126,4 @@ function applyFlashLook(ctx: CanvasRenderingContext2D, w: number, h: number) {
 
 function clamp(value: number) {
   return Math.max(0, Math.min(255, Math.round(value)))
-}
-
-function truncate(text: string, max: number) {
-  return text.length <= max ? text : `${text.slice(0, max - 1)}…`
-}
-
-function formatMomentDate(timestamp: number) {
-  return new Date(timestamp).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
 }

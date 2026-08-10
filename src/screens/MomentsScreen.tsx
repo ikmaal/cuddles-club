@@ -278,7 +278,6 @@ export function MomentsScreen({
                 <div className="polaroid-print polaroid-print--viewer">
                   <img src={viewer.image} alt={viewer.caption || 'Polaroid moment'} />
                 </div>
-                {viewer.caption ? <p className="moments-viewer__caption">{viewer.caption}</p> : null}
               </div>
             </div>,
             document.body,

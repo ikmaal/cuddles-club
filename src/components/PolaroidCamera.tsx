@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
-import { CAPTION_BAND_TOP_RATIO, composePolaroid } from '../composePolaroid'
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
+import { composePolaroid } from '../composePolaroid'
 
 interface PolaroidCameraProps {
   busy?: boolean
@@ -9,15 +9,24 @@ interface PolaroidCameraProps {
 
 type Phase = 'boot' | 'ready' | 'flash' | 'developing' | 'review' | 'denied'
 
+const MARKER_COLOR = '#111111'
+/** Stroke width relative to polaroid canvas width (~750). */
+const MARKER_WIDTH_RATIO = 0.018
+
 export function PolaroidCamera({ busy = false, onSave, onClose }: PolaroidCameraProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
+  const drawCanvasRef = useRef<HTMLCanvasElement>(null)
+  const baseImageRef = useRef<HTMLImageElement | null>(null)
+  const drawingRef = useRef(false)
+  const lastPointRef = useRef<{ x: number; y: number } | null>(null)
+
   const [phase, setPhase] = useState<Phase>('boot')
   const [facing, setFacing] = useState<'user' | 'environment'>('environment')
   const [cameraKey, setCameraKey] = useState(0)
   const [error, setError] = useState('')
   const [polaroid, setPolaroid] = useState('')
-  const [caption, setCaption] = useState('')
+  const [hasInk, setHasInk] = useState(false)
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -64,6 +73,106 @@ export function PolaroidCamera({ busy = false, onSave, onClose }: PolaroidCamera
     }
   }, [facing, cameraKey])
 
+  useEffect(() => {
+    if (phase !== 'review' || !polaroid) return
+    let cancelled = false
+
+    void (async () => {
+      try {
+        const img = await loadImage(polaroid)
+        if (cancelled) return
+        baseImageRef.current = img
+        const canvas = drawCanvasRef.current
+        if (!canvas) return
+        canvas.width = img.naturalWidth
+        canvas.height = img.naturalHeight
+        const ctx = canvas.getContext('2d')
+        if (!ctx) return
+        ctx.drawImage(img, 0, 0)
+        setHasInk(false)
+      } catch {
+        if (!cancelled) setError('Could not open that print for marking.')
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [phase, polaroid])
+
+  function canvasPoint(event: ReactPointerEvent<HTMLCanvasElement>) {
+    const canvas = drawCanvasRef.current
+    if (!canvas) return null
+    const rect = canvas.getBoundingClientRect()
+    if (!rect.width || !rect.height) return null
+    return {
+      x: ((event.clientX - rect.left) / rect.width) * canvas.width,
+      y: ((event.clientY - rect.top) / rect.height) * canvas.height,
+    }
+  }
+
+  function markerStyle(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+    ctx.strokeStyle = MARKER_COLOR
+    ctx.fillStyle = MARKER_COLOR
+    ctx.lineWidth = Math.max(8, canvas.width * MARKER_WIDTH_RATIO)
+    ctx.lineCap = 'round'
+    ctx.lineJoin = 'round'
+  }
+
+  function beginStroke(event: ReactPointerEvent<HTMLCanvasElement>) {
+    if (saving || busy) return
+    const canvas = drawCanvasRef.current
+    const ctx = canvas?.getContext('2d')
+    const point = canvasPoint(event)
+    if (!canvas || !ctx || !point) return
+
+    event.currentTarget.setPointerCapture(event.pointerId)
+    drawingRef.current = true
+    lastPointRef.current = point
+    markerStyle(ctx, canvas)
+    ctx.beginPath()
+    ctx.arc(point.x, point.y, ctx.lineWidth / 2, 0, Math.PI * 2)
+    ctx.fill()
+    setHasInk(true)
+  }
+
+  function moveStroke(event: ReactPointerEvent<HTMLCanvasElement>) {
+    if (!drawingRef.current) return
+    const canvas = drawCanvasRef.current
+    const ctx = canvas?.getContext('2d')
+    const point = canvasPoint(event)
+    const last = lastPointRef.current
+    if (!canvas || !ctx || !point || !last) return
+
+    markerStyle(ctx, canvas)
+    ctx.beginPath()
+    ctx.moveTo(last.x, last.y)
+    ctx.lineTo(point.x, point.y)
+    ctx.stroke()
+    lastPointRef.current = point
+  }
+
+  function endStroke(event: ReactPointerEvent<HTMLCanvasElement>) {
+    if (!drawingRef.current) return
+    drawingRef.current = false
+    lastPointRef.current = null
+    try {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    } catch {
+      /* already released */
+    }
+  }
+
+  function clearInk() {
+    const canvas = drawCanvasRef.current
+    const img = baseImageRef.current
+    const ctx = canvas?.getContext('2d')
+    if (!canvas || !img || !ctx) return
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    ctx.drawImage(img, 0, 0)
+    setHasInk(false)
+  }
+
   async function snap() {
     const video = videoRef.current
     if (!video || phase !== 'ready') return
@@ -72,7 +181,6 @@ export function PolaroidCamera({ busy = false, onSave, onClose }: PolaroidCamera
     const track = streamRef.current?.getVideoTracks()[0]
     const torchOn = await setTorch(track, true)
 
-    // Let the flash / torch settle, then grab the frame.
     window.setTimeout(() => {
       void (async () => {
         try {
@@ -80,7 +188,6 @@ export function PolaroidCamera({ busy = false, onSave, onClose }: PolaroidCamera
             mirror: facing === 'user',
             sourceWidth: video.videoWidth,
             sourceHeight: video.videoHeight,
-            takenAt: Date.now(),
             flash: true,
           })
           await setTorch(track, false)
@@ -88,8 +195,7 @@ export function PolaroidCamera({ busy = false, onSave, onClose }: PolaroidCamera
           streamRef.current?.getTracks().forEach((t) => t.stop())
           streamRef.current = null
           setPolaroid(image)
-          setCaption('')
-          // Brief develop beat, then review
+          setHasInk(false)
           window.setTimeout(() => setPhase('review'), torchOn ? 280 : 420)
         } catch (err) {
           await setTorch(track, false)
@@ -101,14 +207,13 @@ export function PolaroidCamera({ busy = false, onSave, onClose }: PolaroidCamera
   }
 
   async function save() {
-    if (!polaroid || saving || busy) return
+    const canvas = drawCanvasRef.current
+    if (!canvas || saving || busy) return
     setSaving(true)
     setError('')
     try {
-      const finalImage = caption.trim()
-        ? await stampCaption(polaroid, caption.trim())
-        : polaroid
-      const ok = await onSave(finalImage, caption)
+      const finalImage = canvas.toDataURL('image/jpeg', 0.92)
+      const ok = await onSave(finalImage, '')
       if (ok) onClose()
     } finally {
       setSaving(false)
@@ -117,7 +222,8 @@ export function PolaroidCamera({ busy = false, onSave, onClose }: PolaroidCamera
 
   function retake() {
     setPolaroid('')
-    setCaption('')
+    setHasInk(false)
+    baseImageRef.current = null
     setError('')
     setCameraKey((value) => value + 1)
   }
@@ -135,7 +241,7 @@ export function PolaroidCamera({ busy = false, onSave, onClose }: PolaroidCamera
           <p className="eyebrow">Moments</p>
           <h2>
             {phase === 'review'
-              ? 'Your print'
+              ? 'Write on it'
               : phase === 'developing'
                 ? 'Developing…'
                 : phase === 'denied'
@@ -150,6 +256,15 @@ export function PolaroidCamera({ busy = false, onSave, onClose }: PolaroidCamera
             onClick={() => setFacing((prev) => (prev === 'user' ? 'environment' : 'user'))}
           >
             Flip
+          </button>
+        ) : phase === 'review' ? (
+          <button
+            type="button"
+            className="polaroid-cam__text-btn"
+            onClick={clearInk}
+            disabled={!hasInk || saving || busy}
+          >
+            Erase
           </button>
         ) : (
           <span className="polaroid-cam__spacer" />
@@ -210,18 +325,21 @@ export function PolaroidCamera({ busy = false, onSave, onClose }: PolaroidCamera
 
       {phase === 'review' && polaroid ? (
         <div className="polaroid-cam__review">
-          <div className="polaroid-print polaroid-print--reveal">
-            <img src={polaroid} alt="Developed polaroid" />
-          </div>
-          <label className="polaroid-cam__caption field">
-            <span>Caption</span>
-            <input
-              value={caption}
-              onChange={(event) => setCaption(event.target.value)}
-              maxLength={48}
-              placeholder="Optional note on the print"
+          <div className="polaroid-cam__draw-wrap">
+            <canvas
+              ref={drawCanvasRef}
+              className="polaroid-cam__draw-canvas"
+              onPointerDown={beginStroke}
+              onPointerMove={moveStroke}
+              onPointerUp={endStroke}
+              onPointerCancel={endStroke}
+              aria-label="Draw on polaroid with black marker"
             />
-          </label>
+          </div>
+          <p className="polaroid-cam__marker-hint">
+            <span className="polaroid-cam__marker-dot" aria-hidden />
+            Black marker — scribble anywhere on the print
+          </p>
           <div className="polaroid-cam__actions">
             <button
               type="button"
@@ -244,42 +362,6 @@ export function PolaroidCamera({ busy = false, onSave, onClose }: PolaroidCamera
       ) : null}
     </div>
   )
-}
-
-async function stampCaption(polaroidDataUrl: string, caption: string): Promise<string> {
-  const img = await loadImage(polaroidDataUrl)
-  const canvas = document.createElement('canvas')
-  canvas.width = img.width
-  canvas.height = img.height
-  const ctx = canvas.getContext('2d')
-  if (!ctx) return polaroidDataUrl
-
-  ctx.drawImage(img, 0, 0)
-
-  const bandTop = Math.round(img.height * CAPTION_BAND_TOP_RATIO)
-  ctx.fillStyle = '#ffffff'
-  ctx.fillRect(0, bandTop, img.width, img.height - bandTop)
-
-  ctx.fillStyle = '#2a2a2a'
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  const mid = bandTop + (img.height - bandTop) / 2
-  ctx.font = '600 36px "Fredoka", system-ui, sans-serif'
-  ctx.fillText(caption.slice(0, 28), img.width / 2, mid - 16)
-  ctx.font = '500 20px "Fredoka", system-ui, sans-serif'
-  ctx.globalAlpha = 0.5
-  ctx.fillText(
-    new Date().toLocaleDateString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    }),
-    img.width / 2,
-    mid + 24,
-  )
-  ctx.globalAlpha = 1
-
-  return canvas.toDataURL('image/jpeg', 0.9)
 }
 
 function loadImage(src: string): Promise<HTMLImageElement> {

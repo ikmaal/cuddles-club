@@ -5822,8 +5822,8 @@ a.home-listening:focus-visible {
   display: block;
   width: 100%;
   background: #ffffff;
-  /* Match classic instant print: thin top/sides, deep caption band */
-  padding: 4.5% 4.5% 28%;
+  /* Match classic instant print: thinner border, larger photo */
+  padding: 3% 3% 15.5%;
   border-radius: 2px;
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.85) inset,
@@ -5840,7 +5840,7 @@ a.home-listening:focus-visible {
 
 .polaroid-print--empty {
   width: min(220px, 70vw);
-  padding-bottom: 28%;
+  padding-bottom: 15.5%;
 }
 
 .polaroid-print__photo {
@@ -6095,19 +6095,45 @@ a.home-listening:focus-visible {
   padding: 8px 0 12px;
 }
 
-.polaroid-cam__caption {
-  width: min(320px, 100%);
-  color: #f7f1e6;
+.polaroid-cam__draw-wrap {
+  width: min(320px, 82vw);
+  margin: 0 auto;
+  border-radius: 2px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.85) inset,
+    0 12px 28px rgba(0, 0, 0, 0.45);
+  animation: polaroid-reveal 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  background: #fff;
+  touch-action: none;
 }
 
-.polaroid-cam__caption > span {
-  color: #d8b8a0;
+.polaroid-cam__draw-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  vertical-align: top;
+  cursor: crosshair;
+  touch-action: none;
+  border-radius: 2px;
 }
 
-.polaroid-cam__caption input {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: transparent;
-  color: #f7f1e6;
+.polaroid-cam__marker-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: rgba(247, 241, 230, 0.72);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.polaroid-cam__marker-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #111;
+  box-shadow: 0 0 0 2px rgba(247, 241, 230, 0.35);
+  flex-shrink: 0;
 }
 
 .polaroid-cam__actions {
