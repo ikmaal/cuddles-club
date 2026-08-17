@@ -20,6 +20,7 @@ The home hub has a service grid, a spotlight rail, and a summary of the two of y
 | Countdowns | Days until birthdays, trips, and anniversaries |
 | Daily Q | One rotating question a day, answered by both of you |
 | Mood | A quick check-in for each of you |
+| Places | Shared food journal — Been / Want, list + map |
 
 The **Us** tab holds your names, cloud sync, and couple settings.
 
@@ -58,7 +59,13 @@ Shows what each of you is listening to under **Activities**.
 4. In Supabase SQL Editor, run [`supabase/listening_status.sql`](supabase/listening_status.sql) if your project already had the older schema.
 5. Also run [`supabase/home_photo.sql`](supabase/home_photo.sql) so the shared home photo can sync between both phones.
 6. Run [`supabase/booth_poses.sql`](supabase/booth_poses.sql) for the shared photobooth pose gallery.
-7. On the **Us** tab, connect Spotify on each phone (and stay signed into cloud sync so your partner can see you).
+7. Run [`supabase/academics.sql`](supabase/academics.sql) for the Academics modules & materials sync.
+8. If Academics already existed, also run [`supabase/academics_extracted_text.sql`](supabase/academics_extracted_text.sql) so Pip can read uploaded PDFs.
+9. Run [`supabase/places.sql`](supabase/places.sql) for the shared Places food journal.
+10. Deploy Pip’s brain (optional Phase 3):
+   - `supabase functions deploy study-agent`
+   - Set secret `ANTHROPIC_API_KEY` in Supabase Edge Function secrets
+11. On the **Us** tab, connect Spotify on each phone (and stay signed into cloud sync so your partner can see you).
 
 For local testing, open the app at `http://127.0.0.1:5173/cuddles-club/` (or tap Connect from `localhost` — the app hops to `127.0.0.1` automatically).
 

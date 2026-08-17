@@ -118,31 +118,25 @@ html:not(.home-bg):not(.splash-active) body {
 html.home-bg,
 html.home-bg body,
 html.home-bg #root {
-  background-color: var(--home-navy);
+  background-color: #ffffff;
   overscroll-behavior: none;
 }
 
 html.home-bg .app {
-  background: var(--home-navy);
+  background: #ffffff;
   box-shadow: none;
 }
 
 html.home-bg.home-image,
 html.home-bg.home-image body,
 html.home-bg.home-image #root {
-  background-color: var(--home-navy);
-  background-image: var(--home-wallpaper);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background-color: #ffffff;
+  background-image: none;
 }
 
 html.home-bg.home-image .app {
-  background-color: transparent;
-  background-image: var(--home-wallpaper);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background-color: #ffffff;
+  background-image: none;
 }
 
 html.strips-bg,
@@ -166,6 +160,30 @@ html.moments-bg #root {
 
 html.moments-bg .app {
   background: #efe4d4;
+  box-shadow: none;
+}
+
+html.academics-bg,
+html.academics-bg body,
+html.academics-bg #root {
+  background-color: #ffffff;
+  overscroll-behavior: none;
+}
+
+html.academics-bg .app {
+  background: #ffffff;
+  box-shadow: none;
+}
+
+html.places-bg,
+html.places-bg body,
+html.places-bg #root {
+  background-color: #fafaf8;
+  overscroll-behavior: none;
+}
+
+html.places-bg .app {
+  background: #fafaf8;
   box-shadow: none;
 }
 

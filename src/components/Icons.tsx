@@ -225,3 +225,23 @@ export function PolaroidIcon({ size }: IconProps) {
     </Frame>
   )
 }
+
+export function AcademicsIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="M4 19.5V6.2c0-.7.4-1.3 1-1.6L12 2.5l7 2.1c.6.3 1 .9 1 1.6v13.3" />
+      <path d="M12 2.5v17" />
+      <path d="M4 19.5 12 17l8 2.5" />
+    </Frame>
+  )
+}
+
+export function PlacesIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <circle cx="12" cy="12" r="7.5" />
+      <path d="M9.2 10.2v5.2M9.2 10.2c.9-.8 2-.8 2.6 0 .6.8.4 1.6 0 2.1L9.2 15.4" />
+      <path d="M14.8 9.6v6.2M13.4 9.6h2.8" />
+    </Frame>
+  )
+}

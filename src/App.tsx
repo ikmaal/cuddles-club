@@ -2,19 +2,25 @@ import { useCallback, useEffect, useState } from 'react'
 import { HeartIcon, HomeIcon } from './components/Icons'
 import { SplashIntro } from './components/SplashIntro'
 import { useCouple } from './context/CoupleContext'
+import { useAcademics } from './hooks/useAcademics'
 import { useMoments } from './hooks/useMoments'
 import { usePhotostrips } from './hooks/usePhotostrips'
+import { usePlaces } from './hooks/usePlaces'
 import { useProfile } from './hooks/useProfile'
+import { AcademicsScreen } from './screens/AcademicsScreen'
 import { HomeScreen } from './screens/HomeScreen'
 import { MomentsScreen } from './screens/MomentsScreen'
+import { PlacesScreen } from './screens/PlacesScreen'
 import { StripsScreen } from './screens/StripsScreen'
 import { UsScreen } from './screens/UsScreen'
 import type { Screen } from './types'
 import './App.css'
 
-const NAVY = '#272d88'
+const HOME_WHITE = '#ffffff'
 const STRIPS_BLACK = '#0c0c0c'
 const MOMENTS_CREAM = '#efe4d4'
+const ACADEMICS_WHITE = '#ffffff'
+const PLACES_PAPER = '#fafaf8'
 const SPLASH_STATUS_COLOR = '#ffffff'
 const DEFAULT_THEME_COLOR = '#E85D75'
 
@@ -40,6 +46,8 @@ export default function App() {
   const { profile, updateProfile } = useProfile()
   const strips = usePhotostrips()
   const moments = useMoments()
+  const academics = useAcademics()
+  const places = usePlaces()
 
   const [screen, setScreen] = useState<Screen>('home')
   const [splashPhase, setSplashPhase] = useState<SplashPhase>('active')
@@ -49,6 +57,8 @@ export default function App() {
   const homeLive = screen === 'home' && splashPhase === 'done'
   const navyLive = (screen === 'home' || screen === 'us') && splashPhase === 'done'
   const momentsLive = screen === 'moments' && splashPhase === 'done'
+  const academicsLive = screen === 'academics' && splashPhase === 'done'
+  const placesLive = screen === 'places' && splashPhase === 'done'
   const shellVisible = screen === 'us' ? navyLive : homeVisible
   const showTabs = !splashActive && ready && (screen === 'home' || screen === 'us')
 
@@ -61,16 +71,24 @@ export default function App() {
     root.classList.toggle('home-image', homeLive)
     root.classList.toggle('strips-bg', screen === 'strips' && !splashActive)
     root.classList.toggle('moments-bg', momentsLive)
+    root.classList.toggle('academics-bg', academicsLive)
+    root.classList.toggle('places-bg', placesLive)
     root.style.setProperty('--home-wallpaper', wallpaper)
 
     if (navyLive) {
-      setThemeColor(NAVY)
-      setStatusBarStyle('black-translucent')
+      setThemeColor(HOME_WHITE)
+      setStatusBarStyle('default')
     } else if (screen === 'strips' && !splashActive) {
       setThemeColor(STRIPS_BLACK)
       setStatusBarStyle('black-translucent')
     } else if (momentsLive) {
       setThemeColor(MOMENTS_CREAM)
+      setStatusBarStyle('default')
+    } else if (academicsLive) {
+      setThemeColor(ACADEMICS_WHITE)
+      setStatusBarStyle('default')
+    } else if (placesLive) {
+      setThemeColor(PLACES_PAPER)
       setStatusBarStyle('default')
     } else if (splashActive) {
       setThemeColor(SPLASH_STATUS_COLOR)
@@ -79,7 +97,7 @@ export default function App() {
       setThemeColor(DEFAULT_THEME_COLOR)
       setStatusBarStyle('default')
     }
-  }, [splashActive, navyLive, homeLive, momentsLive, screen])
+  }, [splashActive, navyLive, homeLive, momentsLive, academicsLive, placesLive, screen])
 
   useEffect(() => {
     if (screen !== 'home' || splashPhase !== 'done') {
@@ -112,7 +130,7 @@ export default function App() {
 
   return (
     <div
-      className={`app${navyLive ? ' app--home-bg' : ''}${homeLive ? ' app--home-image' : ''}${shellVisible ? ' app--home-visible' : ''}${screen === 'strips' && !splashActive ? ' app--strips' : ''}${momentsLive ? ' app--moments' : ''}${splashActive ? ' app--splash' : ''}`}
+      className={`app${navyLive ? ' app--home-bg' : ''}${homeLive ? ' app--home-image' : ''}${shellVisible ? ' app--home-visible' : ''}${screen === 'strips' && !splashActive ? ' app--strips' : ''}${momentsLive ? ' app--moments' : ''}${academicsLive ? ' app--academics' : ''}${placesLive ? ' app--places' : ''}${splashActive ? ' app--splash' : ''}`}
     >
       {splashActive ? (
         <SplashIntro
@@ -160,6 +178,14 @@ export default function App() {
                 onClearError={() => moments.setError('')}
                 onBack={goHome}
               />
+            ) : null}
+
+            {screen === 'academics' ? (
+              <AcademicsScreen {...academics} onBack={goHome} />
+            ) : null}
+
+            {screen === 'places' ? (
+              <PlacesScreen {...places} onBack={goHome} />
             ) : null}
 
             {screen === 'us' ? (

@@ -52,7 +52,7 @@ export interface CatState {
 
 export const XP_PER_LEVEL = 100
 
-export type Screen = 'home' | 'strips' | 'us' | 'moments'
+export type Screen = 'home' | 'strips' | 'us' | 'moments' | 'academics' | 'places'
 
 export interface Photostrip {
   id: string
@@ -67,6 +67,59 @@ export interface Moment {
   caption: string
   /** Polaroid frame JPEG data URL (photo + vintage filter + border). */
   image: string
+  createdAt: number
+}
+
+export type AcademicMaterialKind = 'lecture' | 'tutorial' | 'assignment' | 'notes'
+
+export interface AcademicModule {
+  id: string
+  /** Viewer-relative owner: your courses vs partner's. */
+  owner: Carer
+  /** Short code e.g. CS101 */
+  code: string
+  title: string
+  /** Optional term label e.g. Sem 1 2026 */
+  term: string
+  createdAt: number
+}
+
+export interface AcademicMaterial {
+  id: string
+  moduleId: string
+  kind: AcademicMaterialKind
+  title: string
+  /** ISO date YYYY-MM-DD when set */
+  dueDate: string
+  notes: string
+  fileName: string
+  /** Public URL (cloud) or object URL / data URL (local). */
+  fileUrl: string
+  /** Cloud storage path when synced. */
+  storagePath: string
+  /** Plain text pulled from notes/PDF for the study agent. */
+  extractedText: string
+  done: boolean
+  createdAt: number
+}
+
+export type FoodPlaceStatus = 'been' | 'want'
+
+export interface FoodPlace {
+  id: string
+  name: string
+  status: FoodPlaceStatus
+  area: string
+  cuisine: string
+  address: string
+  notes: string
+  /** 0 means unrated */
+  rating: number
+  lat: number | null
+  lng: number | null
+  photoUrl: string
+  storagePath: string
+  visitedAt: string
   createdAt: number
 }
 

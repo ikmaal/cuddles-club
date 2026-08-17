@@ -167,8 +167,8 @@ export function HomeScreen({ profile, latestStrip, onOpen }: HomeScreenProps) {
       </header>
 
       <div className="home__scroll">
-        <section className="surface services services--solo" aria-label="Things you can do">
-          <ul className="services__grid services__grid--solo">
+        <section className="services services--apps" aria-label="Things you can do">
+          <ul className="services__grid services__grid--apps">
             {SERVICES.map((service) => (
               <li key={service.id}>
                 <button
@@ -177,8 +177,8 @@ export function HomeScreen({ profile, latestStrip, onOpen }: HomeScreenProps) {
                   onClick={() => onOpen(service.id)}
                 >
                   <span
-                    className={`service__tile service__tile--${service.tone}${
-                      service.image ? ' service__tile--image' : ''
+                    className={`service__tile service__tile--bare${
+                      service.image ? ' service__tile--image' : ` service__tile--${service.tone}`
                     }`}
                   >
                     {service.image ? (
