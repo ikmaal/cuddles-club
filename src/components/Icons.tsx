@@ -227,3 +227,51 @@ export function PlacesIcon({ size }: IconProps) {
     </Frame>
   )
 }
+
+export function CapIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="M3 10.2 12 6l9 4.2-9 4.2-9-4.2z" />
+      <path d="M7.2 12.4v3.6c0 .9 2.1 2.2 4.8 2.2s4.8-1.3 4.8-2.2v-3.6" />
+      <path d="M21 10.2v4.2" />
+    </Frame>
+  )
+}
+
+export function DocPageIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="M7 3.8h7.2L18.5 8v12.2H7z" />
+      <path d="M14.2 3.8V8H18.5" />
+      <path d="M9.4 12.2h5.4M9.4 15.4h3.6" />
+    </Frame>
+  )
+}
+
+export function MegaphoneIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="M4.2 10.2v3.6l2.6.8 7.4 3.2V6.2L6.8 9.4z" />
+      <path d="M14.4 9.4c1.1.6 1.8 1.5 1.8 2.6s-.7 2-1.8 2.6" />
+      <path d="M6.8 14.8V18" />
+    </Frame>
+  )
+}
+
+export function CodeBracketsIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="m8 7.5-4 4.5 4 4.5M16 7.5l4 4.5-4 4.5" />
+    </Frame>
+  )
+}
+
+export function BookIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="M6 5.2A2 2 0 0 1 8 3.2h11v15.8H8A2 2 0 0 0 6 21z" />
+      <path d="M6 5.2v15.8" />
+      <path d="M9.2 7.4h6.8" />
+    </Frame>
+  )
+}

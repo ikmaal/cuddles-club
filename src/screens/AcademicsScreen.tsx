@@ -1,11 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AcademicFileViewer } from '../components/AcademicFileViewer'
+import { buddyAvatarSrc, cardMemberSlot } from '../components/CardBuddy'
+import {
+  BookIcon,
+  CalendarIcon,
+  CapIcon,
+  CodeBracketsIcon,
+  DocPageIcon,
+  MegaphoneIcon,
+} from '../components/Icons'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { ScrollRegion } from '../components/ScrollRegion'
+import { useCouple } from '../context/CoupleContext'
 import { useLongPress } from '../hooks/useLongPress'
 import { academicFileLabel } from '../lib/academicFileKind'
 import type { useAcademics } from '../hooks/useAcademics'
-import type { AcademicMaterial, AcademicMaterialKind, Carer } from '../types'
+import type { AcademicMaterial, AcademicMaterialKind, AcademicModule, Carer } from '../types'
 
 type AcademicsApi = ReturnType<typeof useAcademics>
 
@@ -21,13 +31,6 @@ function isDeskKind(kind: AcademicMaterialKind) {
 
 function sortDeskFiles(rows: AcademicMaterial[]) {
   return [...rows].sort((a, b) => a.createdAt - b.createdAt || a.title.localeCompare(b.title))
-}
-
-function formatDue(dueDate: string) {
-  if (!dueDate) return ''
-  const date = new Date(`${dueDate}T12:00:00`)
-  if (Number.isNaN(date.getTime())) return dueDate
-  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 }
 
 function daysUntil(dueDate: string): number | null {
@@ -47,39 +50,99 @@ function dueTone(dueDate: string, done: boolean) {
   return ''
 }
 
-function dueRelative(dueDate: string): string {
-  const diff = daysUntil(dueDate)
-  if (diff === null) return ''
-  if (diff === 0) return 'Due today'
-  if (diff === 1) return 'Due tomorrow'
-  if (diff === -1) return 'Due yesterday'
-  if (diff < 0) return `${-diff} days late`
-  if (diff <= 14) return `Due in ${diff} days`
-  return `Due ${formatDue(dueDate)}`
+const DEADLINE_PREVIEW = 4
+const ACAD_THEMES = ['lilac', 'rose', 'mint'] as const
+type AcadTheme = (typeof ACAD_THEMES)[number]
+type AcadGlyph = 'doc' | 'megaphone' | 'cap' | 'code' | 'book'
+
+function firstName(name: string) {
+  return name.trim().split(/\s+/)[0] || name
 }
 
-function dueGroup(dueDate: string): 'overdue' | 'soon' | 'later' | null {
-  const diff = daysUntil(dueDate)
-  if (diff === null) return null
-  if (diff < 0) return 'overdue'
-  if (diff <= 3) return 'soon'
-  return 'later'
+function themeFromId(id: string): AcadTheme {
+  let sum = 0
+  for (const char of id) sum += char.charCodeAt(0)
+  return ACAD_THEMES[sum % ACAD_THEMES.length]
 }
 
-function formatDueParts(dueDate: string): { day: string; month: string } {
+function glyphForDeadline(title: string, theme: AcadTheme): AcadGlyph {
+  const text = title.toLowerCase()
+  if (/\btma\b|present|pitch|market/.test(text)) return 'megaphone'
+  if (/\bgba\b|capstone|project/.test(text)) return 'cap'
+  if (/\bpct\b|python|code|program|data|anl/.test(text)) return 'code'
+  if (theme === 'rose') return 'megaphone'
+  if (theme === 'mint') return 'cap'
+  return 'doc'
+}
+
+function glyphForModule(title: string, code: string, theme: AcadTheme): AcadGlyph {
+  const text = `${code} ${title}`.toLowerCase()
+  if (/market|mkt|present/.test(text)) return 'megaphone'
+  if (/python|code|data|anl|program/.test(text)) return 'code'
+  if (/learn|nco|edu/.test(text)) return 'book'
+  if (theme === 'rose') return 'megaphone'
+  if (theme === 'mint') return 'code'
+  return 'book'
+}
+
+function AcadGlyphIcon({ name, size = 18 }: { name: AcadGlyph; size?: number }) {
+  if (name === 'megaphone') return <MegaphoneIcon size={size} />
+  if (name === 'cap') return <CapIcon size={size} />
+  if (name === 'code') return <CodeBracketsIcon size={size} />
+  if (name === 'book') return <BookIcon size={size} />
+  return <DocPageIcon size={size} />
+}
+
+function formatDueCard(dueDate: string): { date: string; weekday: string } {
   const date = new Date(`${dueDate}T12:00:00`)
-  if (Number.isNaN(date.getTime())) return { day: '—', month: '' }
+  if (Number.isNaN(date.getTime())) return { date: dueDate || '—', weekday: '' }
   return {
-    day: date.toLocaleDateString(undefined, { day: '2-digit' }),
-    month: date.toLocaleDateString(undefined, { month: 'short' }),
+    date: date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }),
+    weekday: date.toLocaleDateString(undefined, { weekday: 'short' }),
   }
 }
 
-const DEADLINE_GROUPS: { id: 'overdue' | 'soon' | 'later'; label: string }[] = [
-  { id: 'overdue', label: 'Late' },
-  { id: 'soon', label: 'Due soon' },
-  { id: 'later', label: 'Later' },
-]
+function DeadlineCard({
+  item,
+  module,
+  clickable,
+  onOpen,
+}: {
+  item: AcademicMaterial
+  module?: AcademicModule
+  clickable?: boolean
+  onOpen?: () => void
+}) {
+  const theme = themeFromId(module?.id || item.moduleId)
+  const due = formatDueCard(item.dueDate)
+  const className = `acad-upcoming__row acad-theme-${theme} ${dueTone(item.dueDate, item.done)}`
+  const body = (
+    <>
+      <span className="acad-upcoming__icon">
+        <AcadGlyphIcon name={glyphForDeadline(item.title, theme)} />
+      </span>
+      <span className="acad-upcoming__meta">
+        <strong>{item.title}</strong>
+        <small>{[module?.code, module?.title].filter(Boolean).join(' · ')}</small>
+      </span>
+      <span className="acad-upcoming__due">
+        <i aria-hidden />
+        <b>{due.date}</b>
+        <small>{due.weekday}</small>
+      </span>
+    </>
+  )
+
+  if (clickable) {
+    return (
+      <button type="button" className={className} onClick={onOpen}>
+        {body}
+      </button>
+    )
+  }
+
+  return <div className={className}>{body}</div>
+}
 
 function fileCaption(fileName: string) {
   if (!fileName.trim()) return 'No file'
@@ -132,8 +195,10 @@ export function AcademicsScreen({
   updateMaterial,
   removeMaterial,
 }: AcademicsScreenProps) {
+  const { slot } = useCouple()
   const [owner, setOwner] = useState<Carer>('you')
   const [view, setView] = useState<View>({ mode: 'home' })
+  const [showAllDeadlines, setShowAllDeadlines] = useState(false)
   const [showModuleForm, setShowModuleForm] = useState(false)
   const [showMaterialForm, setShowMaterialForm] = useState(false)
   const [moduleCode, setModuleCode] = useState('')
@@ -226,7 +291,6 @@ export function AcademicsScreen({
           !item.done,
       )
       .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
-      .slice(0, 5)
   }, [materials, ownedModules])
 
   function resetModuleForm() {
@@ -339,6 +403,10 @@ export function AcademicsScreen({
     if (created) resetMaterialForm()
   }
 
+  const visibleUpcoming = showAllDeadlines
+    ? upcoming
+    : upcoming.slice(0, DEADLINE_PREVIEW)
+
   const title =
     view.mode === 'module' && activeModule
       ? activeModule.code || activeModule.title
@@ -346,7 +414,7 @@ export function AcademicsScreen({
   const subtitle =
     view.mode === 'module' && activeModule
       ? [activeModule.title, activeModule.term].filter(Boolean).join(' · ')
-      : 'Your study desk'
+      : undefined
 
   return (
     <div className="screen screen--academics">
@@ -408,9 +476,19 @@ export function AcademicsScreen({
                   role="tab"
                   aria-selected={owner === who}
                   className={`acad-owner__tab${owner === who ? ' is-active' : ''}`}
-                  onClick={() => setOwner(who)}
+                  onClick={() => {
+                    setOwner(who)
+                    setShowAllDeadlines(false)
+                  }}
                 >
-                  {who === 'you' ? names.you : names.partner}
+                  <img
+                    className="acad-owner__avatar"
+                    src={buddyAvatarSrc(cardMemberSlot(who, slot))}
+                    alt=""
+                    width={28}
+                    height={28}
+                  />
+                  <span>{firstName(who === 'you' ? names.you : names.partner)}</span>
                 </button>
               ))}
             </div>
@@ -420,26 +498,33 @@ export function AcademicsScreen({
             ) : (
               <>
                 {upcoming.length > 0 ? (
-                  <section className="acad-section" aria-label="Upcoming">
+                  <section className="acad-section" aria-label="Upcoming Deadlines">
                     <header className="acad-section__head">
-                      <h2>Upcoming</h2>
+                      <h2>
+                        <CalendarIcon size={18} />
+                        Upcoming Deadlines
+                      </h2>
+                      {upcoming.length > DEADLINE_PREVIEW ? (
+                        <button
+                          type="button"
+                          className="acad-section__link"
+                          onClick={() => setShowAllDeadlines((open) => !open)}
+                        >
+                          {showAllDeadlines ? 'Show less' : 'See all'}
+                        </button>
+                      ) : null}
                     </header>
                     <ul className="acad-upcoming">
-                      {upcoming.map((item) => {
+                      {visibleUpcoming.map((item) => {
                         const module = modules.find((row) => row.id === item.moduleId)
                         return (
                           <li key={item.id}>
-                            <button
-                              type="button"
-                              className={`acad-upcoming__row ${dueTone(item.dueDate, item.done)}`}
-                              onClick={() => setView({ mode: 'module', moduleId: item.moduleId })}
-                            >
-                              <span className="acad-upcoming__meta">
-                                <strong>{item.title}</strong>
-                                <small>{[module?.code, module?.title].filter(Boolean).join(' · ')}</small>
-                              </span>
-                              <span className="acad-upcoming__due">{formatDue(item.dueDate)}</span>
-                            </button>
+                            <DeadlineCard
+                              item={item}
+                              module={module}
+                              clickable
+                              onOpen={() => setView({ mode: 'module', moduleId: item.moduleId })}
+                            />
                           </li>
                         )
                       })}
@@ -447,18 +532,23 @@ export function AcademicsScreen({
                   </section>
                 ) : null}
 
-                <section className="acad-section" aria-label="Modules">
+                <section className="acad-section" aria-label="Your Modules">
                   <header className="acad-section__head">
-                    <h2>Modules</h2>
-                    <span>{ownedModules.length}</span>
+                    <h2>
+                      <CapIcon size={18} />
+                      Your Modules
+                    </h2>
+                    <span>
+                      {ownedModules.length} {ownedModules.length === 1 ? 'module' : 'modules'}
+                    </span>
                   </header>
 
                   {ownedModules.length === 0 ? (
                     <div className="acad-empty-card">
                       <h3>No modules yet</h3>
                       <p>
-                        Add {owner === 'you' ? 'your' : `${names.partner}'s`} courses to keep
-                        lectures and assignments in one quiet place.
+                        Add {owner === 'you' ? 'your' : `${firstName(names.partner)}'s`} courses to
+                        keep lectures and assignments in one place.
                       </p>
                       <button
                         type="button"
@@ -474,22 +564,24 @@ export function AcademicsScreen({
                         const count = materials.filter(
                           (item) => item.moduleId === module.id && isDeskKind(item.kind),
                         ).length
+                        const theme = themeFromId(module.id)
                         return (
                           <li key={module.id}>
                             <button
                               type="button"
-                              className="acad-module"
+                              className={`acad-module acad-theme-${theme}`}
                               onClick={() => setView({ mode: 'module', moduleId: module.id })}
                             >
-                              <span className="acad-module__code">{module.code || '—'}</span>
-                              <span className="acad-module__copy">
-                                <strong>{module.title}</strong>
-                                <small>
-                                  {[module.term, `${count} item${count === 1 ? '' : 's'}`]
-                                    .filter(Boolean)
-                                    .join(' · ')}
-                                </small>
+                              <span className="acad-module__icon">
+                                <AcadGlyphIcon
+                                  name={glyphForModule(module.title, module.code, theme)}
+                                />
                               </span>
+                              <span className="acad-module__code">{module.code || 'Module'}</span>
+                              <strong>{module.title}</strong>
+                              <small>
+                                {count} {count === 1 ? 'item' : 'items'}
+                              </small>
                               <span className="acad-module__chev" aria-hidden>
                                 ›
                               </span>
@@ -512,40 +604,19 @@ export function AcademicsScreen({
             {deadlines.length > 0 ? (
               <section className="acad-section" aria-label="Deadlines">
                 <header className="acad-section__head">
-                  <h2>Deadlines</h2>
+                  <h2>
+                    <CalendarIcon size={18} />
+                    Upcoming Deadlines
+                  </h2>
                   <span>{deadlines.length} open</span>
                 </header>
-                <div className="acad-deadlines">
-                  {DEADLINE_GROUPS.map((group) => {
-                    const rows = deadlines.filter((item) => dueGroup(item.dueDate) === group.id)
-                    if (!rows.length) return null
-                    return (
-                      <div key={group.id} className="acad-deadline-group">
-                        <h3>{group.label}</h3>
-                        <ul>
-                          {rows.map((item) => {
-                            const parts = formatDueParts(item.dueDate)
-                            return (
-                              <li
-                                key={item.id}
-                                className={`acad-deadline ${dueTone(item.dueDate, item.done)}`}
-                              >
-                                <time className="acad-deadline__date" dateTime={item.dueDate}>
-                                  <span>{parts.day}</span>
-                                  <span>{parts.month}</span>
-                                </time>
-                                <div className="acad-deadline__copy">
-                                  <strong>{item.title}</strong>
-                                  <small>{dueRelative(item.dueDate)}</small>
-                                </div>
-                              </li>
-                            )
-                          })}
-                        </ul>
-                      </div>
-                    )
-                  })}
-                </div>
+                <ul className="acad-upcoming">
+                  {deadlines.map((item) => (
+                    <li key={item.id}>
+                      <DeadlineCard item={item} module={activeModule} />
+                    </li>
+                  ))}
+                </ul>
               </section>
             ) : null}
 

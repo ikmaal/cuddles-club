@@ -56,10 +56,14 @@ function isInsideScrollRegion(target: EventTarget | null): boolean {
       // Home manages its own touch lock.
       if (node.classList.contains('home')) return true
 
-      const { overflowY } = window.getComputedStyle(node)
-      const scrollable =
-        overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay'
-      if (scrollable && node.scrollHeight > node.clientHeight + 1) {
+      const { overflowY, overflowX } = window.getComputedStyle(node)
+      const canScrollY =
+        (overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay') &&
+        node.scrollHeight > node.clientHeight + 1
+      const canScrollX =
+        (overflowX === 'auto' || overflowX === 'scroll' || overflowX === 'overlay') &&
+        node.scrollWidth > node.clientWidth + 1
+      if (canScrollY || canScrollX) {
         return true
       }
     }

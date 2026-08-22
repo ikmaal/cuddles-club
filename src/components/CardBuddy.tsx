@@ -23,6 +23,10 @@ const BUDDY_LABEL: Record<MemberSlot, string> = {
   b: 'Play Bubu sound',
 }
 
+export function buddyAvatarSrc(memberSlot: MemberSlot): string {
+  return `${import.meta.env.BASE_URL}${BUDDY_SRC[memberSlot]}`
+}
+
 export function CardBuddy({ memberSlot, className }: CardBuddyProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const src = `${import.meta.env.BASE_URL}${BUDDY_SRC[memberSlot]}`

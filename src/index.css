@@ -154,12 +154,12 @@ html.strips-bg .app {
 html.academics-bg,
 html.academics-bg body,
 html.academics-bg #root {
-  background-color: #ffffff;
+  background-color: #f5f3fa;
   overscroll-behavior: none;
 }
 
 html.academics-bg .app {
-  background: #ffffff;
+  background: #f5f3fa;
   box-shadow: none;
 }
 
