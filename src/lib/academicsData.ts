@@ -12,6 +12,46 @@ function publicFileUrl(storagePath: string): string {
   return data.publicUrl
 }
 
+const MIME_BY_EXT: Record<string, string> = {
+  pdf: 'application/pdf',
+  ppt: 'application/vnd.ms-powerpoint',
+  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  doc: 'application/msword',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  webp: 'image/webp',
+  txt: 'text/plain',
+}
+
+const MAX_ACADEMIC_FILE_BYTES = 50 * 1024 * 1024
+
+function fileExtension(name: string): string {
+  const match = name.trim().match(/(\.[a-z0-9]+)$/i)
+  return match ? match[1].toLowerCase() : ''
+}
+
+function mimeForFile(file: File): string {
+  if (file.type && file.type !== 'application/octet-stream') return file.type
+  const ext = fileExtension(file.name).slice(1)
+  return MIME_BY_EXT[ext] ?? 'application/octet-stream'
+}
+
+function storageErrorMessage(error: { message?: string } | null): string {
+  const message = error?.message?.trim() || 'Could not upload that file'
+  if (/mime type|not supported|invalid_mime/i.test(message)) {
+    return 'Cloud storage is still set to photos only. Run supabase/academics.sql in the Supabase SQL Editor, then try again.'
+  }
+  if (/maximum|file size|payload|too large|exceed/i.test(message)) {
+    return 'That file is too large to upload. Try a file under 50 MB.'
+  }
+  if (/row-level security|unauthorized|not allowed|403/i.test(message)) {
+    return 'Could not save that file to your couple space. Sign in again on the Us tab, then retry.'
+  }
+  return message
+}
+
 function rowToModule(row: Record<string, unknown>, mySlot: MemberSlot): AcademicModule {
   return {
     id: String(row.id),
@@ -35,7 +75,7 @@ function rowToMaterial(row: Record<string, unknown>): AcademicMaterial {
     fileName: String(row.file_name ?? ''),
     fileUrl: storagePath ? publicFileUrl(storagePath) : '',
     storagePath,
-    extractedText: String(row.extracted_text ?? ''),
+    extractedText: '',
     done: Boolean(row.done),
     createdAt: Number(row.created_at),
   }
@@ -114,11 +154,15 @@ export async function upsertAcademicMaterial(
     notes: material.notes,
     file_name: material.fileName || null,
     storage_path: material.storagePath || null,
-    extracted_text: material.extractedText || '',
     done: material.done,
     created_at: material.createdAt,
   })
   if (error) throw error
+}
+
+export async function removeAcademicStorage(path: string): Promise<void> {
+  if (!path) return
+  await client().storage.from(PHOTOSTRIP_BUCKET).remove([path])
 }
 
 export async function deleteAcademicMaterialCloud(
@@ -142,13 +186,21 @@ export async function uploadAcademicFile(
   materialId: string,
   file: File,
 ): Promise<{ storagePath: string; fileUrl: string; fileName: string }> {
-  const safeName = file.name.replace(/[^\w.\-()+ ]+/g, '_').slice(0, 120)
-  const storagePath = `${coupleId}/academics/${materialId}-${safeName}`
+  if (!file.size) {
+    throw new Error('That file looks empty. Pick the file again, then save.')
+  }
+  if (file.size > MAX_ACADEMIC_FILE_BYTES) {
+    throw new Error('That file is too large to upload. Try a file under 50 MB.')
+  }
+
+  const ext = fileExtension(file.name)
+  const storagePath = `${coupleId}/academics/${materialId}${ext}`
+  const contentType = mimeForFile(file)
   const { error } = await client().storage.from(PHOTOSTRIP_BUCKET).upload(storagePath, file, {
     upsert: true,
-    contentType: file.type || 'application/octet-stream',
+    contentType,
   })
-  if (error) throw error
+  if (error) throw new Error(storageErrorMessage(error))
   return {
     storagePath,
     fileUrl: publicFileUrl(storagePath),

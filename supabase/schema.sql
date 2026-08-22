@@ -354,3 +354,15 @@ create policy "photostrips_delete_member"
     bucket_id = 'photostrips'
     and (storage.foldername(name))[1] = public.user_couple_id()::text
   );
+
+drop policy if exists "photostrips_update_member" on storage.objects;
+create policy "photostrips_update_member"
+  on storage.objects for update
+  using (
+    bucket_id = 'photostrips'
+    and (storage.foldername(name))[1] = public.user_couple_id()::text
+  )
+  with check (
+    bucket_id = 'photostrips'
+    and (storage.foldername(name))[1] = public.user_couple_id()::text
+  );

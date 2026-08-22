@@ -16,6 +16,7 @@ import {
   deleteAcademicMaterialCloud,
   deleteAcademicModuleCloud,
   loadAcademics,
+  removeAcademicStorage,
   uploadAcademicFile,
   upsertAcademicMaterial,
   upsertAcademicModule,
@@ -26,6 +27,18 @@ import type {
   AcademicModule,
   Carer,
 } from '../types'
+
+function asErrorMessage(err: unknown, fallback: string): string {
+  if (err instanceof DOMException && err.name === 'QuotaExceededError') {
+    return 'This file is too large to save on this device.'
+  }
+  if (err instanceof Error && err.message.trim()) return err.message
+  if (typeof err === 'object' && err && 'message' in err) {
+    const message = (err as { message: unknown }).message
+    if (typeof message === 'string' && message.trim()) return message
+  }
+  return fallback
+}
 
 const objectUrls = new Map<string, string>()
 
@@ -74,7 +87,7 @@ export function useAcademics() {
       }
       setError('')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load Academics')
+      setError(asErrorMessage(err, 'Could not load Academics'))
     } finally {
       setReady(true)
     }
@@ -111,7 +124,7 @@ export function useAcademics() {
         setModules((prev) => [...prev, module].sort((a, b) => a.title.localeCompare(b.title)))
         return module
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Could not add module')
+        setError(asErrorMessage(err, 'Could not add module'))
         return null
       } finally {
         setBusy(false)
@@ -136,7 +149,7 @@ export function useAcademics() {
         setMaterials((prev) => prev.filter((item) => item.moduleId !== id))
         return true
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Could not delete module')
+        setError(asErrorMessage(err, 'Could not delete module'))
         return false
       } finally {
         setBusy(false)
@@ -191,7 +204,7 @@ export function useAcademics() {
         setMaterials((prev) => [material, ...prev])
         return material
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Could not add material')
+        setError(asErrorMessage(err, 'Could not add material'))
         return null
       } finally {
         setBusy(false)
@@ -216,7 +229,7 @@ export function useAcademics() {
         setMaterials((prev) => prev.map((item) => (item.id === id ? next : item)))
         return true
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Could not update item')
+        setError(asErrorMessage(err, 'Could not update item'))
         return false
       } finally {
         setBusy(false)
@@ -241,8 +254,78 @@ export function useAcademics() {
         setMaterials((prev) => prev.filter((item) => item.id !== id))
         return true
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Could not delete item')
+        setError(asErrorMessage(err, 'Could not delete item'))
         return false
+      } finally {
+        setBusy(false)
+      }
+    },
+    [coupleId, isCloud, materials],
+  )
+
+  const updateMaterial = useCallback(
+    async (
+      id: string,
+      input: {
+        title?: string
+        dueDate?: string
+        notes?: string
+        file?: File | null
+      },
+    ) => {
+      const current = materials.find((item) => item.id === id)
+      if (!current) return null
+      setBusy(true)
+      setError('')
+      try {
+        let next: AcademicMaterial = {
+          ...current,
+          title: input.title !== undefined ? input.title.trim() : current.title,
+          dueDate: input.dueDate !== undefined ? input.dueDate.trim() : current.dueDate,
+          notes: input.notes !== undefined ? input.notes.trim() : current.notes,
+        }
+        if (!next.title) {
+          setError('Add a title first')
+          return null
+        }
+
+        if (input.file) {
+          if (isCloud && coupleId) {
+            const previousPath = current.storagePath
+            const uploaded = await uploadAcademicFile(coupleId, next.id, input.file)
+            next = {
+              ...next,
+              fileName: uploaded.fileName,
+              fileUrl: uploaded.fileUrl,
+              storagePath: uploaded.storagePath,
+            }
+            await upsertAcademicMaterial(coupleId, next)
+            if (previousPath && previousPath !== uploaded.storagePath) {
+              await removeAcademicStorage(previousPath)
+            }
+          } else {
+            revokeUrl(next.id)
+            await putLocalFile(next.id, input.file)
+            const url = URL.createObjectURL(input.file)
+            objectUrls.set(next.id, url)
+            next = {
+              ...next,
+              fileName: input.file.name,
+              fileUrl: url,
+            }
+            await putLocalMaterial(next)
+          }
+        } else if (isCloud && coupleId) {
+          await upsertAcademicMaterial(coupleId, next)
+        } else {
+          await putLocalMaterial(next)
+        }
+
+        setMaterials((prev) => prev.map((item) => (item.id === id ? next : item)))
+        return next
+      } catch (err) {
+        setError(asErrorMessage(err, 'Could not update item'))
+        return null
       } finally {
         setBusy(false)
       }
@@ -265,5 +348,6 @@ export function useAcademics() {
     addMaterial,
     toggleMaterialDone,
     removeMaterial,
+    updateMaterial,
   }
 }
