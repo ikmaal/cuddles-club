@@ -1,9 +1,8 @@
 import { useMemo, useRef, useState } from 'react'
 import { ScreenHeader } from '../components/ScreenHeader'
 import { ScrollRegion } from '../components/ScrollRegion'
-import { StudyBuddy } from '../components/StudyBuddy'
 import type { useAcademics } from '../hooks/useAcademics'
-import type { AcademicMaterial, AcademicMaterialKind, AcademicModule, Carer } from '../types'
+import type { AcademicMaterial, AcademicMaterialKind, Carer } from '../types'
 
 type AcademicsApi = ReturnType<typeof useAcademics>
 
@@ -13,15 +12,23 @@ interface AcademicsScreenProps extends AcademicsApi {
 
 type View = { mode: 'home' } | { mode: 'module'; moduleId: string }
 
-const KINDS: { id: AcademicMaterialKind; label: string }[] = [
-  { id: 'lecture', label: 'Lectures' },
-  { id: 'tutorial', label: 'Tutorials' },
-  { id: 'assignment', label: 'Assignments' },
-  { id: 'notes', label: 'Notes' },
-]
+function isDeskKind(kind: AcademicMaterialKind) {
+  return kind === 'lecture' || kind === 'assignment'
+}
 
-function kindLabel(kind: AcademicMaterialKind) {
-  return KINDS.find((item) => item.id === kind)?.label.replace(/s$/, '') ?? kind
+function sortLectures(rows: AcademicMaterial[]) {
+  return [...rows].sort((a, b) => a.createdAt - b.createdAt || a.title.localeCompare(b.title))
+}
+
+function sortAssignments(rows: AcademicMaterial[]) {
+  return [...rows].sort((a, b) => {
+    if (a.done !== b.done) return Number(a.done) - Number(b.done)
+    if (a.dueDate && b.dueDate && a.dueDate !== b.dueDate) {
+      return a.dueDate.localeCompare(b.dueDate)
+    }
+    if (a.dueDate !== b.dueDate) return a.dueDate ? -1 : 1
+    return b.createdAt - a.createdAt
+  })
 }
 
 function formatDue(dueDate: string) {
@@ -49,18 +56,15 @@ export function AcademicsScreen({
   busy,
   error,
   names,
-  isCloud,
   onBack,
   setError,
   addModule,
-  removeModule,
   addMaterial,
   toggleMaterialDone,
   removeMaterial,
 }: AcademicsScreenProps) {
   const [owner, setOwner] = useState<Carer>('you')
   const [view, setView] = useState<View>({ mode: 'home' })
-  const [buddyOpen, setBuddyOpen] = useState(false)
   const [showModuleForm, setShowModuleForm] = useState(false)
   const [showMaterialForm, setShowMaterialForm] = useState(false)
   const [moduleCode, setModuleCode] = useState('')
@@ -83,13 +87,28 @@ export function AcademicsScreen({
 
   const moduleMaterials = useMemo(() => {
     if (!activeModule) return []
-    return materials.filter((item) => item.moduleId === activeModule.id)
+    return materials.filter((item) => item.moduleId === activeModule.id && isDeskKind(item.kind))
   }, [activeModule, materials])
+
+  const lectures = useMemo(
+    () => sortLectures(moduleMaterials.filter((item) => item.kind === 'lecture')),
+    [moduleMaterials],
+  )
+  const assignments = useMemo(
+    () => sortAssignments(moduleMaterials.filter((item) => item.kind === 'assignment')),
+    [moduleMaterials],
+  )
 
   const upcoming = useMemo(() => {
     const moduleIds = new Set(ownedModules.map((item) => item.id))
     return materials
-      .filter((item) => moduleIds.has(item.moduleId) && item.dueDate && !item.done)
+      .filter(
+        (item) =>
+          moduleIds.has(item.moduleId) &&
+          item.kind === 'assignment' &&
+          item.dueDate &&
+          !item.done,
+      )
       .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
       .slice(0, 5)
   }, [materials, ownedModules])
@@ -111,6 +130,12 @@ export function AcademicsScreen({
     setShowMaterialForm(false)
   }
 
+  function openMaterialForm(kind: AcademicMaterialKind = 'lecture') {
+    setError('')
+    setMaterialKind(kind)
+    setShowMaterialForm(true)
+  }
+
   async function submitModule() {
     setError('')
     const created = await addModule(owner, {
@@ -130,19 +155,11 @@ export function AcademicsScreen({
     const created = await addMaterial(activeModule.id, {
       kind: materialKind,
       title: materialTitle,
-      dueDate: materialDue,
-      notes: materialNotes,
+      dueDate: materialKind === 'assignment' ? materialDue : '',
+      notes: materialKind === 'assignment' ? materialNotes : '',
       file: materialFile,
     })
     if (created) resetMaterialForm()
-  }
-
-  async function handleDeleteModule(module: AcademicModule) {
-    if (!window.confirm(`Remove ${module.code || module.title}? All materials will be deleted.`)) {
-      return
-    }
-    const ok = await removeModule(module.id)
-    if (ok) setView({ mode: 'home' })
   }
 
   async function handleDeleteMaterial(item: AcademicMaterial) {
@@ -189,11 +206,8 @@ export function AcademicsScreen({
             <button
               type="button"
               className="acad-icon-btn"
-              onClick={() => {
-                setError('')
-                setShowMaterialForm(true)
-              }}
-              aria-label="Add material"
+              onClick={() => openMaterialForm('lecture')}
+              aria-label="Add lecture"
             >
               +
             </button>
@@ -246,9 +260,7 @@ export function AcademicsScreen({
                             >
                               <span className="acad-upcoming__meta">
                                 <strong>{item.title}</strong>
-                                <small>
-                                  {[module?.code, kindLabel(item.kind)].filter(Boolean).join(' · ')}
-                                </small>
+                                <small>{[module?.code, module?.title].filter(Boolean).join(' · ')}</small>
                               </span>
                               <span className="acad-upcoming__due">{formatDue(item.dueDate)}</span>
                             </button>
@@ -270,7 +282,7 @@ export function AcademicsScreen({
                       <h3>No modules yet</h3>
                       <p>
                         Add {owner === 'you' ? 'your' : `${names.partner}'s`} courses to keep
-                        lectures, tutorials, and assignments in one quiet place.
+                        lectures and assignments in one quiet place.
                       </p>
                       <button
                         type="button"
@@ -283,7 +295,9 @@ export function AcademicsScreen({
                   ) : (
                     <ul className="acad-modules">
                       {ownedModules.map((module) => {
-                        const count = materials.filter((item) => item.moduleId === module.id).length
+                        const count = materials.filter(
+                          (item) => item.moduleId === module.id && isDeskKind(item.kind),
+                        ).length
                         return (
                           <li key={module.id}>
                             <button
@@ -315,80 +329,128 @@ export function AcademicsScreen({
           </>
         ) : activeModule ? (
           <div className="acad-module-view">
-            <div className="acad-module-view__toolbar">
-              <p className="acad-module-view__owner">
-                {activeModule.owner === 'you' ? names.you : names.partner}
-              </p>
-              <button
-                type="button"
-                className="acad-text-btn is-danger"
-                onClick={() => void handleDeleteModule(activeModule)}
-                disabled={busy}
-              >
-                Delete module
-              </button>
-            </div>
+            <p className="acad-module-view__owner">
+              {activeModule.owner === 'you' ? names.you : names.partner}
+            </p>
 
-            {KINDS.map((group) => {
-              const rows = moduleMaterials.filter((item) => item.kind === group.id)
-              return (
-                <section key={group.id} className="acad-section">
-                  <header className="acad-section__head">
-                    <h2>{group.label}</h2>
-                    <span>{rows.length}</span>
-                  </header>
-                  {rows.length === 0 ? (
-                    <p className="acad-empty-inline">Nothing here yet</p>
-                  ) : (
-                    <ul className="acad-materials">
-                      {rows.map((item) => (
-                        <li key={item.id} className={`acad-material${item.done ? ' is-done' : ''}`}>
-                          <button
-                            type="button"
-                            className="acad-material__check"
-                            onClick={() => void toggleMaterialDone(item.id)}
-                            aria-label={item.done ? 'Mark as not done' : 'Mark as done'}
-                            disabled={busy}
+            <section className="acad-section" aria-label="Lectures">
+              <header className="acad-section__head">
+                <h2>Lectures</h2>
+                <span>{lectures.length}</span>
+              </header>
+              <ul className="acad-lectures">
+                {lectures.map((item, index) => (
+                  <li key={item.id} className="acad-lecture">
+                    {item.fileUrl ? (
+                      <a
+                        className="acad-lecture__card"
+                        href={item.fileUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={`Open ${item.title}`}
+                      >
+                        <span className="acad-lecture__index">
+                          {String(index + 1).padStart(2, '0')}
+                        </span>
+                        <strong>{item.title}</strong>
+                        <small>{item.fileName || 'Lecture file'}</small>
+                      </a>
+                    ) : (
+                      <div className="acad-lecture__card is-empty">
+                        <span className="acad-lecture__index">
+                          {String(index + 1).padStart(2, '0')}
+                        </span>
+                        <strong>{item.title}</strong>
+                        <small>No file yet</small>
+                      </div>
+                    )}
+                  </li>
+                ))}
+                <li>
+                  <button
+                    type="button"
+                    className="acad-lecture-add"
+                    onClick={() => openMaterialForm('lecture')}
+                  >
+                    <span aria-hidden>+</span>
+                    Add lecture
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <section className="acad-section" aria-label="Assignments">
+              <header className="acad-section__head">
+                <h2>Assignments</h2>
+                <button
+                  type="button"
+                  className="acad-text-btn"
+                  onClick={() => openMaterialForm('assignment')}
+                >
+                  Add
+                </button>
+              </header>
+              {assignments.length === 0 ? (
+                <button
+                  type="button"
+                  className="acad-assign-empty"
+                  onClick={() => openMaterialForm('assignment')}
+                >
+                  <strong>No assignments yet</strong>
+                  <span>Add a due date and keep track of what’s next.</span>
+                </button>
+              ) : (
+                <ul className="acad-assignments">
+                  {assignments.map((item) => (
+                    <li
+                      key={item.id}
+                      className={`acad-assignment${item.done ? ' is-done' : ''} ${dueTone(item.dueDate, item.done)}`}
+                    >
+                      <button
+                        type="button"
+                        className="acad-material__check"
+                        onClick={() => void toggleMaterialDone(item.id)}
+                        aria-label={item.done ? 'Mark as not done' : 'Mark as done'}
+                        disabled={busy}
+                      >
+                        {item.done ? '✓' : ''}
+                      </button>
+                      <div className="acad-assignment__body">
+                        <strong>{item.title}</strong>
+                        <small>
+                          {[item.fileName, item.notes].filter(Boolean).join(' · ') || 'No file yet'}
+                        </small>
+                        {item.fileUrl ? (
+                          <a
+                            className="acad-material__file"
+                            href={item.fileUrl}
+                            target="_blank"
+                            rel="noreferrer"
                           >
-                            {item.done ? '✓' : ''}
-                          </button>
-                          <div className="acad-material__body">
-                            <strong>{item.title}</strong>
-                            <small>
-                              {[
-                                item.dueDate ? `Due ${formatDue(item.dueDate)}` : '',
-                                item.fileName,
-                                item.notes,
-                              ]
-                                .filter(Boolean)
-                                .join(' · ')}
-                            </small>
-                            {item.fileUrl ? (
-                              <a
-                                className="acad-material__file"
-                                href={item.fileUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
-                                Open file
-                              </a>
-                            ) : null}
-                          </div>
-                          <button
-                            type="button"
-                            className="acad-text-btn is-danger"
-                            onClick={() => void handleDeleteMaterial(item)}
-                            disabled={busy}
-                          >
-                            Delete
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </section>
-              )
-            })}
+                            Open file
+                          </a>
+                        ) : null}
+                      </div>
+                      <div className="acad-assignment__side">
+                        {item.dueDate ? (
+                          <span className="acad-assignment__due">{formatDue(item.dueDate)}</span>
+                        ) : (
+                          <span className="acad-assignment__due is-none">No due</span>
+                        )}
+                        <button
+                          type="button"
+                          className="acad-text-btn is-danger"
+                          onClick={() => void handleDeleteMaterial(item)}
+                          disabled={busy}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
           </div>
         ) : (
           <p className="acad-empty">Module not found.</p>
@@ -444,54 +506,52 @@ export function AcademicsScreen({
       ) : null}
 
       {showMaterialForm && activeModule ? (
-        <div className="acad-sheet" role="dialog" aria-modal="true" aria-label="Add material">
+        <div
+          className="acad-sheet"
+          role="dialog"
+          aria-modal="true"
+          aria-label={materialKind === 'assignment' ? 'Add assignment' : 'Add lecture'}
+        >
           <div className="acad-sheet__panel">
             <header className="acad-sheet__head">
-              <h2>Add material</h2>
+              <h2>{materialKind === 'assignment' ? 'New assignment' : 'New lecture'}</h2>
               <button type="button" className="acad-text-btn" onClick={resetMaterialForm}>
                 Close
               </button>
             </header>
             <label className="field">
-              <span>Type</span>
-              <select
-                value={materialKind}
-                onChange={(event) => setMaterialKind(event.target.value as AcademicMaterialKind)}
-              >
-                {KINDS.map((kind) => (
-                  <option key={kind.id} value={kind.id}>
-                    {kind.label.slice(0, -1)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="field">
               <span>Title</span>
               <input
                 value={materialTitle}
                 onChange={(event) => setMaterialTitle(event.target.value)}
-                placeholder="Week 3 slides"
+                placeholder={
+                  materialKind === 'assignment' ? 'Problem set 2' : 'Week 3 slides'
+                }
                 maxLength={100}
               />
             </label>
-            <label className="field field--date">
-              <span>Due date (optional)</span>
-              <input
-                type="date"
-                value={materialDue}
-                onChange={(event) => setMaterialDue(event.target.value)}
-              />
-            </label>
-            <label className="field">
-              <span>Notes (optional)</span>
-              <textarea
-                value={materialNotes}
-                onChange={(event) => setMaterialNotes(event.target.value)}
-                placeholder="Chapter focus, tips, links…"
-                rows={3}
-                maxLength={400}
-              />
-            </label>
+            {materialKind === 'assignment' ? (
+              <>
+                <label className="field field--date">
+                  <span>Due date (optional)</span>
+                  <input
+                    type="date"
+                    value={materialDue}
+                    onChange={(event) => setMaterialDue(event.target.value)}
+                  />
+                </label>
+                <label className="field">
+                  <span>Notes (optional)</span>
+                  <textarea
+                    value={materialNotes}
+                    onChange={(event) => setMaterialNotes(event.target.value)}
+                    placeholder="Weighting, submission notes…"
+                    rows={3}
+                    maxLength={400}
+                  />
+                </label>
+              </>
+            ) : null}
             <label className="field">
               <span>File (optional)</span>
               <input
@@ -507,22 +567,15 @@ export function AcademicsScreen({
               onClick={() => void submitMaterial()}
               disabled={busy || !materialTitle.trim()}
             >
-              {busy ? 'Saving…' : 'Save material'}
+              {busy
+                ? 'Saving…'
+                : materialKind === 'assignment'
+                  ? 'Save assignment'
+                  : 'Save lecture'}
             </button>
           </div>
         </div>
       ) : null}
-
-      <StudyBuddy
-        open={buddyOpen}
-        onOpen={() => setBuddyOpen(true)}
-        onClose={() => setBuddyOpen(false)}
-        modules={modules}
-        materials={materials}
-        names={names}
-        isCloud={isCloud}
-        defaultOwner={owner}
-      />
     </div>
   )
 }

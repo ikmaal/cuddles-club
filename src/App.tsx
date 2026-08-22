@@ -3,13 +3,11 @@ import { HeartIcon, HomeIcon } from './components/Icons'
 import { SplashIntro } from './components/SplashIntro'
 import { useCouple } from './context/CoupleContext'
 import { useAcademics } from './hooks/useAcademics'
-import { useMoments } from './hooks/useMoments'
 import { usePhotostrips } from './hooks/usePhotostrips'
 import { usePlaces } from './hooks/usePlaces'
 import { useProfile } from './hooks/useProfile'
 import { AcademicsScreen } from './screens/AcademicsScreen'
 import { HomeScreen } from './screens/HomeScreen'
-import { MomentsScreen } from './screens/MomentsScreen'
 import { PlacesScreen } from './screens/PlacesScreen'
 import { StripsScreen } from './screens/StripsScreen'
 import { UsScreen } from './screens/UsScreen'
@@ -18,7 +16,6 @@ import './App.css'
 
 const HOME_WHITE = '#ffffff'
 const STRIPS_BLACK = '#0c0c0c'
-const MOMENTS_CREAM = '#efe4d4'
 const ACADEMICS_WHITE = '#ffffff'
 const PLACES_PAPER = '#fafaf8'
 const SPLASH_STATUS_COLOR = '#ffffff'
@@ -45,7 +42,6 @@ export default function App() {
   const { ready } = useCouple()
   const { profile, updateProfile } = useProfile()
   const strips = usePhotostrips()
-  const moments = useMoments()
   const academics = useAcademics()
   const places = usePlaces()
 
@@ -56,7 +52,6 @@ export default function App() {
   const splashActive = splashPhase !== 'done'
   const homeLive = screen === 'home' && splashPhase === 'done'
   const navyLive = (screen === 'home' || screen === 'us') && splashPhase === 'done'
-  const momentsLive = screen === 'moments' && splashPhase === 'done'
   const academicsLive = screen === 'academics' && splashPhase === 'done'
   const placesLive = screen === 'places' && splashPhase === 'done'
   const shellVisible = screen === 'us' ? navyLive : homeVisible
@@ -70,7 +65,6 @@ export default function App() {
     root.classList.toggle('home-bg', navyLive)
     root.classList.toggle('home-image', homeLive)
     root.classList.toggle('strips-bg', screen === 'strips' && !splashActive)
-    root.classList.toggle('moments-bg', momentsLive)
     root.classList.toggle('academics-bg', academicsLive)
     root.classList.toggle('places-bg', placesLive)
     root.style.setProperty('--home-wallpaper', wallpaper)
@@ -81,9 +75,6 @@ export default function App() {
     } else if (screen === 'strips' && !splashActive) {
       setThemeColor(STRIPS_BLACK)
       setStatusBarStyle('black-translucent')
-    } else if (momentsLive) {
-      setThemeColor(MOMENTS_CREAM)
-      setStatusBarStyle('default')
     } else if (academicsLive) {
       setThemeColor(ACADEMICS_WHITE)
       setStatusBarStyle('default')
@@ -97,7 +88,7 @@ export default function App() {
       setThemeColor(DEFAULT_THEME_COLOR)
       setStatusBarStyle('default')
     }
-  }, [splashActive, navyLive, homeLive, momentsLive, academicsLive, placesLive, screen])
+  }, [splashActive, navyLive, homeLive, academicsLive, placesLive, screen])
 
   useEffect(() => {
     if (screen !== 'home' || splashPhase !== 'done') {
@@ -130,7 +121,7 @@ export default function App() {
 
   return (
     <div
-      className={`app${navyLive ? ' app--home-bg' : ''}${homeLive ? ' app--home-image' : ''}${shellVisible ? ' app--home-visible' : ''}${screen === 'strips' && !splashActive ? ' app--strips' : ''}${momentsLive ? ' app--moments' : ''}${academicsLive ? ' app--academics' : ''}${placesLive ? ' app--places' : ''}${splashActive ? ' app--splash' : ''}`}
+      className={`app${navyLive ? ' app--home-bg' : ''}${homeLive ? ' app--home-image' : ''}${shellVisible ? ' app--home-visible' : ''}${screen === 'strips' && !splashActive ? ' app--strips' : ''}${academicsLive ? ' app--academics' : ''}${placesLive ? ' app--places' : ''}${splashActive ? ' app--splash' : ''}`}
     >
       {splashActive ? (
         <SplashIntro
@@ -163,19 +154,6 @@ export default function App() {
                 onRename={strips.rename}
                 onRemove={strips.remove}
                 onClearError={() => strips.setError()}
-                onBack={goHome}
-              />
-            ) : null}
-
-            {screen === 'moments' ? (
-              <MomentsScreen
-                moments={moments.moments}
-                ready={moments.ready}
-                busy={moments.busy}
-                error={moments.error}
-                onAdd={moments.addPolaroid}
-                onRemove={moments.remove}
-                onClearError={() => moments.setError('')}
                 onBack={goHome}
               />
             ) : null}

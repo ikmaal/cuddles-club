@@ -161,19 +161,6 @@ export function useAcademics() {
       setError('')
       try {
         let material = createMaterial(moduleId, input)
-        let extracted = ''
-        if (input.file) {
-          try {
-            const { extractTextFromFile } = await import('../lib/extractMaterialText')
-            extracted = await extractTextFromFile(input.file)
-          } catch {
-            extracted = ''
-          }
-        }
-        if (input.notes?.trim()) {
-          extracted = [extracted, `User notes:\n${input.notes.trim()}`].filter(Boolean).join('\n\n')
-        }
-        material = { ...material, extractedText: extracted }
 
         if (input.file) {
           if (isCloud && coupleId) {

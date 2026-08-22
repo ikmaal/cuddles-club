@@ -151,18 +151,6 @@ html.strips-bg .app {
   box-shadow: none;
 }
 
-html.moments-bg,
-html.moments-bg body,
-html.moments-bg #root {
-  background-color: #efe4d4;
-  overscroll-behavior: none;
-}
-
-html.moments-bg .app {
-  background: #efe4d4;
-  box-shadow: none;
-}
-
 html.academics-bg,
 html.academics-bg body,
 html.academics-bg #root {

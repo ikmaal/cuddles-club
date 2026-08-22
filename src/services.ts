@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react'
-import { AcademicsIcon, PlacesIcon, PolaroidIcon, StripIcon } from './components/Icons'
+import { AcademicsIcon, PlacesIcon, StripIcon } from './components/Icons'
 import type { Screen } from './types'
 
 export interface Service {
@@ -19,14 +19,6 @@ export const SERVICES: Service[] = [
     tone: 'film',
     Icon: StripIcon,
     image: 'photobooth.jpg',
-  },
-  {
-    id: 'moments',
-    label: 'Moments',
-    blurb: 'Instant polaroids with a film look',
-    tone: 'orange',
-    Icon: PolaroidIcon,
-    image: 'moments-logo.png',
   },
   {
     id: 'academics',

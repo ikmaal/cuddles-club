@@ -49,7 +49,3 @@ create policy "academic_materials_all_member"
 
 -- Reuse the existing photostrips bucket with path prefix {coupleId}/academics/
 -- No new bucket required.
-
--- If you already ran an older academics.sql, also run:
--- alter table public.academic_materials
---   add column if not exists extracted_text text not null default '';
