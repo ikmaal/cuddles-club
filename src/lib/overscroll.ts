@@ -55,6 +55,12 @@ function isInsideScrollRegion(target: EventTarget | null): boolean {
     if (node instanceof HTMLElement) {
       // Home manages its own touch lock.
       if (node.classList.contains('home')) return true
+      if (
+        node.classList.contains('places-map') ||
+        node.classList.contains('leaflet-container')
+      ) {
+        return true
+      }
 
       const { overflowY, overflowX } = window.getComputedStyle(node)
       const canScrollY =

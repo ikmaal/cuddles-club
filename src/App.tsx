@@ -17,7 +17,7 @@ import './App.css'
 const HOME_WHITE = '#ffffff'
 const STRIPS_BLACK = '#0c0c0c'
 const ACADEMICS_WHITE = '#f5f3fa'
-const PLACES_PAPER = '#fafaf8'
+const PLACES_PAPER = '#ffffff'
 const SPLASH_STATUS_COLOR = '#ffffff'
 const DEFAULT_THEME_COLOR = '#E85D75'
 

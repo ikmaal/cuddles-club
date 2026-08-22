@@ -228,6 +228,15 @@ export function PlacesIcon({ size }: IconProps) {
   )
 }
 
+export function MapPinIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="M12 21s6.5-5.2 6.5-10.2a6.5 6.5 0 1 0-13 0C5.5 15.8 12 21 12 21z" />
+      <circle cx="12" cy="10.8" r="2.2" />
+    </Frame>
+  )
+}
+
 export function CapIcon({ size }: IconProps) {
   return (
     <Frame size={size}>
@@ -273,5 +282,101 @@ export function BookIcon({ size }: IconProps) {
       <path d="M6 5.2v15.8" />
       <path d="M9.2 7.4h6.8" />
     </Frame>
+  )
+}
+
+export function SearchIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <circle cx="11" cy="11" r="6.2" />
+      <path d="m16 16 4 4" />
+    </Frame>
+  )
+}
+
+export function FilterIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="M4 6h16M7 12h10M10 18h4" />
+    </Frame>
+  )
+}
+
+export function BookmarkIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="M7 4.5h10a1 1 0 0 1 1 1V20l-6-3.2L6 20V5.5a1 1 0 0 1 1-1z" />
+    </Frame>
+  )
+}
+
+export function UserIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <circle cx="12" cy="8.2" r="3.2" />
+      <path d="M5.2 19.2c.8-3.2 3.2-5 6.8-5s6 1.8 6.8 5" />
+    </Frame>
+  )
+}
+
+export function LocateIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M12 3.5v2.4M12 18.1v2.4M3.5 12h2.4M18.1 12h2.4" />
+      <circle cx="12" cy="12" r="7.2" />
+    </Frame>
+  )
+}
+
+export function ListIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="M8 7h12M8 12h12M8 17h12" />
+      <path d="M4.2 7h.01M4.2 12h.01M4.2 17h.01" strokeWidth="2.4" />
+    </Frame>
+  )
+}
+
+export function BeenToIcon({ size = 24 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <rect
+        x="3.6"
+        y="3.6"
+        width="16.8"
+        height="16.8"
+        rx="5.2"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeDasharray="2.4 1.7"
+      />
+      <path
+        d="M12 17.15c-2.85-2.2-5.35-4.55-5.35-7a5.35 5.35 0 0 1 10.7 0c0 2.45-2.5 4.8-5.35 7z"
+        fill="currentColor"
+      />
+    </svg>
+  )
+}
+
+export function WantToGoIcon({ size = 24 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M7.2 3.8h9.6a1.2 1.2 0 0 1 1.2 1.2V20l-6-3.2-6 3.2V5a1.2 1.2 0 0 1 1.2-1.2z"
+        fill="currentColor"
+        opacity="0.2"
+      />
+      <path
+        d="M7.2 3.8h9.6a1.2 1.2 0 0 1 1.2 1.2V20l-6-3.2-6 3.2V5a1.2 1.2 0 0 1 1.2-1.2z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M12 6.2 12.85 8h2.05l-1.65 1.25.65 2-1.9-1.2-1.9 1.2.65-2L8.1 8h2.05z"
+        fill="currentColor"
+      />
+    </svg>
   )
 }

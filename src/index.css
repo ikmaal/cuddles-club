@@ -166,12 +166,12 @@ html.academics-bg .app {
 html.places-bg,
 html.places-bg body,
 html.places-bg #root {
-  background-color: #fafaf8;
+  background-color: #ffffff;
   overscroll-behavior: none;
 }
 
 html.places-bg .app {
-  background: #fafaf8;
+  background: #ffffff;
   box-shadow: none;
 }
 
