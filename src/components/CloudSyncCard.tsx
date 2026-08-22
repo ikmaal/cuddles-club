@@ -46,7 +46,7 @@ export function CloudSyncCard() {
           <span className="tag tag-positive">Connected</span>
         </div>
         <p className="cloud-card__body">
-          Signed in as <strong>{user?.email}</strong>. Your couple space is synced in real time.
+          Signed in as <strong>{user?.email}</strong>. Both phones stay in sync.
         </p>
         {inviteCode ? (
           <div className="cloud-card__invite">
@@ -133,7 +133,7 @@ export function CloudSyncCard() {
         <h2>Cloud sync</h2>
       </div>
       <p className="cloud-card__body">
-        Sign in to sync your photostrips and couple profile between both phones.
+        Sign in to keep photos, notes, and files in sync on both phones.
       </p>
       <div className="cloud-card__tabs">
         <button

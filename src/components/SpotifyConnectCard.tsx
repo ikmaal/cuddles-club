@@ -34,8 +34,8 @@ export function SpotifyConnectCard() {
       </div>
       <p className="cloud-card__body">
         {connected
-          ? `Connected as ${displayName}. Your listening updates on Home → Activities.`
-          : 'Connect your Spotify so your partner can see what you’re listening to.'}
+          ? `Playing as ${displayName}. Listening shows up on Home.`
+          : 'Connect Spotify so your partner can see what you are playing.'}
       </p>
       {!isCloud ? (
         <p className="cloud-card__body">

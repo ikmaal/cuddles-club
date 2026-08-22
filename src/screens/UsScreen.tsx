@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { SettingsIcon } from '../components/Icons'
 import { CloudSyncCard } from '../components/CloudSyncCard'
 import { PersonProfileCard } from '../components/PersonProfileCard'
+import { StorageCard } from '../components/StorageCard'
 import { ScrollRegion } from '../components/ScrollRegion'
 import { SpotifyConnectCard } from '../components/SpotifyConnectCard'
 import { useCouple } from '../context/CoupleContext'
@@ -137,50 +138,65 @@ export function UsScreen({ profile, onSave }: UsScreenProps) {
                 aria-labelledby="us-settings-title"
               >
                 <header className="sheet__header us-settings__header">
-                  <div>
-                    <p className="eyebrow">Us</p>
-                    <h2 id="us-settings-title">Settings</h2>
-                  </div>
+                  <h2 id="us-settings-title">Settings</h2>
                   <button
                     type="button"
-                    className="icon-btn us-settings__close"
+                    className="us-settings__done"
                     onClick={closeSettings}
-                    aria-label="Close settings"
                   >
-                    ×
+                    Done
                   </button>
                 </header>
 
                 <ScrollRegion className="us-settings__scroll">
-                  <CloudSyncCard />
-
-                  <SpotifyConnectCard />
-
-                  <form className="surface form-card" onSubmit={(event) => void submitSince(event)}>
-                    <div className="section-head section-head--tight">
-                      <h2>Together</h2>
+                  <section className="us-settings__group">
+                    <p className="us-settings__label">Account</p>
+                    <div className="us-settings__stack">
+                      <CloudSyncCard />
+                      <StorageCard />
                     </div>
+                  </section>
 
-                    <label className="field field--date">
-                      <span>Together since</span>
-                      <span className="field__control">
-                        <input
-                          type="date"
-                          value={since}
-                          onChange={(event) => setSince(event.target.value)}
-                        />
-                      </span>
-                    </label>
+                  <section className="us-settings__group">
+                    <p className="us-settings__label">Music</p>
+                    <div className="us-settings__stack">
+                      <SpotifyConnectCard />
+                    </div>
+                  </section>
 
-                    <button type="submit" className="btn btn--primary btn--sm" disabled={busy}>
-                      {saved ? 'Saved' : 'Save'}
-                    </button>
-                  </form>
+                  <section className="us-settings__group">
+                    <p className="us-settings__label">Together</p>
+                    <div className="us-settings__stack">
+                      <form
+                        className="surface form-card"
+                        onSubmit={(event) => void submitSince(event)}
+                      >
+                        <label className="field field--date">
+                          <span>Together since</span>
+                          <span className="field__control">
+                            <input
+                              type="date"
+                              value={since}
+                              onChange={(event) => setSince(event.target.value)}
+                            />
+                          </span>
+                        </label>
+
+                        <button
+                          type="submit"
+                          className="btn btn--primary btn--sm"
+                          disabled={busy}
+                        >
+                          {saved ? 'Saved' : 'Save date'}
+                        </button>
+                      </form>
+                    </div>
+                  </section>
 
                   <p className="fineprint">
                     {isCloud
-                      ? 'Your couple data syncs through Supabase when you are signed in.'
-                      : 'Without cloud sync, everything stays on this device only.'}
+                      ? 'Changes sync to both phones while you are signed in.'
+                      : 'On this device only until you sign in.'}
                   </p>
                 </ScrollRegion>
               </div>
