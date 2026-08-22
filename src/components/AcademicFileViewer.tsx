@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { AcademicPdfPages } from './AcademicPdfPages'
 import { academicFileLabel, academicPreviewKind } from '../lib/academicFileKind'
 import type { AcademicMaterial } from '../types'
 
@@ -54,7 +55,7 @@ export function AcademicFileViewer({ item, onClose }: AcademicFileViewerProps) {
       </header>
       <div className="acad-viewer__stage">
         {kind === 'pdf' ? (
-          <iframe className="acad-viewer__frame" title={item.title} src={item.fileUrl} />
+          <AcademicPdfPages url={item.fileUrl} title={item.title} />
         ) : null}
         {kind === 'image' ? (
           <img className="acad-viewer__img" src={item.fileUrl} alt={item.title} />
