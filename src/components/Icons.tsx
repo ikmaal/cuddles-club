@@ -199,6 +199,14 @@ export function ChevronIcon({ size }: IconProps) {
   )
 }
 
+export function DotsIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="M6.2 12h.01M12 12h.01M17.8 12h.01" strokeWidth="2.8" />
+    </Frame>
+  )
+}
+
 export function SettingsIcon({ size }: IconProps) {
   return (
     <Frame size={size}>

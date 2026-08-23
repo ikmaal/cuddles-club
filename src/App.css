@@ -5863,6 +5863,10 @@ a.home-listening:focus-visible {
   --acad-card: #fffdf8;
   --acad-line: #ebe3d4;
   --acad-shadow: 0 10px 28px rgba(90, 70, 40, 0.08);
+  --acad-lavender: #cbb8ee;
+  --acad-lavender-soft: #ece6fb;
+  --acad-lavender-ink: #6e5b9c;
+  --acad-butter: #f8e7a8;
   background: var(--acad-bg);
   color: var(--acad-ink);
   position: relative;
@@ -5933,6 +5937,99 @@ a.home-listening:focus-visible {
   place-items: center;
   border-radius: 50%;
   color: #171717;
+}
+
+.acad-modhead {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 48px;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 4px 8px;
+  padding-top: max(4px, env(safe-area-inset-top));
+}
+
+.acad-modhead__back {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #171717;
+  box-shadow: 0 4px 14px rgba(90, 70, 40, 0.08);
+}
+
+.acad-modhead__text {
+  min-width: 0;
+}
+
+.acad-modhead__text h1 {
+  margin: 0;
+  font-size: 1.22rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.acad-modhead__text p {
+  margin: 3px 0 0;
+  color: #8a8478;
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.acad-modhead__add {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  justify-self: end;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--acad-gold);
+  color: #171717;
+  box-shadow: 0 8px 18px rgba(210, 150, 20, 0.32);
+}
+
+.acad-sparkles {
+  position: absolute;
+  inset: -7px;
+  pointer-events: none;
+}
+
+.acad-sparkles i {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background: #171717;
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+}
+
+.acad-sparkles i:nth-child(1) {
+  top: 1px;
+  right: 3px;
+}
+
+.acad-sparkles i:nth-child(2) {
+  top: 12px;
+  left: 0;
+  width: 3.5px;
+  height: 3.5px;
+  opacity: 0.7;
+}
+
+.acad-sparkles i:nth-child(3) {
+  bottom: 2px;
+  right: 0;
+  width: 4px;
+  height: 4px;
+}
+
+.acad-due__icon .acad-sparkles,
+.acad-file__icon .acad-sparkles,
+.acad-fileadd__plus .acad-sparkles {
+  inset: -6px;
 }
 
 .acad-switch-block {
@@ -6311,15 +6408,249 @@ a.home-listening:focus-visible {
   gap: 22px;
 }
 
-.acad-module-view .acad-section__head {
-  align-items: center;
+.acad-dueboard {
+  padding: 4px 6px;
+  border-radius: 26px;
+  background: #ffffff;
+  border: 1.5px solid #111111;
+  box-shadow: 0 12px 28px rgba(80, 60, 30, 0.08);
 }
 
-.acad-module-view__owner {
+.acad-dueboard ul {
+  list-style: none;
   margin: 0;
-  font-size: 0.85rem;
+  padding: 0;
+}
+
+.acad-dueboard li + li {
+  border-top: 1px solid #f1ebe0;
+}
+
+.acad-dueboard__empty {
+  margin: 0;
+  padding: 18px 16px;
+  color: var(--acad-mute);
+  font-size: 0.9rem;
+}
+
+.acad-due {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) auto 16px;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 10px;
+  text-align: left;
+  color: inherit;
+  background: transparent;
+}
+
+.acad-due svg:last-child {
+  color: #1a1a1a;
+}
+
+.acad-due__icon {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: var(--acad-butter);
+  color: #171717;
+}
+
+.acad-due__meta {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.acad-due__meta strong {
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.acad-due__when {
+  font-size: 0.78rem;
   font-weight: 650;
-  color: var(--acad-lilac);
+  color: var(--acad-mute);
+}
+
+.acad-due__when.is-hot,
+.acad-due__when.is-warm {
+  color: #e39b16;
+}
+
+.acad-due__when.is-late {
+  color: #be123c;
+}
+
+.acad-due__code {
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--acad-butter);
+  color: #3d3428;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.acad-block {
+  display: grid;
+  gap: 12px;
+}
+
+.acad-block__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 2px;
+}
+
+.acad-block__head h2 {
+  margin: 0;
+  font-size: 1.12rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.acad-block__count {
+  min-width: 26px;
+  height: 26px;
+  padding: 0 7px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--acad-lavender-soft);
+  color: var(--acad-lavender-ink);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.acad-files {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.acad-file {
+  position: relative;
+  min-width: 0;
+}
+
+.acad-file__card {
+  width: 100%;
+  min-height: 118px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 14px 34px 14px 14px;
+  text-align: left;
+  border-radius: 22px;
+  background: #ffffff;
+  border: 1.5px solid #111111;
+  box-shadow: 0 10px 24px rgba(80, 60, 30, 0.08);
+  color: var(--acad-ink);
+  touch-action: pan-y;
+}
+
+.acad-file__card:active,
+.acad-file__card.is-holding {
+  transform: scale(0.98);
+}
+
+.acad-file__card:focus-visible {
+  outline: 2px solid var(--acad-lavender);
+  outline-offset: 2px;
+}
+
+.acad-file__icon {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: #171717;
+}
+
+.acad-file__icon.is-lecture {
+  background: var(--acad-lavender-soft);
+}
+
+.acad-file__icon.is-assignment {
+  background: var(--acad-butter);
+}
+
+.acad-file__copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.acad-file__copy strong {
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.acad-file__copy small {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--acad-mute);
+}
+
+.acad-file__more {
+  position: absolute;
+  top: 6px;
+  right: 4px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  color: #1a1a1a;
+  background: transparent;
+  z-index: 1;
+}
+
+.acad-fileadd {
+  position: relative;
+  width: 100%;
+  min-height: 118px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  border-radius: 22px;
+  border: 1.6px dashed #c5b4e8;
+  background: transparent;
+  color: var(--acad-lavender-ink);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.acad-fileadd__plus {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--acad-lavender);
+  color: #ffffff;
+}
+
+.acad-fileadd:active {
+  transform: scale(0.98);
 }
 
 .acad-text-btn {
@@ -6384,99 +6715,14 @@ a.home-listening:focus-visible {
   font-weight: 650;
 }
 
-.acad-tiles {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.acad-tile {
-  min-width: 0;
-}
-
-.acad-tile__card {
-  width: 100%;
-  min-height: 92px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 14px 12px 12px;
-  text-align: left;
-  border-radius: 18px;
-  background: var(--acad-card);
-  box-shadow: var(--acad-shadow);
-  color: var(--acad-ink);
-  touch-action: pan-y;
-}
-
-.acad-tile__card:active,
-.acad-tile__card.is-holding {
-  transform: scale(0.98);
-}
-
-.acad-tile__card:focus-visible {
-  outline: 2px solid var(--acad-lilac);
-  outline-offset: 2px;
-}
-
-.acad-tile__card.is-empty {
-  background: #fbfafe;
-}
-
-.acad-tile__card strong {
-  font-size: 0.88rem;
-  font-weight: 700;
-  line-height: 1.25;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.acad-tile__card small {
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--acad-mute);
-}
-
-.acad-tile-add {
-  width: 100%;
-  min-height: 92px;
-  display: grid;
-  place-items: center;
-  align-content: center;
-  gap: 4px;
-  border-radius: 18px;
-  border: 1.5px dashed rgba(123, 108, 246, 0.35);
-  background: rgba(255, 255, 255, 0.55);
-  color: var(--acad-lilac);
-  font-size: 0.82rem;
-  font-weight: 650;
-}
-
-.acad-tile-add span {
-  font-size: 1.2rem;
-  line-height: 1;
-}
-
-.acad-tile-add:active {
-  transform: scale(0.98);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .acad-icon-btn:active,
   button.acad-upcoming__row:active,
+  button.acad-due:active,
   .acad-module:active,
-  .acad-tile__card:active,
-  .acad-tile__card.is-holding,
-  .acad-tile-add:active {
+  .acad-file__card:active,
+  .acad-file__card.is-holding,
+  .acad-fileadd:active {
     transform: none;
   }
 }

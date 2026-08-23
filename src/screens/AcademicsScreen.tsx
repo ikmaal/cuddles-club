@@ -6,13 +6,14 @@ import {
   CalcIcon,
   CalendarIcon,
   CapIcon,
+  ChevronIcon,
   DocPageIcon,
+  DotsIcon,
   LaptopIcon,
   MegaphoneIcon,
   PlusIcon,
   SwapIcon,
 } from '../components/Icons'
-import { ScreenHeader } from '../components/ScreenHeader'
 import { ScrollRegion } from '../components/ScrollRegion'
 import { StudyTogetherBanner } from '../components/StudyTogetherBanner'
 import { useLongPress } from '../hooks/useLongPress'
@@ -75,8 +76,18 @@ function dueLine(dueDate: string, done: boolean) {
   if (diff === 0) return { text: 'Due today', tone: 'hot', fire: true }
   if (diff === 1) return { text: 'Due in 1 day', tone: 'hot', fire: true }
   if (diff <= 2) return { text: `Due in ${diff} days`, tone: 'hot', fire: true }
-  if (diff <= 5) return { text: `Due in ${diff} days`, tone: 'warm', fire: false }
+  if (diff <= 7) return { text: `Due in ${diff} days`, tone: 'warm', fire: false }
   return { text: `Due in ${diff} days`, tone: 'calm', fire: false }
+}
+
+function Sparkles() {
+  return (
+    <span className="acad-sparkles" aria-hidden>
+      <i />
+      <i />
+      <i />
+    </span>
+  )
 }
 
 function themeFromId(id: string): AcadTheme {
@@ -121,34 +132,57 @@ function DeadlineCard({
   module,
   clickable,
   onOpen,
+  layout = 'home',
 }: {
   item: AcademicMaterial
   module?: AcademicModule
   clickable?: boolean
   onOpen?: () => void
+  layout?: 'home' | 'page'
 }) {
   const theme = themeFromId(module?.id || item.moduleId)
   const due = dueLine(item.dueDate, item.done)
-  const className = `acad-upcoming__row acad-theme-${theme} ${dueTone(item.dueDate, item.done)}`
-  const body = (
-    <>
-      <span className="acad-upcoming__icon">
-        <AcadGlyphIcon name={glyphForDeadline(item.title, theme)} size={28} />
-      </span>
-      <span className="acad-upcoming__meta">
-        <strong>{item.title}</strong>
-        {due.text ? (
-          <small className={`acad-upcoming__when is-${due.tone}`}>
-            {due.text}
-            {due.fire ? ' 🔥' : ''}
-          </small>
-        ) : (
-          <small>{[module?.code, module?.title].filter(Boolean).join(' · ')}</small>
-        )}
-      </span>
-      <span className="acad-upcoming__code">{module?.code || 'Module'}</span>
-    </>
-  )
+  const className =
+    layout === 'page'
+      ? `acad-due ${dueTone(item.dueDate, item.done)}`
+      : `acad-upcoming__row acad-theme-${theme} ${dueTone(item.dueDate, item.done)}`
+  const body =
+    layout === 'page' ? (
+      <>
+        <span className="acad-due__icon">
+          <Sparkles />
+          <AcadGlyphIcon name={glyphForDeadline(item.title, theme)} size={22} />
+        </span>
+        <span className="acad-due__meta">
+          <strong>{item.title}</strong>
+          {due.text ? (
+            <small className={`acad-due__when is-${due.tone}`}>{due.text}</small>
+          ) : (
+            <small>{[module?.code, module?.title].filter(Boolean).join(' · ')}</small>
+          )}
+        </span>
+        <span className="acad-due__code">{module?.code || 'Module'}</span>
+        <ChevronIcon size={16} />
+      </>
+    ) : (
+      <>
+        <span className="acad-upcoming__icon">
+          <AcadGlyphIcon name={glyphForDeadline(item.title, theme)} size={28} />
+        </span>
+        <span className="acad-upcoming__meta">
+          <strong>{item.title}</strong>
+          {due.text ? (
+            <small className={`acad-upcoming__when is-${due.tone}`}>
+              {due.text}
+              {due.fire ? ' 🔥' : ''}
+            </small>
+          ) : (
+            <small>{[module?.code, module?.title].filter(Boolean).join(' · ')}</small>
+          )}
+        </span>
+        <span className="acad-upcoming__code">{module?.code || 'Module'}</span>
+      </>
+    )
 
   if (clickable) {
     return (
@@ -184,15 +218,29 @@ function MaterialTile({
   )
 
   return (
-    <li className="acad-tile">
+    <li className="acad-file">
       <button
         type="button"
-        className={`acad-tile__card${item.fileUrl ? '' : ' is-empty'}${holding ? ' is-holding' : ''}`}
+        className={`acad-file__card${item.fileUrl ? '' : ' is-empty'}${holding ? ' is-holding' : ''}`}
         aria-label={item.fileUrl ? `Open ${item.title}. Hold for options.` : `${item.title}. Hold for options.`}
         {...bind}
       >
-        <strong>{item.title}</strong>
-        <small>{fileCaption(item.fileName)}</small>
+        <span className={`acad-file__icon is-${item.kind}`}>
+          <Sparkles />
+          <DocPageIcon size={20} />
+        </span>
+        <span className="acad-file__copy">
+          <strong>{item.title}</strong>
+          <small>{fileCaption(item.fileName)}</small>
+        </span>
+      </button>
+      <button
+        type="button"
+        className="acad-file__more"
+        aria-label={`Options for ${item.title}`}
+        onClick={() => onMenu(item)}
+      >
+        <DotsIcon size={18} />
       </button>
     </li>
   )
@@ -423,15 +471,6 @@ export function AcademicsScreen({
     ? upcoming
     : upcoming.slice(0, DEADLINE_PREVIEW)
 
-  const title =
-    view.mode === 'module' && activeModule
-      ? activeModule.code || activeModule.title
-      : 'Academics'
-  const subtitle =
-    view.mode === 'module' && activeModule
-      ? [activeModule.title, activeModule.term].filter(Boolean).join(' · ')
-      : undefined
-
   function handleBack() {
     if (viewerId) {
       setViewerId(null)
@@ -456,23 +495,26 @@ export function AcademicsScreen({
           </button>
         </header>
       ) : (
-        <ScreenHeader
-          title={title}
-          subtitle={subtitle}
-          onBack={handleBack}
-          action={
-            activeModule ? (
-              <button
-                type="button"
-                className="acad-icon-btn"
-                onClick={() => openMaterialForm('lecture')}
-                aria-label="Add lecture"
-              >
-                <PlusIcon size={20} />
-              </button>
-            ) : null
-          }
-        />
+        <header className="acad-modhead">
+          <button type="button" className="acad-modhead__back" onClick={handleBack} aria-label="Back">
+            <BackIcon size={22} />
+          </button>
+          <div className="acad-modhead__text">
+            <h1>{activeModule?.code || activeModule?.title || 'Module'}</h1>
+            {activeModule?.code && activeModule.title ? <p>{activeModule.title}</p> : null}
+          </div>
+          {activeModule ? (
+            <button
+              type="button"
+              className="acad-modhead__add"
+              onClick={() => openMaterialForm('lecture')}
+              aria-label="Add lecture"
+            >
+              <Sparkles />
+              <PlusIcon size={22} />
+            </button>
+          ) : null}
+        </header>
       )}
 
       <ScrollRegion className="screen__scroll acad-scroll">
@@ -642,35 +684,35 @@ export function AcademicsScreen({
           </>
         ) : activeModule ? (
           <div className="acad-module-view">
-            <p className="acad-module-view__owner">
-              {activeModule.owner === 'you' ? names.you : names.partner}
-            </p>
-
-            {deadlines.length > 0 ? (
-              <section className="acad-section" aria-label="Deadlines">
-                <header className="acad-section__head">
-                  <h2>
-                    <CalendarIcon size={18} />
-                    Upcoming Deadlines
-                  </h2>
-                  <span>{deadlines.length} open</span>
-                </header>
-                <ul className="acad-upcoming">
+            <section className="acad-dueboard" aria-label="Upcoming deadlines">
+              {deadlines.length === 0 ? (
+                <p className="acad-dueboard__empty">No open deadlines. You’re clear.</p>
+              ) : (
+                <ul>
                   {deadlines.map((item) => (
                     <li key={item.id}>
-                      <DeadlineCard item={item} module={activeModule} />
+                      <DeadlineCard
+                        item={item}
+                        module={activeModule}
+                        layout="page"
+                        clickable
+                        onOpen={() => {
+                          if (item.fileUrl) openViewer(item)
+                          else openMenu(item)
+                        }}
+                      />
                     </li>
                   ))}
                 </ul>
-              </section>
-            ) : null}
+              )}
+            </section>
 
-            <section className="acad-section" aria-label="Lectures">
-              <header className="acad-section__head">
+            <section className="acad-block" aria-label="Lectures">
+              <header className="acad-block__head">
                 <h2>Lectures</h2>
-                <span>{lectures.length}</span>
+                <span className="acad-block__count">{lectures.length}</span>
               </header>
-              <ul className="acad-tiles">
+              <ul className="acad-files">
                 {lectures.map((item) => (
                   <MaterialTile
                     key={item.id}
@@ -682,22 +724,25 @@ export function AcademicsScreen({
                 <li>
                   <button
                     type="button"
-                    className="acad-tile-add"
+                    className="acad-fileadd"
                     onClick={() => openMaterialForm('lecture')}
                   >
-                    <span aria-hidden>+</span>
+                    <span className="acad-fileadd__plus">
+                      <Sparkles />
+                      <PlusIcon size={18} />
+                    </span>
                     Add lecture
                   </button>
                 </li>
               </ul>
             </section>
 
-            <section className="acad-section" aria-label="Assignments">
-              <header className="acad-section__head">
+            <section className="acad-block" aria-label="Assignments">
+              <header className="acad-block__head">
                 <h2>Assignments</h2>
-                <span>{assignments.length}</span>
+                <span className="acad-block__count">{assignments.length}</span>
               </header>
-              <ul className="acad-tiles">
+              <ul className="acad-files">
                 {assignments.map((item) => (
                   <MaterialTile
                     key={item.id}
@@ -709,10 +754,13 @@ export function AcademicsScreen({
                 <li>
                   <button
                     type="button"
-                    className="acad-tile-add"
+                    className="acad-fileadd"
                     onClick={() => openMaterialForm('assignment')}
                   >
-                    <span aria-hidden>+</span>
+                    <span className="acad-fileadd__plus">
+                      <Sparkles />
+                      <PlusIcon size={18} />
+                    </span>
                     Add assignment
                   </button>
                 </li>
