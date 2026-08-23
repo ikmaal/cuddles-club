@@ -133,7 +133,7 @@ function DeadlineCard({
   const body = (
     <>
       <span className="acad-upcoming__icon">
-        <AcadGlyphIcon name={glyphForDeadline(item.title, theme)} />
+        <AcadGlyphIcon name={glyphForDeadline(item.title, theme)} size={28} />
       </span>
       <span className="acad-upcoming__meta">
         <strong>{item.title}</strong>
@@ -484,46 +484,48 @@ export function AcademicsScreen({
 
         {view.mode === 'home' ? (
           <>
-            <div className="acad-switch" role="tablist" aria-label="Whose courses">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={owner === 'you'}
-                className={owner === 'you' ? 'is-on' : ''}
-                onClick={() => {
-                  setOwner('you')
-                  setShowAllDeadlines(false)
-                }}
-              >
-                <span>{firstName(names.you).toLowerCase()}</span>
-              </button>
-              <button
-                type="button"
-                className="acad-switch__swap"
-                onClick={() => {
-                  setOwner(owner === 'you' ? 'partner' : 'you')
-                  setShowAllDeadlines(false)
-                }}
-                aria-label="Switch person"
-              >
-                <SwapIcon size={22} />
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={owner === 'partner'}
-                className={owner === 'partner' ? 'is-on' : ''}
-                onClick={() => {
-                  setOwner('partner')
-                  setShowAllDeadlines(false)
-                }}
-              >
-                <span>{firstName(names.partner).toLowerCase()}</span>
-              </button>
+            <div className="acad-switch-block">
+              <div className="acad-switch" role="tablist" aria-label="Whose courses">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={owner === 'you'}
+                  className={owner === 'you' ? 'is-on' : ''}
+                  onClick={() => {
+                    setOwner('you')
+                    setShowAllDeadlines(false)
+                  }}
+                >
+                  <span>{firstName(names.you).toLowerCase()}</span>
+                </button>
+                <button
+                  type="button"
+                  className="acad-switch__swap"
+                  onClick={() => {
+                    setOwner(owner === 'you' ? 'partner' : 'you')
+                    setShowAllDeadlines(false)
+                  }}
+                  aria-label="Switch person"
+                >
+                  <SwapIcon size={13} />
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={owner === 'partner'}
+                  className={owner === 'partner' ? 'is-on' : ''}
+                  onClick={() => {
+                    setOwner('partner')
+                    setShowAllDeadlines(false)
+                  }}
+                >
+                  <span>{firstName(names.partner).toLowerCase()}</span>
+                </button>
+              </div>
+              <p className="acad-viewing">
+                Viewing <b>{ownedLabel(viewingName)}</b> modules
+              </p>
             </div>
-            <p className="acad-viewing">
-              Viewing <b>{ownedLabel(viewingName)}</b> modules
-            </p>
             <StudyTogetherBanner />
 
             {!ready ? (
