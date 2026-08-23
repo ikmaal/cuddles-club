@@ -16,7 +16,7 @@ import './App.css'
 
 const HOME_WHITE = '#ffffff'
 const STRIPS_BLACK = '#0c0c0c'
-const ACADEMICS_WHITE = '#f5f3fa'
+const ACADEMICS_CREAM = '#f6f1e6'
 const PLACES_PAPER = '#ffffff'
 const SPLASH_STATUS_COLOR = '#ffffff'
 const DEFAULT_THEME_COLOR = '#E85D75'
@@ -76,7 +76,7 @@ export default function App() {
       setThemeColor(STRIPS_BLACK)
       setStatusBarStyle('black-translucent')
     } else if (academicsLive) {
-      setThemeColor(ACADEMICS_WHITE)
+      setThemeColor(ACADEMICS_CREAM)
       setStatusBarStyle('default')
     } else if (placesLive) {
       setThemeColor(PLACES_PAPER)

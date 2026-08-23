@@ -359,6 +359,46 @@ export function BeenToIcon({ size = 24 }: IconProps) {
   )
 }
 
+export function BellIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="M6.2 10.2a5.8 5.8 0 0 1 11.6 0c0 4.2 1.4 5.4 1.4 5.4H4.8s1.4-1.2 1.4-5.4z" />
+      <path d="M10 18.6a2 2 0 0 0 4 0" />
+    </Frame>
+  )
+}
+
+export function SwapIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="M6.4 8.4h11.2M13.6 5.2 18.2 8.4 13.6 11.6" strokeWidth="2.8" />
+      <path d="M17.6 15.6H6.4M10.4 12.4 5.8 15.6 10.4 18.8" strokeWidth="2.8" />
+    </Frame>
+  )
+}
+
+export function LaptopIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <rect x="5" y="5.5" width="14" height="10" rx="1.6" />
+      <path d="M3.6 18.2h16.8" />
+    </Frame>
+  )
+}
+
+export function CalcIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <rect x="5.2" y="3.6" width="13.6" height="16.8" rx="2.2" />
+      <rect x="7.4" y="6" width="9.2" height="3.2" rx="0.8" />
+      <path
+        d="M8.2 12.2h.01M12 12.2h.01M15.8 12.2h.01M8.2 15.6h.01M12 15.6h.01M15.8 15.6h.01"
+        strokeWidth="2.2"
+      />
+    </Frame>
+  )
+}
+
 export function WantToGoIcon({ size = 24 }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden>
