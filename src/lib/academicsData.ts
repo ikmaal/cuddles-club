@@ -1,6 +1,12 @@
 import { carerToSlot, slotToCarer, type MemberSlot } from './coupleSlot'
 import { PHOTOSTRIP_BUCKET, supabase } from './supabase'
-import type { AcademicMaterial, AcademicMaterialKind, AcademicModule, Carer } from '../types'
+import type {
+  AcademicMaterial,
+  AcademicMaterialKind,
+  AcademicModule,
+  Carer,
+} from '../types'
+import { parseModuleColor } from '../types'
 
 function client() {
   if (!supabase) throw new Error('Supabase is not configured')
@@ -59,6 +65,7 @@ function rowToModule(row: Record<string, unknown>, mySlot: MemberSlot): Academic
     code: String(row.code ?? ''),
     title: String(row.title ?? ''),
     term: String(row.term ?? ''),
+    color: parseModuleColor(row.color, String(row.id)),
     createdAt: Number(row.created_at),
   }
 }
@@ -115,6 +122,7 @@ export async function upsertAcademicModule(
     code: module.code,
     title: module.title,
     term: module.term,
+    color: module.color,
     created_at: module.createdAt,
   })
   if (error) throw error

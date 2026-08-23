@@ -21,11 +21,13 @@ import {
   upsertAcademicMaterial,
   upsertAcademicModule,
 } from '../lib/academicsData'
-import type {
-  AcademicMaterial,
-  AcademicMaterialKind,
-  AcademicModule,
-  Carer,
+import {
+  parseModuleColor,
+  type AcademicMaterial,
+  type AcademicMaterialKind,
+  type AcademicModule,
+  type Carer,
+  type ModuleColor,
 } from '../types'
 
 function asErrorMessage(err: unknown, fallback: string): string {
@@ -110,7 +112,10 @@ export function useAcademics() {
   )
 
   const addModule = useCallback(
-    async (owner: Carer, input: { code: string; title: string; term?: string }) => {
+    async (
+      owner: Carer,
+      input: { code: string; title: string; term?: string; color?: ModuleColor },
+    ) => {
       if (!input.title.trim()) return null
       setBusy(true)
       setError('')
@@ -131,6 +136,43 @@ export function useAcademics() {
       }
     },
     [coupleId, isCloud, slot],
+  )
+
+  const updateModule = useCallback(
+    async (
+      id: string,
+      patch: { code?: string; title?: string; term?: string; color?: ModuleColor },
+    ) => {
+      const current = modules.find((item) => item.id === id)
+      if (!current) return null
+      const next: AcademicModule = {
+        ...current,
+        code: patch.code !== undefined ? patch.code.trim().toUpperCase() : current.code,
+        title: patch.title !== undefined ? patch.title.trim() : current.title,
+        term: patch.term !== undefined ? patch.term.trim() : current.term,
+        color: patch.color !== undefined ? parseModuleColor(patch.color, current.id) : current.color,
+      }
+      if (!next.title) return null
+      setBusy(true)
+      setError('')
+      try {
+        if (isCloud && coupleId && slot) {
+          await upsertAcademicModule(coupleId, next, slot)
+        } else {
+          await putLocalModule(next)
+        }
+        setModules((prev) =>
+          prev.map((item) => (item.id === id ? next : item)).sort((a, b) => a.title.localeCompare(b.title)),
+        )
+        return next
+      } catch (err) {
+        setError(asErrorMessage(err, 'Could not update module'))
+        return null
+      } finally {
+        setBusy(false)
+      }
+    },
+    [coupleId, isCloud, modules, slot],
   )
 
   const removeModule = useCallback(
@@ -344,6 +386,7 @@ export function useAcademics() {
     setError,
     refresh,
     addModule,
+    updateModule,
     removeModule,
     addMaterial,
     toggleMaterialDone,

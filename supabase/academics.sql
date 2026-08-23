@@ -8,6 +8,7 @@ create table if not exists public.academic_modules (
   code text not null default '',
   title text not null,
   term text not null default '',
+  color text not null default 'butter',
   created_at bigint not null
 );
 
@@ -32,6 +33,9 @@ create index if not exists academic_materials_module_idx
   on public.academic_materials (module_id);
 
 alter table public.academic_materials drop column if exists extracted_text;
+
+alter table public.academic_modules
+  add column if not exists color text not null default 'butter';
 
 alter table public.academic_modules enable row level security;
 alter table public.academic_materials enable row level security;

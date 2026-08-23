@@ -11,6 +11,7 @@ import {
   DotsIcon,
   LaptopIcon,
   MegaphoneIcon,
+  PencilIcon,
   PlusIcon,
   SwapIcon,
 } from '../components/Icons'
@@ -19,7 +20,16 @@ import { StudyTogetherBanner } from '../components/StudyTogetherBanner'
 import { useLongPress } from '../hooks/useLongPress'
 import { academicFileLabel } from '../lib/academicFileKind'
 import type { useAcademics } from '../hooks/useAcademics'
-import type { AcademicMaterial, AcademicMaterialKind, AcademicModule, Carer } from '../types'
+import {
+  DEFAULT_MODULE_COLOR,
+  MODULE_COLORS,
+  parseModuleColor,
+  type AcademicMaterial,
+  type AcademicMaterialKind,
+  type AcademicModule,
+  type Carer,
+  type ModuleColor,
+} from '../types'
 
 type AcademicsApi = ReturnType<typeof useAcademics>
 
@@ -55,8 +65,6 @@ function dueTone(dueDate: string, done: boolean) {
 }
 
 const DEADLINE_PREVIEW = 4
-const ACAD_THEMES = ['lilac', 'rose', 'mint'] as const
-type AcadTheme = (typeof ACAD_THEMES)[number]
 type AcadGlyph = 'doc' | 'megaphone' | 'cap' | 'code' | 'book' | 'calc' | 'laptop'
 
 function firstName(name: string) {
@@ -90,30 +98,28 @@ function Sparkles() {
   )
 }
 
-function themeFromId(id: string): AcadTheme {
-  let sum = 0
-  for (const char of id) sum += char.charCodeAt(0)
-  return ACAD_THEMES[sum % ACAD_THEMES.length]
+function themeFromModule(module?: AcademicModule, id = ''): ModuleColor {
+  return parseModuleColor(module?.color, module?.id || id)
 }
 
-function glyphForDeadline(title: string, theme: AcadTheme): AcadGlyph {
+function glyphForDeadline(title: string, theme: ModuleColor): AcadGlyph {
   const text = title.toLowerCase()
   if (/\btma\b|present|pitch|market/.test(text)) return 'megaphone'
   if (/\bgba\b|capstone|project/.test(text)) return 'cap'
   if (/calc|math|ma1|tutorial|algebra/.test(text)) return 'calc'
   if (/\bpct\b|python|code|program|data|anl|report|business/.test(text)) return 'laptop'
-  if (theme === 'rose') return 'megaphone'
+  if (theme === 'rose' || theme === 'peach') return 'megaphone'
   if (theme === 'mint') return 'cap'
   return 'doc'
 }
 
-function glyphForModule(title: string, code: string, theme: AcadTheme): AcadGlyph {
+function glyphForModule(title: string, code: string, theme: ModuleColor): AcadGlyph {
   const text = `${code} ${title}`.toLowerCase()
   if (/market|mkt|present/.test(text)) return 'megaphone'
   if (/python|code|data|anl|program|report/.test(text)) return 'laptop'
   if (/calc|math|ma1|algebra/.test(text)) return 'calc'
   if (/learn|nco|edu/.test(text)) return 'book'
-  if (theme === 'rose') return 'megaphone'
+  if (theme === 'rose' || theme === 'peach') return 'megaphone'
   if (theme === 'mint') return 'code'
   return 'book'
 }
@@ -140,7 +146,7 @@ function DeadlineCard({
   onOpen?: () => void
   layout?: 'home' | 'page'
 }) {
-  const theme = themeFromId(module?.id || item.moduleId)
+  const theme = themeFromModule(module, item.moduleId)
   const due = dueLine(item.dueDate, item.done)
   const className =
     layout === 'page'
@@ -256,6 +262,7 @@ export function AcademicsScreen({
   onBack,
   setError,
   addModule,
+  updateModule,
   addMaterial,
   updateMaterial,
   removeMaterial,
@@ -268,6 +275,8 @@ export function AcademicsScreen({
   const [moduleCode, setModuleCode] = useState('')
   const [moduleTitle, setModuleTitle] = useState('')
   const [moduleTerm, setModuleTerm] = useState('')
+  const [moduleColor, setModuleColor] = useState<ModuleColor>(DEFAULT_MODULE_COLOR)
+  const [editingModuleId, setEditingModuleId] = useState<string | null>(null)
   const [materialKind, setMaterialKind] = useState<AcademicMaterialKind>('lecture')
   const [materialTitle, setMaterialTitle] = useState('')
   const [materialDue, setMaterialDue] = useState('')
@@ -361,7 +370,30 @@ export function AcademicsScreen({
     setModuleCode('')
     setModuleTitle('')
     setModuleTerm('')
+    setModuleColor(DEFAULT_MODULE_COLOR)
+    setEditingModuleId(null)
     setShowModuleForm(false)
+  }
+
+  function openAddModule() {
+    setError('')
+    setEditingModuleId(null)
+    setModuleCode('')
+    setModuleTitle('')
+    setModuleTerm('')
+    setModuleColor(DEFAULT_MODULE_COLOR)
+    setShowModuleForm(true)
+  }
+
+  function openEditModule() {
+    if (!activeModule) return
+    setError('')
+    setEditingModuleId(activeModule.id)
+    setModuleCode(activeModule.code)
+    setModuleTitle(activeModule.title)
+    setModuleTerm(activeModule.term)
+    setModuleColor(themeFromModule(activeModule))
+    setShowModuleForm(true)
   }
 
   function resetMaterialForm() {
@@ -434,10 +466,21 @@ export function AcademicsScreen({
 
   async function submitModule() {
     setError('')
+    if (editingModuleId) {
+      const updated = await updateModule(editingModuleId, {
+        code: moduleCode,
+        title: moduleTitle,
+        term: moduleTerm,
+        color: moduleColor,
+      })
+      if (updated) resetModuleForm()
+      return
+    }
     const created = await addModule(owner, {
       code: moduleCode,
       title: moduleTitle,
       term: moduleTerm,
+      color: moduleColor,
     })
     if (created) {
       resetModuleForm()
@@ -506,12 +549,11 @@ export function AcademicsScreen({
           {activeModule ? (
             <button
               type="button"
-              className="acad-modhead__add"
-              onClick={() => openMaterialForm('lecture')}
-              aria-label="Add lecture"
+              className="acad-modhead__edit"
+              onClick={openEditModule}
+              aria-label="Edit module"
             >
-              <Sparkles />
-              <PlusIcon size={22} />
+              <PencilIcon size={20} />
             </button>
           ) : null}
         </header>
@@ -621,10 +663,7 @@ export function AcademicsScreen({
                     <button
                       type="button"
                       className="acad-panel__add"
-                      onClick={() => {
-                        setError('')
-                        setShowModuleForm(true)
-                      }}
+                      onClick={openAddModule}
                       aria-label="Add module"
                     >
                       <PlusIcon size={16} />
@@ -640,7 +679,7 @@ export function AcademicsScreen({
                       <button
                         type="button"
                         className="btn btn--primary acad-btn"
-                        onClick={() => setShowModuleForm(true)}
+                        onClick={openAddModule}
                       >
                         Add a module
                       </button>
@@ -651,7 +690,7 @@ export function AcademicsScreen({
                         const count = materials.filter(
                           (item) => item.moduleId === module.id && isDeskKind(item.kind),
                         ).length
-                        const theme = themeFromId(module.id)
+                        const theme = themeFromModule(module)
                         return (
                           <li key={module.id}>
                             <button
@@ -683,7 +722,7 @@ export function AcademicsScreen({
             )}
           </>
         ) : activeModule ? (
-          <div className="acad-module-view">
+          <div className={`acad-module-view acad-theme-${themeFromModule(activeModule)}`}>
             <section className="acad-dueboard" aria-label="Upcoming deadlines">
               {deadlines.length === 0 ? (
                 <p className="acad-dueboard__empty">No open deadlines. You’re clear.</p>
@@ -773,10 +812,15 @@ export function AcademicsScreen({
       </ScrollRegion>
 
       {showModuleForm ? (
-        <div className="acad-sheet" role="dialog" aria-modal="true" aria-label="Add module">
+        <div
+          className="acad-sheet"
+          role="dialog"
+          aria-modal="true"
+          aria-label={editingModuleId ? 'Edit module' : 'Add module'}
+        >
           <div className="acad-sheet__panel">
             <header className="acad-sheet__head">
-              <h2>New module</h2>
+              <h2>{editingModuleId ? 'Edit module' : 'New module'}</h2>
               <button type="button" className="acad-text-btn" onClick={resetModuleForm}>
                 Close
               </button>
@@ -808,13 +852,30 @@ export function AcademicsScreen({
                 maxLength={40}
               />
             </label>
+            <fieldset className="acad-colors">
+              <legend>Color</legend>
+              <div className="acad-colors__row" role="radiogroup" aria-label="Module color">
+                {MODULE_COLORS.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={moduleColor === item.id}
+                    aria-label={item.label}
+                    className={`acad-colors__dot${moduleColor === item.id ? ' is-on' : ''}`}
+                    style={{ background: item.swatch }}
+                    onClick={() => setModuleColor(item.id)}
+                  />
+                ))}
+              </div>
+            </fieldset>
             <button
               type="button"
               className="btn btn--primary acad-btn"
               onClick={() => void submitModule()}
               disabled={busy || !moduleTitle.trim()}
             >
-              {busy ? 'Saving…' : 'Save module'}
+              {busy ? 'Saving…' : editingModuleId ? 'Save changes' : 'Save module'}
             </button>
           </div>
         </div>

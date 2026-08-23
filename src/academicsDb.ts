@@ -1,5 +1,6 @@
 import { createId } from './hooks/useStored'
-import type { AcademicMaterial, AcademicModule, Carer } from './types'
+import type { AcademicMaterial, AcademicModule, Carer, ModuleColor } from './types'
+import { parseModuleColor } from './types'
 
 const DB_NAME = 'cuddles-club-academics'
 const DB_VERSION = 1
@@ -38,7 +39,12 @@ function req<T>(request: IDBRequest<T>): Promise<T> {
 export async function listLocalModules(): Promise<AcademicModule[]> {
   const db = await openDb()
   const rows = await req(db.transaction(MODULES, 'readonly').objectStore(MODULES).getAll())
-  return (rows as AcademicModule[]).sort((a, b) => a.title.localeCompare(b.title))
+  return (rows as AcademicModule[])
+    .map((row) => ({
+      ...row,
+      color: parseModuleColor(row.color, row.id),
+    }))
+    .sort((a, b) => a.title.localeCompare(b.title))
 }
 
 export async function listLocalMaterials(): Promise<AcademicMaterial[]> {
@@ -106,7 +112,7 @@ export async function getLocalFile(id: string): Promise<Blob | null> {
 
 export function createModule(
   owner: Carer,
-  input: { code: string; title: string; term?: string },
+  input: { code: string; title: string; term?: string; color?: ModuleColor },
 ): AcademicModule {
   return {
     id: createId(),
@@ -114,6 +120,7 @@ export function createModule(
     code: input.code.trim().toUpperCase(),
     title: input.title.trim(),
     term: input.term?.trim() ?? '',
+    color: parseModuleColor(input.color),
     createdAt: Date.now(),
   }
 }

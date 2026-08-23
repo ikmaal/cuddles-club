@@ -64,6 +64,28 @@ export interface Photostrip {
 
 export type AcademicMaterialKind = 'lecture' | 'tutorial' | 'assignment' | 'notes'
 
+export const MODULE_COLORS = [
+  { id: 'butter', label: 'Butter', swatch: '#f8e7a8' },
+  { id: 'peach', label: 'Peach', swatch: '#f8d4c4' },
+  { id: 'rose', label: 'Rose', swatch: '#f5c6d8' },
+  { id: 'lilac', label: 'Lilac', swatch: '#e4d4f8' },
+  { id: 'sky', label: 'Sky', swatch: '#cde8f8' },
+  { id: 'mint', label: 'Mint', swatch: '#c8ead8' },
+] as const
+
+export type ModuleColor = (typeof MODULE_COLORS)[number]['id']
+export const DEFAULT_MODULE_COLOR: ModuleColor = 'butter'
+
+export function parseModuleColor(value: unknown, fallbackId = ''): ModuleColor {
+  if (typeof value === 'string' && MODULE_COLORS.some((item) => item.id === value)) {
+    return value as ModuleColor
+  }
+  if (!fallbackId) return DEFAULT_MODULE_COLOR
+  let sum = 0
+  for (const char of fallbackId) sum += char.charCodeAt(0)
+  return MODULE_COLORS[sum % MODULE_COLORS.length].id
+}
+
 export interface AcademicModule {
   id: string
   /** Viewer-relative owner: your courses vs partner's. */
@@ -73,6 +95,7 @@ export interface AcademicModule {
   title: string
   /** Optional term label e.g. Sem 1 2026 */
   term: string
+  color: ModuleColor
   createdAt: number
 }
 
