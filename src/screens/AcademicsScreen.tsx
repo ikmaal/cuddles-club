@@ -40,20 +40,43 @@ interface AcademicsScreenProps extends AcademicsApi {
 type View = { mode: 'home' } | { mode: 'module'; moduleId: string }
 
 function isDeskKind(kind: AcademicMaterialKind) {
-  return kind === 'lecture' || kind === 'assignment'
+  return kind === 'lecture' || kind === 'assignment' || kind === 'notes'
+}
+
+function kindLabel(kind: AcademicMaterialKind) {
+  if (kind === 'assignment') return 'assignment'
+  if (kind === 'notes') return 'notes'
+  return 'lecture'
 }
 
 function sortDeskFiles(rows: AcademicMaterial[]) {
   return [...rows].sort((a, b) => a.createdAt - b.createdAt || a.title.localeCompare(b.title))
 }
 
-function daysUntil(dueDate: string): number | null {
+function parseDueDate(dueDate: string): Date | null {
   if (!dueDate) return null
+  const due = new Date(`${dueDate}T12:00:00`)
+  return Number.isNaN(due.getTime()) ? null : due
+}
+
+function daysUntil(dueDate: string): number | null {
+  const due = parseDueDate(dueDate)
+  if (!due) return null
   const today = new Date()
   today.setHours(12, 0, 0, 0)
-  const due = new Date(`${dueDate}T12:00:00`)
-  if (Number.isNaN(due.getTime())) return null
   return Math.round((due.getTime() - today.getTime()) / 86_400_000)
+}
+
+function formatDueDate(dueDate: string): string {
+  const due = parseDueDate(dueDate)
+  if (!due) return ''
+  const sameYear = due.getFullYear() === new Date().getFullYear()
+  return due.toLocaleDateString(undefined, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    ...(sameYear ? {} : { year: 'numeric' }),
+  })
 }
 
 function dueTone(dueDate: string, done: boolean) {
@@ -77,25 +100,17 @@ function ownedLabel(name: string) {
 }
 
 function dueLine(dueDate: string, done: boolean) {
-  if (done) return { text: 'Completed', tone: 'calm', fire: false }
+  const date = formatDueDate(dueDate)
+  const withDate = (relative: string) => (date ? `${date} · ${relative}` : relative)
+  if (done) return { text: withDate('Completed'), tone: 'calm', fire: false }
   const diff = daysUntil(dueDate)
   if (diff === null) return { text: '', tone: 'calm', fire: false }
-  if (diff < 0) return { text: 'Overdue', tone: 'late', fire: true }
-  if (diff === 0) return { text: 'Due today', tone: 'hot', fire: true }
-  if (diff === 1) return { text: 'Due in 1 day', tone: 'hot', fire: true }
-  if (diff <= 2) return { text: `Due in ${diff} days`, tone: 'hot', fire: true }
-  if (diff <= 7) return { text: `Due in ${diff} days`, tone: 'warm', fire: false }
-  return { text: `Due in ${diff} days`, tone: 'calm', fire: false }
-}
-
-function Sparkles() {
-  return (
-    <span className="acad-sparkles" aria-hidden>
-      <i />
-      <i />
-      <i />
-    </span>
-  )
+  if (diff < 0) return { text: withDate('Overdue'), tone: 'late', fire: true }
+  if (diff === 0) return { text: withDate('Due today'), tone: 'hot', fire: true }
+  if (diff === 1) return { text: withDate('Due in 1 day'), tone: 'hot', fire: true }
+  if (diff <= 2) return { text: withDate(`Due in ${diff} days`), tone: 'hot', fire: true }
+  if (diff <= 7) return { text: withDate(`Due in ${diff} days`), tone: 'warm', fire: false }
+  return { text: withDate(`Due in ${diff} days`), tone: 'calm', fire: false }
 }
 
 function themeFromModule(module?: AcademicModule, id = ''): ModuleColor {
@@ -156,7 +171,6 @@ function DeadlineCard({
     layout === 'page' ? (
       <>
         <span className="acad-due__icon">
-          <Sparkles />
           <AcadGlyphIcon name={glyphForDeadline(item.title, theme)} size={22} />
         </span>
         <span className="acad-due__meta">
@@ -232,7 +246,6 @@ function MaterialTile({
         {...bind}
       >
         <span className={`acad-file__icon is-${item.kind}`}>
-          <Sparkles />
           <DocPageIcon size={20} />
         </span>
         <span className="acad-file__copy">
@@ -310,6 +323,10 @@ export function AcademicsScreen({
   )
   const assignments = useMemo(
     () => sortDeskFiles(moduleMaterials.filter((item) => item.kind === 'assignment')),
+    [moduleMaterials],
+  )
+  const notes = useMemo(
+    () => sortDeskFiles(moduleMaterials.filter((item) => item.kind === 'notes')),
     [moduleMaterials],
   )
   const deadlines = useMemo(() => {
@@ -674,7 +691,7 @@ export function AcademicsScreen({
                     <div className="acad-panel__empty-block">
                       <p>
                         Add {owner === 'you' ? 'your' : `${firstName(names.partner)}'s`} courses to
-                        keep lectures and assignments in one place.
+                        keep lectures, assignments, and notes in one place.
                       </p>
                       <button
                         type="button"
@@ -767,7 +784,6 @@ export function AcademicsScreen({
                     onClick={() => openMaterialForm('lecture')}
                   >
                     <span className="acad-fileadd__plus">
-                      <Sparkles />
                       <PlusIcon size={18} />
                     </span>
                     Add lecture
@@ -797,10 +813,38 @@ export function AcademicsScreen({
                     onClick={() => openMaterialForm('assignment')}
                   >
                     <span className="acad-fileadd__plus">
-                      <Sparkles />
                       <PlusIcon size={18} />
                     </span>
                     Add assignment
+                  </button>
+                </li>
+              </ul>
+            </section>
+
+            <section className="acad-block" aria-label="Notes">
+              <header className="acad-block__head">
+                <h2>Notes</h2>
+                <span className="acad-block__count">{notes.length}</span>
+              </header>
+              <ul className="acad-files">
+                {notes.map((item) => (
+                  <MaterialTile
+                    key={item.id}
+                    item={item}
+                    onOpen={openViewer}
+                    onMenu={openMenu}
+                  />
+                ))}
+                <li>
+                  <button
+                    type="button"
+                    className="acad-fileadd"
+                    onClick={() => openMaterialForm('notes')}
+                  >
+                    <span className="acad-fileadd__plus">
+                      <PlusIcon size={18} />
+                    </span>
+                    Add notes
                   </button>
                 </li>
               </ul>
@@ -888,24 +932,16 @@ export function AcademicsScreen({
           aria-modal="true"
           aria-label={
             editingId
-              ? materialKind === 'assignment'
-                ? 'Edit assignment'
-                : 'Edit lecture'
-              : materialKind === 'assignment'
-                ? 'Add assignment'
-                : 'Add lecture'
+              ? `Edit ${kindLabel(materialKind)}`
+              : `Add ${kindLabel(materialKind)}`
           }
         >
           <div className="acad-sheet__panel">
             <header className="acad-sheet__head">
               <h2>
                 {editingId
-                  ? materialKind === 'assignment'
-                    ? 'Edit assignment'
-                    : 'Edit lecture'
-                  : materialKind === 'assignment'
-                    ? 'New assignment'
-                    : 'New lecture'}
+                  ? `Edit ${kindLabel(materialKind)}`
+                  : `New ${kindLabel(materialKind)}`}
               </h2>
               <button type="button" className="acad-text-btn" onClick={resetMaterialForm}>
                 Close
@@ -922,7 +958,11 @@ export function AcademicsScreen({
                 value={materialTitle}
                 onChange={(event) => setMaterialTitle(event.target.value)}
                 placeholder={
-                  materialKind === 'assignment' ? 'Problem set 2' : 'Week 3 slides'
+                  materialKind === 'assignment'
+                    ? 'Problem set 2'
+                    : materialKind === 'notes'
+                      ? 'Week 3 summary'
+                      : 'Week 3 slides'
                 }
                 maxLength={100}
               />
@@ -970,9 +1010,7 @@ export function AcademicsScreen({
                 ? 'Saving…'
                 : editingId
                   ? 'Save changes'
-                  : materialKind === 'assignment'
-                    ? 'Save assignment'
-                    : 'Save lecture'}
+                  : `Save ${kindLabel(materialKind)}`}
             </button>
           </div>
         </div>

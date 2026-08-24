@@ -12,7 +12,7 @@ export type StorageCategoryId =
 
 export const STORAGE_CATEGORY_LABELS: Record<StorageCategoryId, string> = {
   photostrips: 'Photostrips',
-  academics: 'Academics',
+  academics: 'Study Together',
   places: 'Places',
   poses: 'Booth poses',
   photos: 'Home & profiles',

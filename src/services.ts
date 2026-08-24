@@ -22,11 +22,11 @@ export const SERVICES: Service[] = [
   },
   {
     id: 'academics',
-    label: 'Academics',
-    blurb: 'Modules, materials, and due dates',
+    label: 'Study Together',
+    blurb: 'Modules, notes, and due dates',
     tone: 'neutral',
     Icon: AcademicsIcon,
-    image: 'academics-logo.png',
+    image: 'studytogethericon.jpg',
   },
   {
     id: 'places',

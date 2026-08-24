@@ -89,7 +89,7 @@ export function useAcademics() {
       }
       setError('')
     } catch (err) {
-      setError(asErrorMessage(err, 'Could not load Academics'))
+      setError(asErrorMessage(err, 'Could not load Study Together'))
     } finally {
       setReady(true)
     }
