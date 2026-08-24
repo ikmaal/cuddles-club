@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react'
-import { PlusIcon, TrashIcon } from '../components/Icons'
+import { BackIcon, PlusIcon, TrashIcon } from '../components/Icons'
 import { ScrollRegion } from '../components/ScrollRegion'
-import { ScreenHeader } from '../components/ScreenHeader'
 import { useBoothPoses } from '../hooks/useBoothPoses'
 import type { BoothPosePhoto } from '../types'
 
@@ -27,25 +26,24 @@ export function BoothPosesScreen({ onBack }: BoothPosesScreenProps) {
 
   return (
     <div className="screen screen--strips screen--poses">
-      <ScreenHeader
-        title="Poses"
-        onBack={onBack}
-        action={
-          <button
-            type="button"
-            className="strip-add-btn"
-            onClick={() => {
-              clearError()
-              inputRef.current?.click()
-            }}
-            disabled={busy}
-            aria-label="Upload pose photos"
-            title="Upload"
-          >
-            <PlusIcon size={20} />
-          </button>
-        }
-      />
+      <header className="booth-subhead">
+        <button type="button" className="booth-back" onClick={onBack} aria-label="Back">
+          <BackIcon size={20} />
+        </button>
+        <h1>poses</h1>
+        <button
+          type="button"
+          className="booth-subhead__action"
+          onClick={() => {
+            clearError()
+            inputRef.current?.click()
+          }}
+          disabled={busy}
+          aria-label="Upload pose photos"
+        >
+          <PlusIcon size={20} />
+        </button>
+      </header>
 
       <input
         ref={inputRef}
@@ -56,7 +54,7 @@ export function BoothPosesScreen({ onBack }: BoothPosesScreenProps) {
         onChange={(event) => void onFileChange(event)}
       />
 
-      <ScrollRegion className="screen__scroll">
+      <ScrollRegion className="screen__scroll booth-scroll">
         {error ? (
           <p className="strip-error" role="alert">
             {error}
@@ -64,13 +62,11 @@ export function BoothPosesScreen({ onBack }: BoothPosesScreenProps) {
         ) : null}
 
         {!ready ? (
-          <div className="empty">
-            <p className="empty__title">Opening gallery…</p>
-          </div>
+          <p className="booth-empty">Opening gallery…</p>
         ) : poses.length === 0 ? (
-          <div className="album-empty">
-            <p className="album-empty__title">No pose photos yet</p>
-            <p className="album-empty__body">
+          <div className="booth-empty-block">
+            <p className="booth-empty__title">No pose photos yet</p>
+            <p className="booth-empty">
               Upload screenshots or photos of poses you want to try next time.
             </p>
           </div>

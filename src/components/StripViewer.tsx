@@ -1,19 +1,28 @@
 import { useEffect, useRef, useState } from 'react'
-import { PencilIcon, TrashIcon } from './Icons'
+import { HeartIcon, PencilIcon, TrashIcon } from './Icons'
 import { formatRelative } from '../hooks/useStored'
 import type { Photostrip } from '../types'
 
 interface StripViewerProps {
   strip: Photostrip
+  favorited?: boolean
   onClose: () => void
   onRename: (id: string, title: string) => Promise<void>
   onRemove: (id: string) => Promise<void>
+  onToggleFavorite?: (id: string) => void
 }
 
 const MIN_ZOOM = 0.7
 const MAX_ZOOM = 2.4
 
-export function StripViewer({ strip, onClose, onRename, onRemove }: StripViewerProps) {
+export function StripViewer({
+  strip,
+  favorited = false,
+  onClose,
+  onRename,
+  onRemove,
+  onToggleFavorite,
+}: StripViewerProps) {
   const [rotateX, setRotateX] = useState(-8)
   const [rotateY, setRotateY] = useState(-18)
   const [zoom, setZoom] = useState(1)
@@ -113,6 +122,17 @@ export function StripViewer({ strip, onClose, onRename, onRemove }: StripViewerP
           <span>{formatRelative(strip.createdAt)} · Drag to spin · pinch or scroll to zoom</span>
         </div>
         <div className="strip-viewer__actions">
+          {onToggleFavorite ? (
+            <button
+              type="button"
+              className={`strip-viewer__icon-btn${favorited ? ' is-fav' : ''}`}
+              onClick={() => onToggleFavorite(strip.id)}
+              aria-label={favorited ? 'Remove from favorites' : 'Add to favorites'}
+              aria-pressed={favorited}
+            >
+              <HeartIcon size={18} />
+            </button>
+          ) : null}
           <button
             type="button"
             className="strip-viewer__icon-btn"

@@ -142,12 +142,12 @@ html.home-bg.home-image .app {
 html.strips-bg,
 html.strips-bg body,
 html.strips-bg #root {
-  background-color: #0c0c0c;
+  background-color: #000000;
   overscroll-behavior: none;
 }
 
 html.strips-bg .app {
-  background: #0c0c0c;
+  background: #000000;
   box-shadow: none;
 }
 

@@ -15,7 +15,7 @@ import type { Screen } from './types'
 import './App.css'
 
 const HOME_WHITE = '#ffffff'
-const STRIPS_BLACK = '#0c0c0c'
+const STRIPS_BLACK = '#000000'
 const ACADEMICS_CREAM = '#f6f1e6'
 const PLACES_PAPER = '#ffffff'
 const SPLASH_STATUS_COLOR = '#ffffff'

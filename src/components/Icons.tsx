@@ -164,6 +164,15 @@ export function PlusIcon({ size }: IconProps) {
   )
 }
 
+export function TagIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="M20.4 13.1 12.6 20.9a2 2 0 0 1-2.8 0l-4.8-4.8a2 2 0 0 1 0-2.8L12.8 5.5H20.4v7.6z" />
+      <circle cx="16.4" cy="9.4" r="1.15" />
+    </Frame>
+  )
+}
+
 export function TrashIcon({ size }: IconProps) {
   return (
     <Frame size={size}>

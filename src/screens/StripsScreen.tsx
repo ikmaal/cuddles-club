@@ -1,9 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import { PhotoBooth } from '../components/PhotoBooth'
-import { ScrollRegion } from '../components/ScrollRegion'
-import { CameraIcon, PlusIcon, PoseIcon, StripIcon } from '../components/Icons'
-import { ScreenHeader } from '../components/ScreenHeader'
+import {
+  BackIcon,
+  CameraIcon,
+  PlusIcon,
+  PoseIcon,
+} from '../components/Icons'
 import { StripViewer } from '../components/StripViewer'
+import { PhotoboothBanner } from '../components/PhotoboothBanner'
+import { MemoriesGallery } from '../components/MemoriesGallery'
+import { MemoriesGalleryAll } from '../components/MemoriesGalleryAll'
+import { useStored } from '../hooks/useStored'
 import type { CoupleProfile, Photostrip } from '../types'
 import { BoothPosesScreen } from './BoothPosesScreen'
 
@@ -20,6 +27,8 @@ interface StripsScreenProps {
   onClearError: () => void
   onBack: () => void
 }
+
+const FAVORITES_KEY = 'cuddles-club-strip-favorites'
 
 function formatTakenWhen(isoDate: string): string {
   const date = new Date(`${isoDate}T12:00:00`)
@@ -44,7 +53,7 @@ function takenAtFromDateInput(isoDate: string): number {
 }
 
 export function StripsScreen({
-  profile,
+  profile: _profile,
   strips,
   ready,
   busy,
@@ -57,6 +66,7 @@ export function StripsScreen({
   onBack,
 }: StripsScreenProps) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const [favorites, setFavorites] = useStored<string[]>(FAVORITES_KEY, [])
   const [takenWhen, setTakenWhen] = useState('')
   const [takenWhere, setTakenWhere] = useState('')
   const [pendingFile, setPendingFile] = useState<File | null>(null)
@@ -64,8 +74,9 @@ export function StripsScreen({
   const [active, setActive] = useState<Photostrip | null>(null)
   const [boothOpen, setBoothOpen] = useState(false)
   const [posesOpen, setPosesOpen] = useState(false)
+  const [addOpen, setAddOpen] = useState(false)
+  const [galleryAllOpen, setGalleryAllOpen] = useState(false)
 
-  const coverStrip = strips[0] ?? null
   const canSaveUpload = Boolean(takenWhen && takenWhere.trim())
 
   useEffect(() => {
@@ -84,21 +95,31 @@ export function StripsScreen({
 
   function pickFile() {
     onClearError()
+    setAddOpen(false)
     inputRef.current?.click()
   }
 
   function openBooth() {
     onClearError()
+    setAddOpen(false)
     setBoothOpen(true)
+  }
+
+  function openPoses() {
+    setAddOpen(false)
+    setPosesOpen(true)
+  }
+
+  function openAdd() {
+    onClearError()
+    setAddOpen(true)
   }
 
   function onFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     event.target.value = ''
     if (!file) return
-    if (!file.type.startsWith('image/')) {
-      return
-    }
+    if (!file.type.startsWith('image/')) return
     setPendingFile(file)
     setTakenWhen('')
     setTakenWhere('')
@@ -121,13 +142,30 @@ export function StripsScreen({
     if (saved) cancelPending()
   }
 
+  function toggleFavorite(id: string) {
+    setFavorites((current) =>
+      current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
+    )
+  }
+
+  function handleBack() {
+    if (pendingFile) {
+      cancelPending()
+      return
+    }
+    if (addOpen) {
+      setAddOpen(false)
+      return
+    }
+    if (galleryAllOpen) {
+      setGalleryAllOpen(false)
+      return
+    }
+    onBack()
+  }
+
   return (
     <div className="screen screen--strips">
-      <ScreenHeader
-        title="Photobooth"
-        onBack={onBack}
-      />
-
       <input
         ref={inputRef}
         type="file"
@@ -136,75 +174,89 @@ export function StripsScreen({
         onChange={onFileChange}
       />
 
-      <ScrollRegion className="screen__scroll">
-        <section className="album-cover" aria-label="Album cover">
-          <div className="album-cover__spine" aria-hidden />
-          <div className="album-cover__face">
-            <div className="album-cover__peek" aria-hidden>
-              {coverStrip ? (
-                <img src={coverStrip.image} alt="" />
-              ) : (
-                <span className="album-cover__empty">
-                  <StripIcon size={28} />
+      <div className="booth-home">
+        {galleryAllOpen ? (
+          <MemoriesGalleryAll
+            strips={strips}
+            onBack={() => setGalleryAllOpen(false)}
+            onOpen={setActive}
+          />
+        ) : (
+          <>
+            <header className="booth-homebar">
+              <button type="button" className="booth-back" onClick={handleBack} aria-label="Back">
+                <BackIcon size={20} />
+              </button>
+            </header>
+
+            <PhotoboothBanner />
+
+            {error ? (
+              <p className="strip-error" role="alert">
+                {error}
+              </p>
+            ) : null}
+
+            <nav className="booth-docks" aria-label="Photobooth">
+              <button type="button" className="booth-dock" onClick={openAdd} disabled={busy}>
+                <span className="booth-dock__icon">
+                  <PlusIcon size={22} />
                 </span>
-              )}
-            </div>
-            <div className="album-cover__info">
-              <p className="album-cover__eyebrow">Film album</p>
-              <h2>
-                {profile.nameYou} & {profile.namePartner}
-              </h2>
-              <dl className="album-cover__stats">
-                <div>
-                  <dt>Strips</dt>
-                  <dd>{ready ? strips.length : '—'}</dd>
-                </div>
-              </dl>
-              <div className="album-toolbar">
-                <button
-                  type="button"
-                  className="album-toolbar__btn album-toolbar__btn--primary"
-                  onClick={openBooth}
-                  disabled={busy}
-                  aria-label="Open booth"
-                  title="Open booth"
-                >
-                  <CameraIcon size={18} />
-                </button>
-                <button
-                  type="button"
-                  className="album-toolbar__btn"
-                  onClick={() => setPosesOpen(true)}
-                  aria-label="Poses"
-                  title="Poses"
-                >
-                  <PoseIcon size={18} />
-                </button>
-                <button
-                  type="button"
-                  className="album-toolbar__btn"
-                  onClick={pickFile}
-                  disabled={busy}
-                  aria-label="Upload strip"
-                  title="Upload strip"
-                >
-                  <PlusIcon size={18} />
-                </button>
-              </div>
-            </div>
+                <span>add</span>
+              </button>
+              <button type="button" className="booth-dock" onClick={openPoses}>
+                <span className="booth-dock__icon">
+                  <PoseIcon size={22} />
+                </span>
+                <span>poses</span>
+              </button>
+            </nav>
+
+            <MemoriesGallery
+              strips={strips}
+              favorites={favorites}
+              ready={ready}
+              onOpen={setActive}
+              onToggleFavorite={toggleFavorite}
+              onViewAll={() => setGalleryAllOpen(true)}
+            />
+          </>
+        )}
+      </div>
+
+      {addOpen ? (
+        <div className="booth-sheet" role="dialog" aria-modal="true" aria-label="Add a strip">
+          <button
+            type="button"
+            className="booth-sheet__scrim"
+            aria-label="Close"
+            onClick={() => setAddOpen(false)}
+          />
+          <div className="booth-sheet__panel">
+            <h2>new strip</h2>
+            <button type="button" onClick={openBooth} disabled={busy}>
+              <CameraIcon size={18} />
+              Open booth
+            </button>
+            <button type="button" onClick={pickFile} disabled={busy}>
+              <PlusIcon size={18} />
+              Upload strip
+            </button>
           </div>
-        </section>
+        </div>
+      ) : null}
 
-        {error ? (
-          <p className="strip-error" role="alert">
-            {error}
-          </p>
-        ) : null}
-
-        {pendingFile ? (
-          <form className="surface album-compose" onSubmit={savePending}>
-            <p className="album-compose__label">New album page</p>
-            <div className="album-compose__preview">
+      {pendingFile ? (
+        <div className="booth-sheet" role="dialog" aria-modal="true" aria-label="Save uploaded strip">
+          <button
+            type="button"
+            className="booth-sheet__scrim"
+            aria-label="Close"
+            onClick={cancelPending}
+          />
+          <form className="booth-sheet__panel booth-sheet__panel--form" onSubmit={savePending}>
+            <h2>new album page</h2>
+            <div className="booth-upload-preview">
               <img src={preview} alt="New strip preview" />
             </div>
             <label className="field">
@@ -228,75 +280,30 @@ export function StripsScreen({
                 required
               />
             </label>
-            <div className="album-compose__actions">
-              <button
-                type="button"
-                className="btn btn--ghost btn--sm"
-                onClick={cancelPending}
-                disabled={busy}
-              >
+            <div className="booth-sheet__actions">
+              <button type="button" className="btn btn--ghost btn--sm" onClick={cancelPending} disabled={busy}>
                 Cancel
               </button>
-              <button
-                type="submit"
-                className="btn btn--primary btn--sm"
-                disabled={busy || !canSaveUpload}
-              >
+              <button type="submit" className="btn btn--primary btn--sm" disabled={busy || !canSaveUpload}>
                 {busy ? 'Saving…' : 'Add to album'}
               </button>
             </div>
           </form>
-        ) : null}
-
-        {!ready ? (
-          <div className="empty">
-            <p className="empty__title">Opening album…</p>
-          </div>
-        ) : strips.length === 0 && !pendingFile ? (
-          <div className="album-empty">
-            <p className="album-empty__title">No strips developed yet</p>
-            <p className="album-empty__body">
-              Snap four frames in the booth, or upload a strip to start the album.
-            </p>
-          </div>
-        ) : strips.length > 0 ? (
-          <section className="album-shelf" aria-label="Photostrips">
-            <ul className="album-pages">
-              {strips.map((strip) => (
-                <li key={strip.id} className="album-page">
-                  <button
-                    type="button"
-                    className="album-page__open"
-                    onClick={() => setActive(strip)}
-                    aria-label={strip.title}
-                  >
-                    <img
-                      className="album-page__image"
-                      src={strip.image}
-                      alt=""
-                    />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ) : null}
-      </ScrollRegion>
+        </div>
+      ) : null}
 
       {boothOpen ? (
-        <PhotoBooth
-          busy={busy}
-          onSave={onAddBooth}
-          onClose={() => setBoothOpen(false)}
-        />
+        <PhotoBooth busy={busy} onSave={onAddBooth} onClose={() => setBoothOpen(false)} />
       ) : null}
 
       {active ? (
         <StripViewer
           strip={active}
+          favorited={favorites.includes(active.id)}
           onClose={() => setActive(null)}
           onRename={onRename}
           onRemove={onRemove}
+          onToggleFavorite={toggleFavorite}
         />
       ) : null}
     </div>
