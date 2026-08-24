@@ -214,10 +214,8 @@ export function StripsScreen({
 
             <MemoriesGallery
               strips={strips}
-              favorites={favorites}
               ready={ready}
               onOpen={setActive}
-              onToggleFavorite={toggleFavorite}
               onViewAll={() => setGalleryAllOpen(true)}
             />
           </>

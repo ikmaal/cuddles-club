@@ -1,44 +1,25 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { HeartIcon } from './Icons'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import type { Photostrip } from '../types'
 
 interface MemoriesGalleryProps {
   strips: Photostrip[]
-  favorites: string[]
   ready: boolean
   onOpen: (strip: Photostrip) => void
-  onToggleFavorite: (id: string) => void
   onViewAll: () => void
 }
 
-function stripCaption(strip: Photostrip): { place: string; date: string } {
-  const [place] = strip.title.split(' · ')
-  const date = new Date(strip.createdAt).toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  })
-  return {
-    place: (place?.trim() || strip.title).slice(0, 28),
-    date: date.toUpperCase(),
-  }
-}
-
-function cardOffset(index: number, active: number): number {
-  return index - active
-}
+const FOCUS_OPEN_THRESHOLD = 0.82
 
 export function MemoriesGallery({
   strips,
-  favorites,
   ready,
   onOpen,
-  onToggleFavorite,
   onViewAll,
 }: MemoriesGalleryProps) {
   const trackRef = useRef<HTMLDivElement>(null)
+  const spotlightRef = useRef<HTMLDivElement>(null)
   const cardRefs = useRef<(HTMLDivElement | null)[]>([])
-  const [activeIndex, setActiveIndex] = useState(0)
+  const focusRef = useRef<number[]>([])
   const scrollRaf = useRef(0)
 
   const sorted = useMemo(
@@ -46,25 +27,46 @@ export function MemoriesGallery({
     [strips],
   )
 
-  const syncActiveFromScroll = useCallback(() => {
+  const updateCarousel = useCallback(() => {
     const track = trackRef.current
     if (!track || sorted.length === 0) return
 
     const center = track.scrollLeft + track.clientWidth / 2
-    let best = 0
-    let bestDist = Number.POSITIVE_INFINITY
+    const cardWidth = cardRefs.current.find((card) => card)?.offsetWidth ?? 118
+    const focusRadius = cardWidth * 1.35
+
+    let bestFocus = -1
+    let spotlightX = track.clientWidth / 2
+    let spotlightFocus = 0
+
+    const nextFocus: number[] = []
 
     cardRefs.current.forEach((card, index) => {
       if (!card) return
+
       const cardCenter = card.offsetLeft + card.offsetWidth / 2
+      const signedOffset = (cardCenter - center) / cardWidth
       const dist = Math.abs(cardCenter - center)
-      if (dist < bestDist) {
-        bestDist = dist
-        best = index
+      const focus = Math.max(0, 1 - dist / focusRadius)
+
+      nextFocus[index] = focus
+      card.style.setProperty('--focus', focus.toFixed(3))
+      card.style.setProperty('--card-offset', signedOffset.toFixed(3))
+
+      if (focus > bestFocus) {
+        bestFocus = focus
+        spotlightX = cardCenter - track.scrollLeft
+        spotlightFocus = focus
       }
     })
 
-    setActiveIndex(best)
+    focusRef.current = nextFocus
+
+    const spotlight = spotlightRef.current
+    if (spotlight) {
+      spotlight.style.setProperty('--spotlight-x', `${spotlightX}px`)
+      spotlight.style.setProperty('--spotlight-focus', spotlightFocus.toFixed(3))
+    }
   }, [sorted.length])
 
   const scrollToIndex = useCallback((index: number, smooth = true) => {
@@ -83,20 +85,17 @@ export function MemoriesGallery({
 
   useEffect(() => {
     cardRefs.current = cardRefs.current.slice(0, sorted.length)
-    if (sorted.length === 0) {
-      setActiveIndex(0)
-      return
-    }
-    if (activeIndex > sorted.length - 1) {
-      setActiveIndex(sorted.length - 1)
-    }
-  }, [sorted.length, activeIndex])
+    focusRef.current = focusRef.current.slice(0, sorted.length)
+  }, [sorted.length])
 
   useEffect(() => {
     if (sorted.length === 0) return
-    const id = window.requestAnimationFrame(() => scrollToIndex(0, false))
+    const id = window.requestAnimationFrame(() => {
+      scrollToIndex(0, false)
+      window.requestAnimationFrame(updateCarousel)
+    })
     return () => window.cancelAnimationFrame(id)
-  }, [sorted.length, scrollToIndex])
+  }, [sorted.length, scrollToIndex, updateCarousel])
 
   useEffect(() => {
     const track = trackRef.current
@@ -104,17 +103,21 @@ export function MemoriesGallery({
 
     const onScroll = () => {
       window.cancelAnimationFrame(scrollRaf.current)
-      scrollRaf.current = window.requestAnimationFrame(syncActiveFromScroll)
+      scrollRaf.current = window.requestAnimationFrame(updateCarousel)
     }
 
     track.addEventListener('scroll', onScroll, { passive: true })
-    syncActiveFromScroll()
+    updateCarousel()
+
+    const onResize = () => updateCarousel()
+    window.addEventListener('resize', onResize)
 
     return () => {
       track.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onResize)
       window.cancelAnimationFrame(scrollRaf.current)
     }
-  }, [syncActiveFromScroll, sorted.length])
+  }, [updateCarousel, sorted.length])
 
   const countLabel = sorted.length === 1 ? '1 strip' : `${sorted.length} strips`
 
@@ -122,7 +125,7 @@ export function MemoriesGallery({
     <section className="memories" aria-label="Memories">
       <header className="memories__head">
         <div>
-          <h2 className="memories__title">memories ♡</h2>
+          <h2 className="memories__title">memories</h2>
           <p className="memories__count">{ready ? countLabel : 'Opening album…'}</p>
         </div>
         <button
@@ -141,25 +144,19 @@ export function MemoriesGallery({
         </div>
       ) : (
         <div className="memories__stage">
+          <div className="memories__spotlight" ref={spotlightRef} aria-hidden />
           <div className="memories__track" ref={trackRef}>
-            {sorted.map((strip, index) => {
-              const offset = cardOffset(index, activeIndex)
-              const { place, date } = stripCaption(strip)
-              const favorited = favorites.includes(strip.id)
-              const absOffset = Math.abs(offset)
-              const clamped = Math.min(absOffset, 3)
-
-              return (
+            {sorted.map((strip, index) => (
                 <div
                   key={strip.id}
                   ref={(node) => {
                     cardRefs.current[index] = node
                   }}
-                  className={`memories-card${offset === 0 ? ' is-active' : ''}${offset < 0 ? ' is-before' : ''}${offset > 0 ? ' is-after' : ''}`}
+                  className="memories-card"
                   style={
                     {
-                      '--card-offset': offset,
-                      '--card-depth': clamped,
+                      '--focus': 0,
+                      '--card-offset': 0,
                     } as React.CSSProperties
                   }
                 >
@@ -167,35 +164,21 @@ export function MemoriesGallery({
                     type="button"
                     className="memories-card__hit"
                     onClick={() => {
-                      if (offset !== 0) {
+                      const currentFocus = focusRef.current[index] ?? 0
+                      if (currentFocus < FOCUS_OPEN_THRESHOLD) {
                         scrollToIndex(index)
                         return
                       }
                       onOpen(strip)
                     }}
-                    aria-label={`${place}, ${date}`}
+                    aria-label={strip.title}
                   >
                     <span className="memories-card__frame">
                       <img src={strip.image} alt="" draggable={false} />
                     </span>
                   </button>
-                  <span className="memories-card__meta">
-                    <span className="memories-card__copy">
-                      <span className="memories-card__date">{date}</span>
-                      <span className="memories-card__place">{place}</span>
-                    </span>
-                    <button
-                      type="button"
-                      className={`memories-card__heart${favorited ? ' is-faved' : ''}`}
-                      aria-label={favorited ? 'Remove from favorites' : 'Add to favorites'}
-                      onClick={() => onToggleFavorite(strip.id)}
-                    >
-                      <HeartIcon size={16} />
-                    </button>
-                  </span>
                 </div>
-              )
-            })}
+              ))}
           </div>
         </div>
       )}

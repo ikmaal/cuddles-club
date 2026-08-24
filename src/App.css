@@ -4802,16 +4802,15 @@ a.home-listening:focus-visible {
 
 .booth-banner {
   margin: 0 0 16px;
-  overflow: hidden;
-  border-radius: 28px;
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35);
+  width: 100%;
 }
 
 .booth-banner__art {
   display: block;
   width: 100%;
   height: auto;
-  object-fit: cover;
+  border-radius: 28px;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35);
 }
 
 .booth-back {
@@ -4884,9 +4883,9 @@ a.home-listening:focus-visible {
 
 .memories__title {
   margin: 0;
-  font-family: var(--booth-script);
-  font-size: 2rem;
-  font-weight: 400;
+  font-family: 'Dancing Script', 'Great Vibes', 'Segoe Script', cursive;
+  font-size: 2.45rem;
+  font-weight: 600;
   line-height: 1.05;
   color: #ffffff;
 }
@@ -4928,7 +4927,31 @@ a.home-listening:focus-visible {
   overflow: visible;
 }
 
+.memories__spotlight {
+  position: absolute;
+  left: var(--spotlight-x, 50%);
+  bottom: 18px;
+  z-index: 0;
+  width: min(78vw, 220px);
+  height: 82%;
+  pointer-events: none;
+  opacity: calc(0.35 + var(--spotlight-focus, 0.8) * 0.55);
+  transform: translateX(-50%);
+  background:
+    radial-gradient(
+      ellipse 70% 88% at 50% 72%,
+      rgba(255, 232, 210, 0.22) 0%,
+      rgba(255, 210, 190, 0.1) 38%,
+      rgba(255, 200, 180, 0.03) 62%,
+      transparent 78%
+    );
+  filter: blur(2px);
+  transition: opacity 120ms linear;
+}
+
 .memories__track {
+  position: relative;
+  z-index: 1;
   --strip-card-width: clamp(88px, 20vw, 118px);
   display: flex;
   align-items: flex-end;
@@ -4949,27 +4972,19 @@ a.home-listening:focus-visible {
   flex: 0 0 var(--strip-card-width, 118px);
   width: var(--strip-card-width, 118px);
   scroll-snap-align: center;
-  display: grid;
-  gap: 12px;
+  display: block;
+  --focus: 0;
+  --card-offset: 0;
   transform:
-    translateX(calc(var(--card-offset) * 8px))
-    scale(calc(1 - var(--card-depth) * 0.09))
-    rotateY(calc(var(--card-offset) * -24deg));
-  opacity: calc(1 - var(--card-depth) * 0.24);
-  filter: brightness(calc(1 - var(--card-depth) * 0.2));
-  transition:
-    transform 380ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 380ms cubic-bezier(0.22, 1, 0.36, 1),
-    filter 380ms cubic-bezier(0.22, 1, 0.36, 1);
+    translateX(calc(var(--card-offset) * 10px))
+    translateY(calc((1 - var(--focus)) * 6px))
+    scale(calc(0.82 + var(--focus) * 0.18))
+    rotateY(calc(var(--card-offset) * -26deg));
+  opacity: calc(0.5 + var(--focus) * 0.5);
+  z-index: calc(1 + var(--focus) * 8);
   transform-style: preserve-3d;
   will-change: transform, opacity;
   transform-origin: center bottom;
-}
-
-.memories-card.is-active {
-  opacity: 1;
-  filter: brightness(1);
-  z-index: 2;
 }
 
 .memories-card__hit {
@@ -4995,10 +5010,6 @@ a.home-listening:focus-visible {
   overflow: visible;
 }
 
-.memories-card.is-active .memories-card__frame {
-  box-shadow: none;
-}
-
 .memories-card__frame img {
   display: block;
   width: 100%;
@@ -5008,74 +5019,10 @@ a.home-listening:focus-visible {
   object-fit: contain;
   object-position: center bottom;
   background: transparent;
-  filter: drop-shadow(0 20px 36px rgba(0, 0, 0, 0.45));
-}
-
-.memories-card.is-active .memories-card__frame img {
-  filter: drop-shadow(0 26px 44px rgba(0, 0, 0, 0.52));
-}
-
-.memories-card__meta {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 0 6px;
-  min-height: 44px;
-}
-
-.memories-card__copy {
-  display: grid;
-  gap: 2px;
-  min-width: 0;
-}
-
-.memories-card__date {
-  font-family: var(--booth-sans);
-  font-size: 0.68rem;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.42);
-}
-
-.memories-card__place {
-  font-family: var(--booth-sans);
-  font-size: 0.92rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.memories-card__heart {
-  flex-shrink: 0;
-  width: 34px;
-  height: 34px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(255, 255, 255, 0.55);
-}
-
-.memories-card__heart:active {
-  transform: scale(0.94);
-}
-
-.memories-card__heart.is-faved {
-  color: #ff9eb0;
-  border-color: rgba(255, 158, 176, 0.35);
-  background: rgba(255, 158, 176, 0.12);
-}
-
-.memories-card__heart.is-faved svg path {
-  fill: currentColor;
-}
-
-.memories-card:not(.is-active) .memories-card__meta {
-  opacity: 0.72;
+  filter:
+    grayscale(calc(1 - var(--focus)))
+    brightness(calc(0.68 + var(--focus) * 0.32))
+    drop-shadow(0 calc(12px + var(--focus) * 10px) calc(20px + var(--focus) * 18px) rgba(0, 0, 0, calc(0.28 + var(--focus) * 0.24)));
 }
 
 .memories__empty {
