@@ -18,7 +18,7 @@ export const SERVICES: Service[] = [
     blurb: 'Snap strips, save memories, spin them in 3D',
     tone: 'film',
     Icon: StripIcon,
-    image: 'photobooth.jpg',
+    image: 'photoboothicon.png',
   },
   {
     id: 'academics',
