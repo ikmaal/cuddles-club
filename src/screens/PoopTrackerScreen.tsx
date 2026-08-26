@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   BackIcon,
   CalendarIcon,
@@ -66,10 +66,14 @@ export function PoopTrackerScreen({
   profile,
   logPoop,
   statsFor,
+  refresh,
+  error,
+  isCloud,
   onBack,
 }: PoopTrackerScreenProps) {
   const [owner, setOwner] = useState<Carer>('you')
   const [justLogged, setJustLogged] = useState(false)
+  const [logFailed, setLogFailed] = useState(false)
 
   const names = useMemo(
     () => ({
@@ -82,8 +86,17 @@ export function PoopTrackerScreen({
   const stats = statsFor(owner)
   const displayName = firstName(names[owner])
 
-  function handleLog() {
-    logPoop(owner)
+  useEffect(() => {
+    void refresh()
+  }, [refresh])
+
+  async function handleLog() {
+    setLogFailed(false)
+    const entry = await logPoop(owner)
+    if (!entry) {
+      setLogFailed(true)
+      return
+    }
     setJustLogged(true)
     window.setTimeout(() => setJustLogged(false), 1800)
   }
@@ -110,6 +123,19 @@ export function PoopTrackerScreen({
         </div>
         <span className="poop-topbar__spacer" aria-hidden />
       </header>
+
+      {error ? (
+        <p className="poop-sync-error" role="alert">
+          {error}
+          {!isCloud ? ' Sign in on the Us tab to sync with your partner.' : ''}
+        </p>
+      ) : null}
+
+      {logFailed ? (
+        <p className="poop-sync-error" role="alert">
+          Could not save that log. Check your connection and try again.
+        </p>
+      ) : null}
 
       <ScrollRegion className="screen__scroll poop-scroll">
         <section className="poop-hero" aria-label="Summary">

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useCouple } from '../context/CoupleContext'
 import { deletePoopLog, insertPoopLog, loadPoopLogs } from '../lib/poopData'
+import { supabase } from '../lib/supabase'
 import { createId, todayKey } from './useStored'
 import type { Carer, PoopLog } from '../types'
 
@@ -179,6 +180,31 @@ export function usePoopTracker() {
       document.removeEventListener('visibilitychange', onVisible)
     }
   }, [isCloud, refresh])
+
+  useEffect(() => {
+    if (!isCloud || !coupleId || !supabase) return
+
+    const client = supabase
+    const channel = client
+      .channel(`poop_logs:${coupleId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'poop_logs',
+          filter: `couple_id=eq.${coupleId}`,
+        },
+        () => {
+          void refresh()
+        },
+      )
+      .subscribe()
+
+    return () => {
+      void client.removeChannel(channel)
+    }
+  }, [coupleId, isCloud, refresh])
 
   const logPoop = useCallback(
     async (owner: Carer) => {

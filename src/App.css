@@ -8719,6 +8719,18 @@ a.home-listening:focus-visible {
   box-shadow: 0 6px 16px rgba(92, 36, 56, 0.22);
 }
 
+.poop-sync-error {
+  margin: 0 16px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  color: #9f1239;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
 .poop-scroll {
   gap: 14px;
   padding: 6px 16px 24px;

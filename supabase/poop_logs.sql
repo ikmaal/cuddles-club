@@ -18,3 +18,11 @@ create policy "poop_logs_all_member"
   on public.poop_logs for all
   using (couple_id = public.user_couple_id())
   with check (couple_id = public.user_couple_id());
+
+-- Live updates between partners (safe to run once; ignore if already added).
+do $$
+begin
+  alter publication supabase_realtime add table public.poop_logs;
+exception
+  when duplicate_object then null;
+end $$;
