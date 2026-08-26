@@ -30,11 +30,11 @@ export const SERVICES: Service[] = [
   },
   {
     id: 'places',
-    label: 'Places',
+    label: 'Noms',
     blurb: 'Food we’ve been to, and want to try',
     tone: 'orange',
     Icon: PlacesIcon,
-    image: 'places-logo.png',
+    image: 'nomsicon.png',
   },
   {
     id: 'pooptracker',

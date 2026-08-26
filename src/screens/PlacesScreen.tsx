@@ -765,7 +765,7 @@ export function PlacesScreen({
       </div>
 
       {hideTabs ? null : (
-        <nav className="places-tabbar" aria-label="Places">
+        <nav className="places-tabbar" aria-label="Noms">
           <button
             type="button"
             className={tab === 'home' ? 'is-active' : ''}
