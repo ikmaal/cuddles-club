@@ -431,6 +431,27 @@ export function PoopIcon({ size }: IconProps) {
   )
 }
 
+export function FlameIcon({ size }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M12 21c3.5 0 6.5-2.4 6.5-6.2 0-2.4-1.2-4.1-2.6-5.6-.8 1.4-1.8 2.4-2.4 2.4-.5 0-1-.8-1.4-1.8C10.8 8.6 12 6.4 12 4c0 0-3 2.8-3 7.1 0 1.2.4 2.1 1 2.8-.9-.6-1.5-1.7-1.5-3.1C8.5 7.8 10.5 5 12 3c1.5 2 3.5 4.8 3.5 7.8 0 2.8-1.7 4.7-3.5 5.5.8-.9 1.3-2.1 1.3-3.5 0-2.5-1.6-4.4-2.8-5.8Z"
+        fill="currentColor"
+      />
+    </svg>
+  )
+}
+
+export function ToiletPaperIcon({ size }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <rect x="5" y="5" width="14" height="14" rx="3" fill="currentColor" />
+      <circle cx="12" cy="12" r="4.5" stroke="#fff" strokeWidth="1.6" />
+      <circle cx="12" cy="12" r="1.4" fill="#fff" />
+    </svg>
+  )
+}
+
 export function WantToGoIcon({ size = 24 }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden>

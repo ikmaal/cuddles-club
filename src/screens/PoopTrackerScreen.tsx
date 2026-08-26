@@ -1,5 +1,10 @@
 import { useMemo, useState } from 'react'
-import { BackIcon } from '../components/Icons'
+import {
+  BackIcon,
+  CalendarIcon,
+  CheckIcon,
+  ChevronIcon,
+} from '../components/Icons'
 import { ScrollRegion } from '../components/ScrollRegion'
 import type { UsePoopTrackerReturn } from '../hooks/usePoopTracker'
 import type { Carer, CoupleProfile } from '../types'
@@ -13,14 +18,48 @@ function firstName(name: string): string {
   return name.trim().split(/\s+/)[0] || name
 }
 
-function formatHeaderDate(date = new Date()): string {
-  return date
-    .toLocaleDateString(undefined, {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-    })
-    .toUpperCase()
+function formatCardDate(date = new Date()): string {
+  const weekday = date.toLocaleDateString(undefined, { weekday: 'short' }).toUpperCase()
+  const rest = date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }).toUpperCase()
+  return `${weekday}, ${rest}`
+}
+
+function streakLabel(days: number): string {
+  return `${days} day${days === 1 ? '' : 's'}`
+}
+
+function GutInsightBody({
+  daysSince,
+  streak,
+}: {
+  daysSince: number | null
+  streak: number
+}) {
+  if (daysSince === null) {
+    return <>Log your first poop to start tracking.</>
+  }
+  if (daysSince === 0) {
+    return (
+      <>
+        You&apos;re on a <strong>{streakLabel(streak)}</strong> streak.
+      </>
+    )
+  }
+  if (daysSince === 1) {
+    return <>You last pooped yesterday.</>
+  }
+  if (daysSince <= 3) {
+    return (
+      <>
+        You last pooped <strong>{daysSince} days</strong> ago.
+      </>
+    )
+  }
+  return (
+    <>
+      It&apos;s been <strong>{daysSince} days</strong> since your last log.
+    </>
+  )
 }
 
 export function PoopTrackerScreen({
@@ -69,47 +108,53 @@ export function PoopTrackerScreen({
             </button>
           ))}
         </div>
-        <span className="poop-topbar__spacer" aria-hidden />
       </header>
 
       <ScrollRegion className="screen__scroll poop-scroll">
         <section className="poop-hero" aria-label="Summary">
           <div className="poop-hero__copy">
             <h1>
-              {displayName}, you are doing
+              Hey {displayName.toLowerCase()},
               <br />
-              great so far.
+              you&apos;re doing
+              <br />
+              <em>great</em> so far.
             </h1>
-            <div className="poop-hero__stats">
-              <div>
-                <span className="poop-hero__stat-label">Your longest streak is</span>
-                <strong>{stats.longestStreak} days</strong>
-              </div>
-              <div>
-                <span className="poop-hero__stat-label">Your last poop was</span>
-                <strong>{stats.lastPoopLabel}</strong>
-              </div>
-            </div>
           </div>
           <div className="poop-mascot" aria-hidden>
-            <span className="poop-mascot__blob">💩</span>
+            <img src={`${import.meta.env.BASE_URL}poopmascot.png`} alt="" />
           </div>
         </section>
+
+        <div className="poop-stat-row">
+          <article className="poop-stat-card">
+            <p className="poop-stat-card__label">Longest streak</p>
+            <p className="poop-stat-card__value">{streakLabel(stats.longestStreak)}</p>
+          </article>
+          <article className="poop-stat-card">
+            <p className="poop-stat-card__label">Last poop was</p>
+            <p className="poop-stat-card__value">{stats.lastPoopLabel}</p>
+          </article>
+        </div>
 
         <button
           type="button"
           className={`poop-log-btn${justLogged ? ' is-logged' : ''}`}
           onClick={handleLog}
         >
-          {justLogged ? 'Logged!' : 'I just pooped'}
+          <span className="poop-log-btn__icon" aria-hidden>
+            <CheckIcon size={16} />
+          </span>
+          <span>{justLogged ? 'Logged!' : 'I just pooped'}</span>
         </button>
-
-        <p className="poop-date">{formatHeaderDate()}</p>
 
         <section className="poop-card poop-week" aria-label="Weekly overview">
           <div className="poop-week__header">
             <div className="poop-week__header-copy">
-              <p className="poop-week__eyebrow">Overview</p>
+              <p className="poop-week__date">
+                <CalendarIcon size={14} />
+                {formatCardDate()}
+              </p>
               <h2 className="poop-week__title">This week</h2>
             </div>
             <div className="poop-week__badge" aria-label={`${stats.weekTotal} logs this week`}>
@@ -118,48 +163,37 @@ export function PoopTrackerScreen({
             </div>
           </div>
 
-          <div className="poop-week__panel">
-            <div className="poop-week__chart">
-              {stats.week.map((bar) => {
-                const active = !bar.isFuture && bar.count > 0
-                const height = active
-                  ? Math.max(22, Math.round((bar.count / stats.maxWeek) * 100))
-                  : 0
-                const tone = bar.count === 0 ? 'empty' : bar.count >= 2 ? 'great' : 'good'
-                return (
-                  <div
-                    key={bar.key}
-                    className={`poop-week__col${bar.isToday ? ' is-today' : ''}${bar.isFuture ? ' is-future' : ''}`}
-                  >
-                    <div className="poop-week__track" aria-hidden>
-                      <div
-                        className={`poop-week__fill poop-week__fill--${tone}`}
-                        style={{ height: active ? `${height}%` : '0%' }}
-                      >
-                        {active ? <span className="poop-week__count">{bar.count}</span> : null}
-                      </div>
-                    </div>
-                    <span className="poop-week__label">{bar.label}</span>
+          <div className="poop-week__chart">
+            {stats.week.map((bar) => {
+              const active = !bar.isFuture && bar.count > 0
+              return (
+                <div
+                  key={bar.key}
+                  className={`poop-week__col${bar.isToday ? ' is-today' : ''}${bar.isFuture ? ' is-future' : ''}${active ? ' is-active' : ''}`}
+                >
+                  <div className="poop-week__track" aria-hidden>
+                    {active ? <span className="poop-week__count">{bar.count}</span> : null}
                   </div>
-                )
-              })}
-            </div>
+                  <span className="poop-week__label">{bar.label}</span>
+                </div>
+              )
+            })}
           </div>
+        </section>
 
-          <div className="poop-week__summary">
-            <div className="poop-week__summary-icon" aria-hidden>
-              ✨
-            </div>
-            <div className="poop-week__summary-copy">
-              <h3>{stats.gut.title}</h3>
-              <p>{stats.gut.body}</p>
-              <p className="poop-week__meta">
-                {stats.todayCount > 0
-                  ? `${stats.todayCount} today · ${stats.total} total`
-                  : `${stats.total} logs total`}
-              </p>
-            </div>
+        <section className="poop-insight" aria-label="Gut health insight">
+          <div className="poop-insight__copy">
+            <h3>{stats.gut.title}</h3>
+            <p>
+              <GutInsightBody daysSince={stats.daysSinceLast} streak={stats.currentStreak} />
+            </p>
+            <p className="poop-insight__meta">
+              {stats.todayCount > 0
+                ? `${stats.todayCount} today · ${stats.total} total`
+                : `${stats.total} logs total`}
+            </p>
           </div>
+          <ChevronIcon size={18} />
         </section>
       </ScrollRegion>
     </div>

@@ -778,7 +778,7 @@ export function PlacesScreen({
             Home
           </button>
           <button type="button" className="places-tabbar__plus" onClick={openNew} aria-label="Add a place">
-            <PlusIcon size={26} />
+            <PlusIcon size={22} />
           </button>
           <button
             type="button"
