@@ -416,6 +416,21 @@ export function CalcIcon({ size }: IconProps) {
   )
 }
 
+export function PoopIcon({ size }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path
+        d="M8.5 6.2c.4-1.8 1.8-3.2 3.8-3.2s3.4 1.4 3.8 3.2c2 .5 3.4 2.2 3.4 4.3 0 1.2-.4 2.3-1.1 3.2.3.6.5 1.3.5 2 0 2.4-2.5 3.5-6.6 3.5s-6.6-1.1-6.6-3.5c0-.7.2-1.4.5-2A5.2 5.2 0 0 1 5.1 10.5c0-2.1 1.4-3.8 3.4-4.3z"
+        fill="currentColor"
+        stroke="none"
+      />
+      <circle cx="10" cy="11.5" r="0.7" fill="#fff" stroke="none" />
+      <circle cx="14" cy="11.5" r="0.7" fill="#fff" stroke="none" />
+      <path d="M10.5 14.2c.8.6 1.7.9 2.5.9s1.7-.3 2.5-.9" stroke="#fff" strokeWidth="1.2" />
+    </Frame>
+  )
+}
+
 export function WantToGoIcon({ size = 24 }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden>

@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react'
-import { AcademicsIcon, PlacesIcon, StripIcon } from './components/Icons'
+import { AcademicsIcon, PlacesIcon, PoopIcon, StripIcon } from './components/Icons'
 import type { Screen } from './types'
 
 export interface Service {
@@ -35,5 +35,13 @@ export const SERVICES: Service[] = [
     tone: 'orange',
     Icon: PlacesIcon,
     image: 'places-logo.png',
+  },
+  {
+    id: 'pooptracker',
+    label: 'Poop Tracker',
+    blurb: 'Log daily poops and keep your streak',
+    tone: 'poop',
+    Icon: PoopIcon,
+    image: 'pooptrackericon.png',
   },
 ]

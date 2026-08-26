@@ -175,6 +175,18 @@ html.places-bg .app {
   box-shadow: none;
 }
 
+html.poop-bg,
+html.poop-bg body,
+html.poop-bg #root {
+  background-color: #ffffff;
+  overscroll-behavior: none;
+}
+
+html.poop-bg .app {
+  background: #ffffff;
+  box-shadow: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .app--home-bg .app__main,
   .app--home-bg .tabbar {

@@ -9,6 +9,8 @@ import { useProfile } from './hooks/useProfile'
 import { AcademicsScreen } from './screens/AcademicsScreen'
 import { HomeScreen } from './screens/HomeScreen'
 import { PlacesScreen } from './screens/PlacesScreen'
+import { usePoopTracker } from './hooks/usePoopTracker'
+import { PoopTrackerScreen } from './screens/PoopTrackerScreen'
 import { StripsScreen } from './screens/StripsScreen'
 import { UsScreen } from './screens/UsScreen'
 import type { Screen } from './types'
@@ -18,6 +20,7 @@ const HOME_WHITE = '#ffffff'
 const STRIPS_BLACK = '#000000'
 const ACADEMICS_CREAM = '#f6f1e6'
 const PLACES_PAPER = '#ffffff'
+const POOP_WHITE = '#ffffff'
 const SPLASH_STATUS_COLOR = '#ffffff'
 const DEFAULT_THEME_COLOR = '#E85D75'
 
@@ -44,6 +47,7 @@ export default function App() {
   const strips = usePhotostrips()
   const academics = useAcademics()
   const places = usePlaces()
+  const poopTracker = usePoopTracker()
 
   const [screen, setScreen] = useState<Screen>('home')
   const [splashPhase, setSplashPhase] = useState<SplashPhase>('active')
@@ -54,6 +58,7 @@ export default function App() {
   const navyLive = (screen === 'home' || screen === 'us') && splashPhase === 'done'
   const academicsLive = screen === 'academics' && splashPhase === 'done'
   const placesLive = screen === 'places' && splashPhase === 'done'
+  const poopLive = screen === 'pooptracker' && splashPhase === 'done'
   const shellVisible = screen === 'us' ? navyLive : homeVisible
   const showTabs = !splashActive && ready && (screen === 'home' || screen === 'us')
 
@@ -67,6 +72,7 @@ export default function App() {
     root.classList.toggle('strips-bg', screen === 'strips' && !splashActive)
     root.classList.toggle('academics-bg', academicsLive)
     root.classList.toggle('places-bg', placesLive)
+    root.classList.toggle('poop-bg', poopLive)
     root.style.setProperty('--home-wallpaper', wallpaper)
 
     if (navyLive) {
@@ -81,6 +87,9 @@ export default function App() {
     } else if (placesLive) {
       setThemeColor(PLACES_PAPER)
       setStatusBarStyle('default')
+    } else if (poopLive) {
+      setThemeColor(POOP_WHITE)
+      setStatusBarStyle('default')
     } else if (splashActive) {
       setThemeColor(SPLASH_STATUS_COLOR)
       setStatusBarStyle('default')
@@ -88,7 +97,7 @@ export default function App() {
       setThemeColor(DEFAULT_THEME_COLOR)
       setStatusBarStyle('default')
     }
-  }, [splashActive, navyLive, homeLive, academicsLive, placesLive, screen])
+  }, [splashActive, navyLive, homeLive, academicsLive, placesLive, poopLive, screen])
 
   useEffect(() => {
     if (screen !== 'home' || splashPhase !== 'done') {
@@ -121,7 +130,7 @@ export default function App() {
 
   return (
     <div
-      className={`app${navyLive ? ' app--home-bg' : ''}${homeLive ? ' app--home-image' : ''}${shellVisible ? ' app--home-visible' : ''}${screen === 'strips' && !splashActive ? ' app--strips' : ''}${academicsLive ? ' app--academics' : ''}${placesLive ? ' app--places' : ''}${splashActive ? ' app--splash' : ''}`}
+      className={`app${navyLive ? ' app--home-bg' : ''}${homeLive ? ' app--home-image' : ''}${shellVisible ? ' app--home-visible' : ''}${screen === 'strips' && !splashActive ? ' app--strips' : ''}${academicsLive ? ' app--academics' : ''}${placesLive ? ' app--places' : ''}${poopLive ? ' app--poop' : ''}${splashActive ? ' app--splash' : ''}`}
     >
       {splashActive ? (
         <SplashIntro
@@ -164,6 +173,10 @@ export default function App() {
 
             {screen === 'places' ? (
               <PlacesScreen {...places} onBack={goHome} />
+            ) : null}
+
+            {screen === 'pooptracker' ? (
+              <PoopTrackerScreen {...poopTracker} profile={profile} onBack={goHome} />
             ) : null}
 
             {screen === 'us' ? (
