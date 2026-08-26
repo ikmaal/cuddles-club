@@ -53,7 +53,7 @@ export function PoopTrackerScreen({
     <div className="screen screen--poop">
       <header className="poop-topbar">
         <button type="button" className="poop-back" onClick={onBack} aria-label="Back">
-          <BackIcon size={20} />
+          <BackIcon size={18} />
         </button>
         <div className="poop-switch" role="tablist" aria-label="Whose tracker">
           {(['you', 'partner'] as const).map((id) => (
@@ -123,7 +123,7 @@ export function PoopTrackerScreen({
               {stats.week.map((bar) => {
                 const active = !bar.isFuture && bar.count > 0
                 const height = active
-                  ? Math.max(28, Math.round((bar.count / stats.maxWeek) * 100))
+                  ? Math.max(22, Math.round((bar.count / stats.maxWeek) * 100))
                   : 0
                 const tone = bar.count === 0 ? 'empty' : bar.count >= 2 ? 'great' : 'good'
                 return (

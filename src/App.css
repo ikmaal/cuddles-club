@@ -8677,17 +8677,17 @@ a.home-listening:focus-visible {
 
 .poop-topbar {
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr) 36px;
+  grid-template-columns: 32px minmax(0, 1fr) 32px;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px 4px;
-  padding-top: max(8px, env(safe-area-inset-top));
+  gap: 6px;
+  padding: 6px 14px 2px;
+  padding-top: max(6px, env(safe-area-inset-top));
 }
 
 .poop-back,
 .poop-topbar__spacer {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
 }
 
 .poop-back {
@@ -8704,17 +8704,21 @@ a.home-listening:focus-visible {
 .poop-switch {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
-  padding: 4px;
+  gap: 2px;
+  width: 100%;
+  max-width: 156px;
+  margin: 0 auto;
+  padding: 2px;
   border-radius: 999px;
   background: #f3f3f3;
   box-shadow: inset 0 0 0 1px rgba(42, 31, 36, 0.06);
 }
 
 .poop-switch button {
-  min-height: 34px;
+  min-height: 24px;
+  padding: 0 6px;
   border-radius: 999px;
-  font-size: 0.82rem;
+  font-size: 0.66rem;
   font-weight: 600;
   color: var(--poop-muted);
   text-transform: lowercase;
@@ -8723,74 +8727,74 @@ a.home-listening:focus-visible {
 .poop-switch button.is-on {
   background: #ffffff;
   color: var(--poop-ink);
-  box-shadow: 0 6px 16px rgba(92, 36, 56, 0.12);
+  box-shadow: 0 2px 8px rgba(92, 36, 56, 0.08);
 }
 
 .poop-scroll {
-  gap: 14px;
-  padding: 8px 18px 28px;
+  gap: 10px;
+  padding: 4px 14px 20px;
 }
 
 .poop-hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
+  gap: 6px;
   align-items: end;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .poop-hero h1 {
   margin: 0;
-  font-size: clamp(1.55rem, 5vw, 1.95rem);
-  line-height: 1.08;
+  font-size: clamp(1.2rem, 4.2vw, 1.45rem);
+  line-height: 1.1;
   letter-spacing: -0.02em;
   font-weight: 700;
 }
 
 .poop-hero__stats {
   display: grid;
-  gap: 12px;
-  margin-top: 18px;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .poop-hero__stats strong {
   display: block;
-  margin-top: 2px;
-  font-size: 1.35rem;
+  margin-top: 1px;
+  font-size: 1.05rem;
   font-weight: 700;
   letter-spacing: -0.02em;
 }
 
 .poop-hero__stat-label {
-  font-size: 0.84rem;
+  font-size: 0.75rem;
   color: var(--poop-muted);
 }
 
 .poop-mascot {
   display: grid;
   place-items: end center;
-  min-width: 72px;
-  padding-bottom: 8px;
+  min-width: 52px;
+  padding-bottom: 4px;
 }
 
 .poop-mascot__blob {
-  font-size: 3.4rem;
-  filter: drop-shadow(0 10px 18px rgba(92, 36, 56, 0.14));
+  font-size: 2.4rem;
+  filter: drop-shadow(0 6px 12px rgba(92, 36, 56, 0.12));
   transform: rotate(8deg);
 }
 
 .poop-card {
-  border-radius: 28px;
+  border-radius: 20px;
   background: var(--poop-card);
   box-shadow:
-    0 20px 40px rgba(92, 36, 56, 0.1),
-    0 2px 8px rgba(42, 31, 36, 0.04);
+    0 12px 28px rgba(92, 36, 56, 0.08),
+    0 1px 4px rgba(42, 31, 36, 0.04);
   border: 1px solid rgba(92, 36, 56, 0.08);
 }
 
 .poop-date {
-  margin: 8px 0 0;
-  font-size: 0.72rem;
+  margin: 4px 0 0;
+  font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   color: var(--poop-muted);
@@ -8799,7 +8803,7 @@ a.home-listening:focus-visible {
 .poop-week {
   position: relative;
   overflow: hidden;
-  padding: 20px 18px 18px;
+  padding: 14px 14px 12px;
   background:
     radial-gradient(circle at 100% 0%, rgba(255, 214, 228, 0.55), transparent 42%),
     radial-gradient(circle at 0% 100%, rgba(220, 201, 255, 0.4), transparent 38%),
@@ -8821,13 +8825,13 @@ a.home-listening:focus-visible {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 .poop-week__eyebrow {
   margin: 0;
-  font-size: 0.72rem;
+  font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -8835,8 +8839,8 @@ a.home-listening:focus-visible {
 }
 
 .poop-week__title {
-  margin: 4px 0 0;
-  font-size: 1.45rem;
+  margin: 2px 0 0;
+  font-size: 1.1rem;
   font-weight: 700;
   letter-spacing: -0.03em;
   color: var(--poop-ink);
@@ -8846,18 +8850,18 @@ a.home-listening:focus-visible {
   flex-shrink: 0;
   display: grid;
   justify-items: center;
-  gap: 2px;
-  min-width: 72px;
-  padding: 10px 12px;
-  border-radius: 18px;
+  gap: 1px;
+  min-width: 58px;
+  padding: 7px 10px;
+  border-radius: 14px;
   background: rgba(255, 255, 255, 0.82);
   box-shadow:
-    0 8px 20px rgba(92, 36, 56, 0.1),
+    0 6px 14px rgba(92, 36, 56, 0.08),
     inset 0 0 0 1px rgba(92, 36, 56, 0.08);
 }
 
 .poop-week__badge strong {
-  font-size: 1.35rem;
+  font-size: 1.05rem;
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.03em;
@@ -8865,7 +8869,7 @@ a.home-listening:focus-visible {
 }
 
 .poop-week__badge span {
-  font-size: 0.68rem;
+  font-size: 0.58rem;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -8875,42 +8879,42 @@ a.home-listening:focus-visible {
 .poop-week__panel {
   position: relative;
   z-index: 1;
-  padding: 16px 12px 14px;
-  border-radius: 22px;
+  padding: 10px 10px 8px;
+  border-radius: 16px;
   background: rgba(255, 255, 255, 0.78);
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.9),
-    0 10px 24px rgba(92, 36, 56, 0.06);
+    0 6px 16px rgba(92, 36, 56, 0.05);
   backdrop-filter: blur(8px);
 }
 
 .poop-week__chart {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 6px;
+  gap: 4px;
   align-items: end;
-  min-height: 156px;
+  min-height: 118px;
 }
 
 .poop-week__col {
   display: grid;
   justify-items: center;
-  gap: 10px;
+  gap: 6px;
   align-content: end;
-  min-height: 156px;
+  min-height: 118px;
 }
 
 .poop-week__track {
   width: 100%;
-  max-width: 34px;
-  height: 112px;
+  max-width: 26px;
+  height: 84px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding: 4px;
+  padding: 3px;
   border-radius: 999px;
   background: linear-gradient(180deg, #f3eef1 0%, #ebe5e8 100%);
-  box-shadow: inset 0 2px 6px rgba(42, 31, 36, 0.06);
+  box-shadow: inset 0 2px 4px rgba(42, 31, 36, 0.06);
 }
 
 .poop-week__fill {
@@ -8924,25 +8928,25 @@ a.home-listening:focus-visible {
 
 .poop-week__fill--good {
   background: linear-gradient(180deg, #5cb884 0%, #3f8f66 100%);
-  box-shadow: 0 6px 14px rgba(63, 143, 102, 0.35);
+  box-shadow: 0 4px 10px rgba(63, 143, 102, 0.3);
 }
 
 .poop-week__fill--great {
   background: linear-gradient(180deg, #d96a6a 0%, #b84545 100%);
-  box-shadow: 0 6px 14px rgba(184, 69, 69, 0.32);
+  box-shadow: 0 4px 10px rgba(184, 69, 69, 0.28);
 }
 
 .poop-week__count {
-  font-size: 0.72rem;
+  font-size: 0.62rem;
   font-weight: 800;
   color: #ffffff;
   line-height: 1;
 }
 
 .poop-week__label {
-  min-width: 28px;
-  padding: 4px 0;
-  font-size: 0.68rem;
+  min-width: 24px;
+  padding: 2px 0;
+  font-size: 0.6rem;
   font-weight: 700;
   letter-spacing: 0.02em;
   text-align: center;
@@ -8970,44 +8974,44 @@ a.home-listening:focus-visible {
   z-index: 1;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: 12px;
+  gap: 10px;
   align-items: start;
-  margin-top: 16px;
-  padding-top: 16px;
+  margin-top: 12px;
+  padding-top: 12px;
   border-top: 1px solid rgba(92, 36, 56, 0.08);
 }
 
 .poop-week__summary-icon {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   display: grid;
   place-items: center;
-  border-radius: 14px;
+  border-radius: 11px;
   background: rgba(255, 255, 255, 0.85);
   box-shadow: inset 0 0 0 1px rgba(92, 36, 56, 0.08);
-  font-size: 1.1rem;
+  font-size: 0.9rem;
 }
 
 .poop-week__summary h3 {
   margin: 0;
-  font-size: 1.08rem;
+  font-size: 0.92rem;
   font-weight: 700;
   letter-spacing: -0.02em;
 }
 
 .poop-week__summary p {
-  margin: 4px 0 0;
-  font-size: 0.88rem;
-  line-height: 1.45;
+  margin: 2px 0 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
   color: var(--poop-muted);
 }
 
 .poop-week__meta {
-  margin-top: 8px !important;
+  margin-top: 6px !important;
   display: inline-block;
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: 999px;
-  font-size: 0.74rem !important;
+  font-size: 0.66rem !important;
   font-weight: 700;
   color: var(--poop-accent) !important;
   background: rgba(92, 36, 56, 0.07);
@@ -9015,14 +9019,14 @@ a.home-listening:focus-visible {
 
 .poop-log-btn {
   width: 100%;
-  min-height: 58px;
+  min-height: 46px;
   border-radius: 999px;
   background: var(--poop-accent);
   color: #ffffff;
-  font-size: 1rem;
+  font-size: 0.88rem;
   font-weight: 700;
   letter-spacing: 0.01em;
-  box-shadow: 0 16px 30px rgba(92, 36, 56, 0.24);
+  box-shadow: 0 10px 22px rgba(92, 36, 56, 0.2);
   transition: transform 160ms ease, background 160ms ease;
 }
 
