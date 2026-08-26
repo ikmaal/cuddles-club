@@ -1,5 +1,7 @@
-import { useCallback, useMemo } from 'react'
-import { createId, todayKey, useStored } from './useStored'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCouple } from '../context/CoupleContext'
+import { deletePoopLog, insertPoopLog, loadPoopLogs } from '../lib/poopData'
+import { createId, todayKey } from './useStored'
 import type { Carer, PoopLog } from '../types'
 
 const STORAGE_KEY = 'cuddles-club-poop-logs'
@@ -10,6 +12,21 @@ export interface WeekBar {
   count: number
   isToday: boolean
   isFuture: boolean
+}
+
+function readLocalLogs(): PoopLog[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw) as PoopLog[]
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+function writeLocalLogs(entries: PoopLog[]) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries))
 }
 
 function entriesForOwner(entries: PoopLog[], owner: Carer): PoopLog[] {
@@ -123,21 +140,97 @@ function gutSummary(days: number | null, streak: number): { title: string; body:
 }
 
 export function usePoopTracker() {
-  const [entries, setEntries] = useStored<PoopLog[]>(STORAGE_KEY, [])
+  const { isCloud, coupleId, slot } = useCouple()
+  const [entries, setEntries] = useState<PoopLog[]>([])
+  const [ready, setReady] = useState(false)
+  const [error, setError] = useState('')
 
-  const logPoop = useCallback((owner: Carer) => {
-    const entry: PoopLog = {
-      id: createId(),
-      owner,
-      createdAt: Date.now(),
+  const refresh = useCallback(async () => {
+    try {
+      if (isCloud && coupleId && slot) {
+        setEntries(await loadPoopLogs(coupleId, slot))
+      } else {
+        setEntries(readLocalLogs())
+      }
+      setError('')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not load poop logs')
+    } finally {
+      setReady(true)
     }
-    setEntries((current) => [entry, ...current])
-    return entry
-  }, [setEntries])
+  }, [coupleId, isCloud, slot])
 
-  const removeLog = useCallback((id: string) => {
-    setEntries((current) => current.filter((entry) => entry.id !== id))
-  }, [setEntries])
+  useEffect(() => {
+    setReady(false)
+    void refresh()
+  }, [refresh])
+
+  useEffect(() => {
+    if (!isCloud) return
+
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void refresh()
+    }
+
+    window.addEventListener('focus', refresh)
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      window.removeEventListener('focus', refresh)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+  }, [isCloud, refresh])
+
+  const logPoop = useCallback(
+    async (owner: Carer) => {
+      const entry: PoopLog = {
+        id: createId(),
+        owner,
+        createdAt: Date.now(),
+      }
+
+      try {
+        if (isCloud && coupleId && slot) {
+          await insertPoopLog(coupleId, entry, slot)
+          setEntries(await loadPoopLogs(coupleId, slot))
+        } else {
+          setEntries((current) => {
+            const next = [entry, ...current]
+            writeLocalLogs(next)
+            return next
+          })
+        }
+        setError('')
+        return entry
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Could not log poop')
+        return null
+      }
+    },
+    [coupleId, isCloud, slot],
+  )
+
+  const removeLog = useCallback(
+    async (id: string) => {
+      try {
+        if (isCloud && coupleId && slot) {
+          await deletePoopLog(coupleId, id)
+          setEntries(await loadPoopLogs(coupleId, slot))
+        } else {
+          setEntries((current) => {
+            const next = current.filter((entry) => entry.id !== id)
+            writeLocalLogs(next)
+            return next
+          })
+        }
+        setError('')
+        return true
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Could not remove log')
+        return false
+      }
+    },
+    [coupleId, isCloud, slot],
+  )
 
   const statsFor = useCallback(
     (owner: Carer) => {
@@ -182,11 +275,14 @@ export function usePoopTracker() {
 
   return {
     entries,
-    ready: true,
+    ready,
+    error,
+    isCloud,
     logPoop,
     removeLog,
     statsFor,
     coupleTotals,
+    refresh,
   }
 }
 

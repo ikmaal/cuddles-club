@@ -8665,19 +8665,15 @@ a.home-listening:focus-visible {
 }
 
 .poop-topbar {
-  position: relative;
-  display: flex;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 36px;
   align-items: center;
+  gap: 8px;
   padding: 8px 14px 4px;
   padding-top: max(8px, env(safe-area-inset-top));
 }
 
 .poop-back {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
   width: 32px;
   height: 32px;
   display: grid;
@@ -8690,7 +8686,14 @@ a.home-listening:focus-visible {
   background: rgba(31, 20, 24, 0.06);
 }
 
+.poop-topbar__spacer {
+  width: 32px;
+  height: 32px;
+}
+
 .poop-switch {
+  grid-column: 2;
+  justify-self: center;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 4px;

@@ -108,6 +108,7 @@ export function PoopTrackerScreen({
             </button>
           ))}
         </div>
+        <span className="poop-topbar__spacer" aria-hidden />
       </header>
 
       <ScrollRegion className="screen__scroll poop-scroll">
