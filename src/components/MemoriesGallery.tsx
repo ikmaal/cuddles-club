@@ -32,7 +32,7 @@ export function MemoriesGallery({
     if (!track || sorted.length === 0) return
 
     const center = track.scrollLeft + track.clientWidth / 2
-    const cardWidth = cardRefs.current.find((card) => card)?.offsetWidth ?? 118
+    const cardWidth = cardRefs.current.find((card) => card)?.offsetWidth ?? 100
     const focusRadius = cardWidth * 1.35
 
     let bestFocus = -1

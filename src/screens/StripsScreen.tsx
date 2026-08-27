@@ -198,6 +198,12 @@ export function StripsScreen({
             ) : null}
 
             <nav className="booth-docks" aria-label="Photobooth">
+              <button type="button" className="booth-dock" onClick={openBooth} disabled={busy}>
+                <span className="booth-dock__icon">
+                  <CameraIcon size={22} />
+                </span>
+                <span>take a photobooth</span>
+              </button>
               <button type="button" className="booth-dock" onClick={openAdd} disabled={busy}>
                 <span className="booth-dock__icon">
                   <PlusIcon size={22} />

@@ -133,7 +133,7 @@ export function HomeScreen({ profile, latestStrip, onOpen }: HomeScreenProps) {
     if (button && button.clientWidth > 0 && button.clientHeight > 0) {
       setCropAspect(button.clientWidth / button.clientHeight)
     } else {
-      setCropAspect(days === null ? 16 / 9 : 2.6)
+      setCropAspect(days === null ? 16 / 9 : 1.35)
     }
 
     setCropSrc(URL.createObjectURL(file))
@@ -201,34 +201,49 @@ export function HomeScreen({ profile, latestStrip, onOpen }: HomeScreenProps) {
           className={`home-duo${days === null ? ' home-duo--photo-only' : ''}`}
           aria-label="Together"
         >
-          {days !== null ? (
-            <div className="metric home-duo__metric">
-              <span className="metric__value">{days}</span>
-              <span className="metric__label">
-                {days === 1 ? 'Day together' : 'Days together'}
-              </span>
+          <div className="home-duo__card">
+            <div className="home-duo__deco" aria-hidden>
+              <span className="home-duo__sparkle home-duo__sparkle--1">✦</span>
+              <span className="home-duo__sparkle home-duo__sparkle--2">✦</span>
+              <span className="home-duo__sparkle home-duo__sparkle--3">✦</span>
+              <span className="home-duo__deco-heart home-duo__deco-heart--1">♡</span>
+              <span className="home-duo__deco-heart home-duo__deco-heart--2">♡</span>
+              <span className="home-duo__cloud home-duo__cloud--1" />
+              <span className="home-duo__cloud home-duo__cloud--2" />
+              <span className="home-duo__cloud home-duo__cloud--3" />
             </div>
-          ) : null}
 
-          <button
-            ref={photoBtnRef}
-            type="button"
-            className={`home-photo${photo ? ' has-image' : ''}`}
-            onClick={() => photoInputRef.current?.click()}
-            disabled={busy || Boolean(cropSrc)}
-            aria-label={photo ? 'Change home photo' : 'Add a home photo'}
-          >
-            {photo ? (
-              <img key={photoKey} src={photo} alt="" />
-            ) : (
-              <span className="home-photo__empty">
-                <span className="home-photo__plus" aria-hidden>
-                  +
+            {days !== null ? (
+              <div className="home-duo__stat">
+                <p className="home-duo__eyebrow">Together for</p>
+                <p className="home-duo__number">{days}</p>
+                <p className="home-duo__unit">
+                  {days === 1 ? 'day' : 'days'}
+                  <span className="home-duo__heart">♡</span>
+                </p>
+              </div>
+            ) : null}
+
+            <button
+              ref={photoBtnRef}
+              type="button"
+              className={`home-duo__photo${photo ? ' has-image' : ''}`}
+              onClick={() => photoInputRef.current?.click()}
+              disabled={busy || Boolean(cropSrc)}
+              aria-label={photo ? 'Change home photo' : 'Add a home photo'}
+            >
+              {photo ? (
+                <img key={photoKey} src={photo} alt="" />
+              ) : (
+                <span className="home-duo__photo-empty">
+                  <span className="home-duo__photo-plus" aria-hidden>
+                    +
+                  </span>
+                  <span>{busy ? 'Saving…' : 'Add photo'}</span>
                 </span>
-                <span>{busy ? 'Saving…' : 'Add photo'}</span>
-              </span>
-            )}
-          </button>
+              )}
+            </button>
+          </div>
 
           <input
             ref={photoInputRef}
