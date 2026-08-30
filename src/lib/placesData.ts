@@ -1,3 +1,4 @@
+import { normalizePlaceRatings } from './placeRatings'
 import { PHOTOSTRIP_BUCKET, supabase } from './supabase'
 import type { FoodPlace } from '../types'
 
@@ -15,6 +16,11 @@ function rowToPlace(row: Record<string, unknown>): FoodPlace {
   const storagePath = String(row.storage_path ?? '')
   const lat = row.lat
   const lng = row.lng
+  const { ratingA, ratingB } = normalizePlaceRatings({
+    ratingA: row.rating_a != null ? Number(row.rating_a) : undefined,
+    ratingB: row.rating_b != null ? Number(row.rating_b) : undefined,
+    rating: Number(row.rating) || 0,
+  })
   return {
     id: String(row.id),
     name: String(row.name ?? ''),
@@ -23,7 +29,8 @@ function rowToPlace(row: Record<string, unknown>): FoodPlace {
     cuisine: String(row.cuisine ?? ''),
     address: String(row.address ?? ''),
     notes: String(row.notes ?? ''),
-    rating: Number(row.rating) || 0,
+    ratingA,
+    ratingB,
     lat: typeof lat === 'number' ? lat : lat != null ? Number(lat) : null,
     lng: typeof lng === 'number' ? lng : lng != null ? Number(lng) : null,
     photoUrl: storagePath ? publicFileUrl(storagePath) : '',
@@ -53,7 +60,9 @@ export async function upsertFoodPlace(coupleId: string, place: FoodPlace): Promi
     cuisine: place.cuisine,
     address: place.address,
     notes: place.notes,
-    rating: place.rating,
+    rating: Math.max(place.ratingA, place.ratingB),
+    rating_a: place.ratingA,
+    rating_b: place.ratingB,
     lat: place.lat,
     lng: place.lng,
     storage_path: place.storagePath || null,

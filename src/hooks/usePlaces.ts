@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
-import { createPlace, deleteLocalPlace, listLocalPlaces, putLocalPlace } from '../placesDb'
 import { useCouple } from '../context/CoupleContext'
+import { withMyPlaceRating } from '../lib/placeRatings'
 import {
   deleteFoodPlaceCloud,
   loadPlaces,
   uploadPlacePhoto,
   upsertFoodPlace,
 } from '../lib/placesData'
+import { createPlace, deleteLocalPlace, listLocalPlaces, putLocalPlace } from '../placesDb'
 import type { FoodPlace, FoodPlaceStatus } from '../types'
 
 export interface PlaceDraft {
@@ -16,7 +17,7 @@ export interface PlaceDraft {
   cuisine: string
   address: string
   notes: string
-  rating: number
+  myRating: number
   lat: number | null
   lng: number | null
   visitedAt: string
@@ -50,7 +51,8 @@ function blobToDataUrl(blob: Blob): Promise<string> {
 }
 
 export function usePlaces() {
-  const { isCloud, coupleId } = useCouple()
+  const { isCloud, coupleId, slot } = useCouple()
+  const mySlot = slot ?? 'a'
   const [places, setPlaces] = useState<FoodPlace[]>([])
   const [ready, setReady] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -91,12 +93,15 @@ export function usePlaces() {
               cuisine: draft.cuisine.trim(),
               address: draft.address.trim(),
               notes: draft.notes.trim(),
-              rating: draft.status === 'been' ? draft.rating : 0,
               lat: draft.lat,
               lng: draft.lng,
               visitedAt: draft.status === 'been' ? draft.visitedAt.trim() : '',
             }
-          : createPlace(draft)
+          : createPlace(draft, mySlot)
+
+        if (draft.status === 'been') {
+          place = withMyPlaceRating(place, draft.myRating, mySlot)
+        }
 
         if (draft.photoFile) {
           const blob = await fileToJpegBlob(draft.photoFile)
@@ -126,7 +131,7 @@ export function usePlaces() {
         setBusy(false)
       }
     },
-    [coupleId, isCloud],
+    [coupleId, isCloud, mySlot],
   )
 
   const markBeen = useCallback(

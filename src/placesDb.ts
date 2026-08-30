@@ -1,4 +1,7 @@
 import { createId } from './hooks/useStored'
+import type { MemberSlot } from './lib/coupleSlot'
+import { clampPlaceRating } from './lib/placeRating'
+import { normalizePlaceRatings } from './lib/placeRatings'
 import type { FoodPlace, FoodPlaceStatus } from './types'
 
 const DB_NAME = 'cuddles-club-places'
@@ -26,7 +29,8 @@ function req<T>(request: IDBRequest<T>): Promise<T> {
   })
 }
 
-function normalize(row: FoodPlace): FoodPlace {
+function normalize(row: FoodPlace & { rating?: number }): FoodPlace {
+  const { ratingA, ratingB } = normalizePlaceRatings(row)
   return {
     id: row.id,
     name: row.name ?? '',
@@ -35,7 +39,8 @@ function normalize(row: FoodPlace): FoodPlace {
     cuisine: row.cuisine ?? '',
     address: row.address ?? '',
     notes: row.notes ?? '',
-    rating: Number(row.rating) || 0,
+    ratingA,
+    ratingB,
     lat: typeof row.lat === 'number' ? row.lat : null,
     lng: typeof row.lng === 'number' ? row.lng : null,
     photoUrl: row.photoUrl ?? '',
@@ -63,18 +68,22 @@ export async function deleteLocalPlace(id: string): Promise<void> {
   await req(db.transaction(STORE, 'readwrite').objectStore(STORE).delete(id))
 }
 
-export function createPlace(input: {
+export function createPlace(
+  input: {
   name: string
   status: FoodPlaceStatus
   area?: string
   cuisine?: string
   address?: string
   notes?: string
-  rating?: number
+  myRating?: number
   lat?: number | null
   lng?: number | null
   visitedAt?: string
-}): FoodPlace {
+},
+  slot: MemberSlot,
+): FoodPlace {
+  const myRating = input.status === 'been' ? clampPlaceRating(input.myRating ?? 0) : 0
   return {
     id: createId(),
     name: input.name.trim(),
@@ -83,7 +92,8 @@ export function createPlace(input: {
     cuisine: input.cuisine?.trim() ?? '',
     address: input.address?.trim() ?? '',
     notes: input.notes?.trim() ?? '',
-    rating: input.rating ?? 0,
+    ratingA: slot === 'a' ? myRating : 0,
+    ratingB: slot === 'b' ? myRating : 0,
     lat: input.lat ?? null,
     lng: input.lng ?? null,
     photoUrl: '',

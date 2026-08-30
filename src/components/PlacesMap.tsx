@@ -1,19 +1,37 @@
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import type { FoodPlace, FoodPlaceStatus } from '../types'
 
-const browser = L.Browser as {
-  any3d: boolean
-  webkit3d: boolean
-  gecko3d: boolean
-}
-
-browser.any3d = false
-browser.webkit3d = false
-browser.gecko3d = false
-
 const SINGAPORE: L.LatLngExpression = [1.3521, 103.8198]
+
+const OSM_ATTRIBUTION =
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+
+function addBaseTileLayer(map: L.Map): L.TileLayer {
+  const cartoKey = (import.meta.env.VITE_CARTO_API_KEY as string | undefined)?.trim()
+  if (cartoKey) {
+    return L.tileLayer(
+      `https://{s}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png?key=${encodeURIComponent(cartoKey)}`,
+      {
+        attribution: `${OSM_ATTRIBUTION}, &copy; <a href="https://carto.com/attributions">CARTO</a>`,
+        subdomains: 'abcd',
+        maxZoom: 20,
+        updateWhenIdle: true,
+        updateWhenZooming: false,
+        keepBuffer: 3,
+      },
+    ).addTo(map)
+  }
+
+  return L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: OSM_ATTRIBUTION,
+    maxZoom: 19,
+    updateWhenIdle: true,
+    updateWhenZooming: false,
+    keepBuffer: 3,
+  }).addTo(map)
+}
 
 export interface MapPreviewPin {
   lat: number
@@ -27,7 +45,10 @@ interface PlacesMapProps {
   onSelect: (id: string) => void
   preview?: MapPreviewPin | null
   interactive?: boolean
-  flyTo?: { lat: number; lng: number } | null
+  active?: boolean
+  /** When this value changes, the map smoothly fits visible markers. */
+  autoFitKey?: string
+  flyTo?: { lat: number; lng: number; token?: number } | null
 }
 
 function pinIcon(place: Pick<FoodPlace, 'name' | 'photoUrl' | 'status'>, selected: boolean) {
@@ -48,25 +69,69 @@ function pinIcon(place: Pick<FoodPlace, 'name' | 'photoUrl' | 'status'>, selecte
   })
 }
 
+function mapPadding(host: HTMLElement | null): {
+  paddingTopLeft: L.PointExpression
+  paddingBottomRight: L.PointExpression
+} {
+  const height = host?.clientHeight ?? 640
+  return {
+    paddingTopLeft: [56, 20],
+    paddingBottomRight: [Math.round(height * 0.48) + 20, 20],
+  }
+}
+
 export function PlacesMap({
   places,
   selectedId,
   onSelect,
   preview = null,
   interactive = false,
+  active = true,
+  autoFitKey = '',
   flyTo = null,
 }: PlacesMapProps) {
   const hostRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
   const layerRef = useRef<L.LayerGroup | null>(null)
+  const markersRef = useRef<Map<string, L.Marker>>(new Map())
+  const previewRef = useRef<L.Marker | null>(null)
   const fitKeyRef = useRef('')
   const flyKeyRef = useRef('')
+  const onSelectRef = useRef(onSelect)
   const interactiveRef = useRef(interactive)
+  onSelectRef.current = onSelect
   interactiveRef.current = interactive
 
+  const refreshMapSize = useCallback(() => {
+    const map = mapRef.current
+    if (!map) return
+    map.invalidateSize({ animate: false, pan: false })
+  }, [])
+
   useEffect(() => {
+    return () => {
+      const map = mapRef.current
+      if (!map) return
+      map.remove()
+      mapRef.current = null
+      layerRef.current = null
+      markersRef.current.clear()
+      previewRef.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!active) return
+
     const host = hostRef.current
-    if (!host || mapRef.current) return
+    if (!host) return
+
+    if (mapRef.current) {
+      requestAnimationFrame(refreshMapSize)
+      window.setTimeout(refreshMapSize, 120)
+      window.setTimeout(refreshMapSize, 320)
+      return
+    }
 
     const enabled = interactiveRef.current
     const map = L.map(host, {
@@ -78,109 +143,195 @@ export function PlacesMap({
       boxZoom: enabled,
       keyboard: enabled,
       touchZoom: enabled,
+      zoomAnimation: true,
+      fadeAnimation: true,
+      markerZoomAnimation: false,
+      inertia: true,
+      inertiaDeceleration: 2800,
+      worldCopyJump: false,
     }).setView(SINGAPORE, 12)
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OpenStreetMap &copy; CARTO',
-      subdomains: 'abcd',
-      maxZoom: 19,
-    }).addTo(map)
+    addBaseTileLayer(map)
 
     layerRef.current = L.layerGroup().addTo(map)
     mapRef.current = map
 
-    const resize = () => map.invalidateSize()
+    let resizeTimer = 0
+    const resize = () => {
+      window.clearTimeout(resizeTimer)
+      resizeTimer = window.setTimeout(refreshMapSize, 120)
+    }
+
     const observer = new ResizeObserver(resize)
     observer.observe(host)
-    window.setTimeout(resize, 80)
     window.addEventListener('resize', resize)
+    requestAnimationFrame(refreshMapSize)
+    window.setTimeout(refreshMapSize, 150)
 
     return () => {
       observer.disconnect()
       window.removeEventListener('resize', resize)
-      map.remove()
-      mapRef.current = null
-      layerRef.current = null
+      window.clearTimeout(resizeTimer)
     }
-  }, [])
+  }, [active, refreshMapSize])
 
   useEffect(() => {
     const map = mapRef.current
     if (!map) return
-    if (interactive) map.dragging.enable()
-    else map.dragging.disable()
-    if (interactive) map.touchZoom.enable()
-    else map.touchZoom.disable()
-    if (interactive) map.scrollWheelZoom.enable()
-    else map.scrollWheelZoom.disable()
+
+    const enabled = interactive
+    const toggle = (handler: L.Handler, on: boolean) => {
+      if (on) handler.enable()
+      else handler.disable()
+    }
+
+    toggle(map.dragging, enabled)
+    toggle(map.touchZoom, enabled)
+    toggle(map.scrollWheelZoom, enabled)
+    toggle(map.doubleClickZoom, enabled)
+    toggle(map.boxZoom, enabled)
+    toggle(map.keyboard, enabled)
   }, [interactive])
+
+  const fitToPlaces = useCallback(
+    (targetPlaces: FoodPlace[], animate: boolean) => {
+      const map = mapRef.current
+      const host = hostRef.current
+      if (!map) return
+
+      const padding = mapPadding(host)
+      const withCoords = targetPlaces.filter(
+        (place) => typeof place.lat === 'number' && typeof place.lng === 'number',
+      )
+
+      if (preview) {
+        map.flyTo([preview.lat, preview.lng], 16, {
+          animate,
+          duration: 0.65,
+          ...padding,
+        })
+        return
+      }
+
+      if (withCoords.length === 0) {
+        map.flyTo(SINGAPORE, 12, { animate, duration: 0.65, ...padding })
+        return
+      }
+
+      if (withCoords.length === 1) {
+        const place = withCoords[0]
+        map.flyTo([place.lat as number, place.lng as number], 14, {
+          animate,
+          duration: 0.65,
+          ...padding,
+        })
+        return
+      }
+
+      const bounds = L.latLngBounds(
+        withCoords.map((place) => [place.lat as number, place.lng as number] as L.LatLngTuple),
+      )
+      map.flyToBounds(bounds.pad(0.16), {
+        animate,
+        duration: 0.75,
+        maxZoom: 15,
+        ...padding,
+      })
+    },
+    [preview],
+  )
 
   useEffect(() => {
     const map = mapRef.current
     if (!map || !flyTo) return
-    const key = `${flyTo.lat},${flyTo.lng}`
+    const key = `${flyTo.lat},${flyTo.lng},${flyTo.token ?? 0}`
     if (key === flyKeyRef.current) return
     flyKeyRef.current = key
-    map.setView([flyTo.lat, flyTo.lng], 15)
+
+    map.flyTo([flyTo.lat, flyTo.lng], 15, {
+      animate: true,
+      duration: 0.75,
+      ...mapPadding(hostRef.current),
+    })
   }, [flyTo])
 
   useEffect(() => {
-    const map = mapRef.current
     const layer = layerRef.current
-    if (!map || !layer) return
+    if (!layer) return
 
-    layer.clearLayers()
     const withCoords = places.filter(
       (place) => typeof place.lat === 'number' && typeof place.lng === 'number',
     )
+    const nextIds = new Set(withCoords.map((place) => place.id))
+
+    for (const [id, marker] of markersRef.current) {
+      if (nextIds.has(id)) continue
+      layer.removeLayer(marker)
+      markersRef.current.delete(id)
+    }
 
     for (const place of withCoords) {
-      const marker = L.marker([place.lat as number, place.lng as number], {
-        icon: pinIcon(place, place.id === selectedId),
+      const latlng: L.LatLngExpression = [place.lat as number, place.lng as number]
+      const selected = place.id === selectedId
+      const existing = markersRef.current.get(place.id)
+
+      if (existing) {
+        existing.setLatLng(latlng)
+        existing.setIcon(pinIcon(place, selected))
+        existing.setZIndexOffset(selected ? 1000 : 0)
+        continue
+      }
+
+      const marker = L.marker(latlng, {
+        icon: pinIcon(place, selected),
         title: place.name,
+        zIndexOffset: selected ? 1000 : 0,
       })
-      marker.on('click', () => onSelect(place.id))
+      marker.on('click', () => onSelectRef.current(place.id))
       marker.addTo(layer)
+      markersRef.current.set(place.id, marker)
     }
 
     if (preview) {
-      L.marker([preview.lat, preview.lng], {
-        icon: pinIcon({ name: 'Pin', photoUrl: '', status: preview.status }, true),
-        title: 'Pinned place',
-      }).addTo(layer)
-    }
-
-    const fitKey = preview
-      ? `preview:${preview.lat},${preview.lng}`
-      : withCoords.map((place) => place.id).join('|')
-    if (fitKey !== fitKeyRef.current) {
-      fitKeyRef.current = fitKey
-      if (preview) {
-        map.setView([preview.lat, preview.lng], 16)
-      } else if (withCoords.length === 1) {
-        map.setView([withCoords[0].lat as number, withCoords[0].lng as number], 14)
-      } else if (withCoords.length > 1) {
-        const bounds = L.latLngBounds(
-          withCoords.map((place) => [place.lat as number, place.lng as number] as L.LatLngTuple),
-        )
-        map.fitBounds(bounds.pad(0.18))
+      if (!previewRef.current) {
+        previewRef.current = L.marker([preview.lat, preview.lng], {
+          icon: pinIcon({ name: 'Pin', photoUrl: '', status: preview.status }, true),
+          title: 'Pinned place',
+          zIndexOffset: 1200,
+        })
+        previewRef.current.addTo(layer)
       } else {
-        map.setView(SINGAPORE, 12)
+        previewRef.current.setLatLng([preview.lat, preview.lng])
       }
-    } else {
-      const selected = withCoords.find((place) => place.id === selectedId)
-      if (selected) map.panTo([selected.lat as number, selected.lng as number])
+    } else if (previewRef.current) {
+      layer.removeLayer(previewRef.current)
+      previewRef.current = null
     }
 
-    window.setTimeout(() => map.invalidateSize(), 40)
-  }, [onSelect, places, preview, selectedId])
+    const selected = withCoords.find((place) => place.id === selectedId)
+    if (selected && fitKeyRef.current) {
+      mapRef.current?.panTo([selected.lat as number, selected.lng as number], {
+        animate: true,
+        duration: 0.35,
+      })
+    }
+  }, [places, preview, selectedId])
+
+  useEffect(() => {
+    if (!active || !mapRef.current) return
+    const key = preview ? `preview:${preview.lat},${preview.lng}` : autoFitKey
+    if (key === fitKeyRef.current) return
+    fitKeyRef.current = key
+    window.setTimeout(() => fitToPlaces(places, true), 80)
+  }, [active, autoFitKey, fitToPlaces, places, preview])
 
   return (
     <div
       ref={hostRef}
-      className={`places-map${interactive ? ' is-interactive' : ''}`}
+      className={`places-map${interactive ? ' is-interactive' : ''}${active ? ' is-active' : ''}`}
       role="img"
       aria-label="Places map"
+      aria-hidden={!active}
     />
   )
 }

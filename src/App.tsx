@@ -172,7 +172,7 @@ export default function App() {
             ) : null}
 
             {screen === 'places' ? (
-              <PlacesScreen {...places} onBack={goHome} />
+              <PlacesScreen {...places} profile={profile} onBack={goHome} />
             ) : null}
 
             {screen === 'pooptracker' ? (

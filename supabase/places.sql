@@ -30,3 +30,11 @@ create policy "food_places_all_member"
   with check (couple_id = public.user_couple_id());
 
 -- Photos reuse the photostrips bucket under {coupleId}/places/
+
+-- Per-partner ratings (run once in Supabase SQL Editor).
+alter table public.food_places add column if not exists rating_a numeric not null default 0;
+alter table public.food_places add column if not exists rating_b numeric not null default 0;
+
+update public.food_places
+set rating_a = rating
+where rating > 0 and coalesce(rating_a, 0) = 0 and coalesce(rating_b, 0) = 0;

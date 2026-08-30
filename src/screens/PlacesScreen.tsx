@@ -1,11 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { PlacesMap } from '../components/PlacesMap'
+import { PlaceCoupleRatings } from '../components/PlaceCoupleRatings'
+import { PlaceRating } from '../components/PlaceRating'
+import { useCouple } from '../context/CoupleContext'
+import { placeRatingsForViewer } from '../lib/placeRatings'
 import {
   BackIcon,
   BeenToIcon,
   BookmarkIcon,
   CalendarIcon,
   CameraIcon,
+  ChevronIcon,
   FilterIcon,
   HeartIcon,
   HomeIcon,
@@ -17,14 +22,15 @@ import {
 } from '../components/Icons'
 import { ScrollRegion } from '../components/ScrollRegion'
 import type { PlaceDraft, usePlaces } from '../hooks/usePlaces'
-import { searchPlaces, type GeocodeHit } from '../lib/geocode'
-import type { FoodPlace, FoodPlaceStatus } from '../types'
+import { isInSingapore, searchPlaces, type GeocodeHit } from '../lib/geocode'
+import type { CoupleProfile, FoodPlace, FoodPlaceStatus } from '../types'
 
 type PlacesApi = ReturnType<typeof usePlaces>
 type PlacesTab = 'home' | 'map'
 type CollectionFilter = 'all' | 'been' | 'want'
 
 interface PlacesScreenProps extends PlacesApi {
+  profile: CoupleProfile
   onBack: () => void
 }
 
@@ -35,7 +41,7 @@ const emptyDraft = (status: FoodPlaceStatus): PlaceDraft => ({
   cuisine: '',
   address: '',
   notes: '',
-  rating: 0,
+  myRating: 0,
   lat: null,
   lng: null,
   visitedAt: '',
@@ -53,7 +59,8 @@ function locationLine(place: FoodPlace) {
   return place.area || place.address || 'Singapore'
 }
 
-function draftFromPlace(place: FoodPlace): PlaceDraft {
+function draftFromPlace(place: FoodPlace, mySlot: 'a' | 'b'): PlaceDraft {
+  const ratings = placeRatingsForViewer(place, mySlot)
   return {
     name: place.name,
     status: place.status,
@@ -61,7 +68,7 @@ function draftFromPlace(place: FoodPlace): PlaceDraft {
     cuisine: place.cuisine,
     address: place.address,
     notes: place.notes,
-    rating: place.rating,
+    myRating: ratings.you,
     lat: place.lat,
     lng: place.lng,
     visitedAt: place.visitedAt,
@@ -82,11 +89,13 @@ function PlaceThumb({ place, className }: { place?: FoodPlace; className?: strin
 
 function PlaceRow({
   place,
+  profile,
   onOpen,
   mark,
   showCuisine = true,
 }: {
   place: FoodPlace
+  profile: CoupleProfile
   onOpen: (place: FoodPlace) => void
   mark?: 'heart' | 'bookmark'
   showCuisine?: boolean
@@ -99,6 +108,9 @@ function PlaceRow({
           <strong>{place.name}</strong>
           <small>{locationLine(place)}</small>
           {showCuisine && place.cuisine ? <em>{place.cuisine}</em> : null}
+          {place.status === 'been' ? (
+            <PlaceCoupleRatings profile={profile} place={place} layout="inline" />
+          ) : null}
         </span>
         <span
           className={`places-row__mark${
@@ -116,21 +128,8 @@ function PlaceRow({
   )
 }
 
-function StarValue({ rating }: { rating: number }) {
-  if (!rating) return null
-  return (
-    <span className="places-stars">
-      {[1, 2, 3, 4, 5].map((value) => (
-        <span key={value} className={value <= Math.round(rating) ? 'is-on' : ''}>
-          ★
-        </span>
-      ))}
-      <b>{rating.toFixed(1)}</b>
-    </span>
-  )
-}
-
 export function PlacesScreen({
+  profile,
   places,
   ready,
   busy,
@@ -141,6 +140,8 @@ export function PlacesScreen({
   markBeen,
   removePlace,
 }: PlacesScreenProps) {
+  const { slot } = useCouple()
+  const mySlot = slot ?? 'a'
   const [tab, setTab] = useState<PlacesTab>('home')
   const [collection, setCollection] = useState<CollectionFilter | null>(null)
   const [detailId, setDetailId] = useState<string | null>(null)
@@ -149,10 +150,12 @@ export function PlacesScreen({
   const [menuId, setMenuId] = useState<string | null>(null)
   const [mapStatus, setMapStatus] = useState<CollectionFilter>('all')
   const [mapQuery, setMapQuery] = useState('')
-  const [flyTo, setFlyTo] = useState<{ lat: number; lng: number } | null>(null)
+  const [flyTo, setFlyTo] = useState<{ lat: number; lng: number; token?: number } | null>(null)
+  const [mapSheetOpen, setMapSheetOpen] = useState(true)
   const [draft, setDraft] = useState<PlaceDraft>(emptyDraft('been'))
   const [query, setQuery] = useState('')
   const [hits, setHits] = useState<GeocodeHit[]>([])
+  const [searchBias, setSearchBias] = useState({ lat: 1.3521, lng: 103.8198 })
   const [searching, setSearching] = useState(false)
   const photoRef = useRef<HTMLInputElement>(null)
   const photoPreviewRef = useRef('')
@@ -180,6 +183,19 @@ export function PlacesScreen({
   const menuPlace = places.find((place) => place.id === menuId) ?? null
   const editing = Boolean(editor)
   const hideTabs = editing || Boolean(detailId) || photoOpen
+  const showMainTabs = !editing && !detailId && !photoOpen && !collection
+
+  const handleMapSelect = useCallback(
+    (id: string) => {
+      const place = places.find((item) => item.id === id)
+      if (place) {
+        setDetailId(place.id)
+        setPhotoOpen(false)
+        setMenuId(null)
+      }
+    },
+    [places],
+  )
 
   const photoPreview = useMemo(() => {
     if (draft.photoFile) return URL.createObjectURL(draft.photoFile)
@@ -198,20 +214,35 @@ export function PlacesScreen({
   }, [photoPreview])
 
   useEffect(() => {
+    if (!editor) return
+    if (!navigator.geolocation) return
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords
+        if (isInSingapore(latitude, longitude)) {
+          setSearchBias({ lat: latitude, lng: longitude })
+        }
+      },
+      () => {},
+      { enableHighAccuracy: false, timeout: 5000, maximumAge: 600_000 },
+    )
+  }, [editor])
+
+  useEffect(() => {
     const term = query.trim()
-    if (term.length < 3) {
+    if (term.length < 2) {
       setHits([])
       return
     }
     const timer = window.setTimeout(() => {
       setSearching(true)
-      void searchPlaces(term)
+      void searchPlaces(term, searchBias)
         .then(setHits)
         .catch(() => setHits([]))
         .finally(() => setSearching(false))
-    }, 420)
+    }, 320)
     return () => window.clearTimeout(timer)
-  }, [query])
+  }, [query, searchBias])
 
   function openNew() {
     setError('')
@@ -224,7 +255,7 @@ export function PlacesScreen({
 
   function openEdit(place: FoodPlace) {
     setError('')
-    setDraft(draftFromPlace(place))
+    setDraft(draftFromPlace(place, mySlot))
     setQuery(place.address || [place.name, place.area].filter(Boolean).join(', '))
     setHits([])
     setEditor(place)
@@ -246,6 +277,7 @@ export function PlacesScreen({
       address: hit.address,
       lat: hit.lat,
       lng: hit.lng,
+      cuisine: current.cuisine || hit.category || '',
     }))
     setQuery(hit.label)
     setHits([])
@@ -279,6 +311,10 @@ export function PlacesScreen({
     if (editor !== 'new' && editor?.id === place.id) setEditor(null)
   }
 
+  async function handleMyRatingChange(place: FoodPlace, myRating: number) {
+    await savePlace({ ...draftFromPlace(place, mySlot), myRating }, place)
+  }
+
   function goBack() {
     if (photoOpen) {
       setPhotoOpen(false)
@@ -307,10 +343,14 @@ export function PlacesScreen({
     if (!navigator.geolocation) return
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        setFlyTo({ lat: position.coords.latitude, lng: position.coords.longitude })
+        setFlyTo({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+          token: Date.now(),
+        })
       },
       () => undefined,
-      { enableHighAccuracy: true, timeout: 8000 },
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 120_000 },
     )
   }
 
@@ -352,136 +392,187 @@ export function PlacesScreen({
               </button>
             </header>
 
-            <div className="places-editor__media">
-              <button
-                type="button"
-                className="places-editor__camera"
-                onClick={() => photoRef.current?.click()}
-                aria-label="Add photo"
-              >
-                <CameraIcon size={22} />
-              </button>
-              {photoPreview ? <img src={photoPreview} alt="" /> : null}
-              <input
-                ref={photoRef}
-                className="sr-only"
-                type="file"
-                accept="image/*"
-                onChange={(event) =>
-                  setDraft((current) => ({
-                    ...current,
-                    photoFile: event.target.files?.[0] ?? null,
-                  }))
-                }
-              />
-            </div>
-
-            <label className="places-field">
-              <span>Place Name</span>
-              <input
-                value={draft.name}
-                onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
-                placeholder="Pergh! Chicks"
-                maxLength={80}
-              />
-            </label>
-
-            <label className="places-field">
-              <span>Location</span>
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search a street or neighbourhood"
-              />
-            </label>
-            {searching ? <p className="places-hint">Searching…</p> : null}
-            {hits.length > 0 ? (
-              <ul className="places-hits">
-                {hits.map((hit) => (
-                  <li key={`${hit.lat},${hit.lng}`}>
-                    <button type="button" onClick={() => applyHit(hit)}>
-                      <strong>{hit.label}</strong>
-                      <small>{hit.address}</small>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-
-            <label className="places-field">
-              <span>Category</span>
-              <input
-                value={draft.cuisine}
-                onChange={(event) =>
-                  setDraft((current) => ({ ...current, cuisine: event.target.value }))
-                }
-                placeholder="Cafe, Western, Zi char…"
-                maxLength={40}
-              />
-            </label>
-
-            <div className="places-segment" role="tablist" aria-label="Status">
-              {(['been', 'want'] as FoodPlaceStatus[]).map((value) => (
-                <button
-                  key={value}
-                  type="button"
-                  role="tab"
-                  aria-selected={draft.status === value}
-                  className={draft.status === value ? 'is-active' : ''}
-                  onClick={() => setDraft((current) => ({ ...current, status: value }))}
-                >
-                  {value === 'been' ? 'Been To' : 'Want To Go'}
-                </button>
-              ))}
-            </div>
-
-            {draft.status === 'been' ? (
-              <>
-                <label className="places-field">
-                  <span>Date Visited</span>
-                  <span className="places-field__date">
-                    <input
-                      type="date"
-                      value={draft.visitedAt}
-                      onChange={(event) =>
-                        setDraft((current) => ({ ...current, visitedAt: event.target.value }))
-                      }
-                    />
-                    <CalendarIcon size={18} />
-                  </span>
-                </label>
-                <fieldset className="places-rating">
-                  <legend>Rating</legend>
-                  <div>
-                    {[1, 2, 3, 4, 5].map((value) => (
-                      <button
-                        key={value}
-                        type="button"
-                        className={draft.rating >= value ? 'is-on' : ''}
-                        onClick={() => setDraft((current) => ({ ...current, rating: value }))}
-                        aria-label={`${value} stars`}
-                      >
-                        ★
-                      </button>
-                    ))}
-                    {draft.rating ? <b>{draft.rating.toFixed(1)}</b> : null}
+            <div className="places-editor__body">
+              <section className="places-editor__card">
+                <div className="places-editor__photo-row">
+                  <button
+                    type="button"
+                    className="places-editor__photo"
+                    onClick={() => photoRef.current?.click()}
+                    aria-label="Add photo"
+                  >
+                    {photoPreview ? (
+                      <img src={photoPreview} alt="" />
+                    ) : (
+                      <CameraIcon size={24} />
+                    )}
+                  </button>
+                  <div className="places-editor__photo-copy">
+                    <strong>Add a photo</strong>
+                    <p>Optional — show what you ate or the vibe</p>
                   </div>
-                </fieldset>
-              </>
-            ) : null}
+                  <input
+                    ref={photoRef}
+                    className="sr-only"
+                    type="file"
+                    accept="image/*"
+                    onChange={(event) =>
+                      setDraft((current) => ({
+                        ...current,
+                        photoFile: event.target.files?.[0] ?? null,
+                      }))
+                    }
+                  />
+                </div>
 
-            <label className="places-field">
-              <span>Notes (Optional)</span>
-              <textarea
-                value={draft.notes}
-                onChange={(event) =>
-                  setDraft((current) => ({ ...current, notes: event.target.value }))
-                }
-                placeholder="Their chicken chop is amazing!"
-                rows={4}
-                maxLength={400}
-              />
-            </label>
+                <div className="places-editor__fields">
+                  <label className="places-field">
+                    <span>Place name</span>
+                    <input
+                      value={draft.name}
+                      onChange={(event) =>
+                        setDraft((current) => ({ ...current, name: event.target.value }))
+                      }
+                      placeholder="e.g. Pergh! Chicks"
+                      maxLength={80}
+                    />
+                  </label>
+
+                  <div className="places-field places-editor-location">
+                    <div className="places-editor-location__head">
+                      <span>Location</span>
+                      <span className="places-editor-location__region">Singapore</span>
+                    </div>
+                    <div
+                      className={`places-editor-location__box${
+                        hits.length > 0 || (query.trim().length >= 2 && !searching) ? ' is-open' : ''
+                      }`}
+                    >
+                      <div className="places-editor-location__input-wrap">
+                        <span className="places-editor-location__icon" aria-hidden>
+                          <SearchIcon size={18} />
+                        </span>
+                        <input
+                          className="places-editor-location__input"
+                          value={query}
+                          onChange={(event) => setQuery(event.target.value)}
+                          placeholder="Search restaurants, cafes, or areas"
+                          autoComplete="off"
+                          spellCheck={false}
+                        />
+                        {searching ? (
+                          <span className="places-editor-location__spinner" aria-label="Searching" />
+                        ) : null}
+                      </div>
+
+                      {hits.length > 0 ? (
+                        <ul
+                          className="places-editor-location__results"
+                          role="listbox"
+                          aria-label="Search results"
+                        >
+                          {hits.map((hit) => (
+                            <li key={hit.id} role="option">
+                              <button
+                                type="button"
+                                className="places-editor-location__result"
+                                onClick={() => applyHit(hit)}
+                              >
+                                <span className="places-editor-location__result-icon" aria-hidden>
+                                  <MapPinIcon size={16} />
+                                </span>
+                                <span className="places-editor-location__result-copy">
+                                  <span className="places-editor-location__result-top">
+                                    <strong>{hit.label}</strong>
+                                    {hit.category ? (
+                                      <span className="places-editor-location__tag">{hit.category}</span>
+                                    ) : null}
+                                  </span>
+                                  <small>{hit.area || hit.address}</small>
+                                </span>
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : query.trim().length >= 2 && !searching ? (
+                        <p className="places-editor-location__empty">No places found in Singapore</p>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <label className="places-field">
+                    <span>Category</span>
+                    <input
+                      value={draft.cuisine}
+                      onChange={(event) =>
+                        setDraft((current) => ({ ...current, cuisine: event.target.value }))
+                      }
+                      placeholder="Cafe, Western, Zi char…"
+                      maxLength={40}
+                    />
+                  </label>
+
+                  <div className="places-field">
+                    <span>Status</span>
+                    <div className="places-segment" role="tablist" aria-label="Status">
+                      {(['been', 'want'] as FoodPlaceStatus[]).map((value) => (
+                        <button
+                          key={value}
+                          type="button"
+                          role="tab"
+                          aria-selected={draft.status === value}
+                          className={draft.status === value ? 'is-active' : ''}
+                          onClick={() => setDraft((current) => ({ ...current, status: value }))}
+                        >
+                          {value === 'been' ? 'Been to' : 'Want to go'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <label className="places-field">
+                    <span>Notes</span>
+                    <textarea
+                      value={draft.notes}
+                      onChange={(event) =>
+                        setDraft((current) => ({ ...current, notes: event.target.value }))
+                      }
+                      placeholder="Their chicken chop is amazing!"
+                      rows={3}
+                      maxLength={400}
+                    />
+                  </label>
+
+                  {draft.status === 'been' ? (
+                    <>
+                      <label className="places-field">
+                        <span>Date visited</span>
+                        <span className="places-field__date">
+                          <input
+                            type="date"
+                            value={draft.visitedAt}
+                            onChange={(event) =>
+                              setDraft((current) => ({ ...current, visitedAt: event.target.value }))
+                            }
+                          />
+                          <CalendarIcon size={18} />
+                        </span>
+                      </label>
+                      <fieldset className="places-rating-field">
+                        <legend>Your rating</legend>
+                        <PlaceRating
+                          value={draft.myRating}
+                          onChange={(myRating) =>
+                            setDraft((current) => ({ ...current, myRating }))
+                          }
+                          size="lg"
+                        />
+                      </fieldset>
+                    </>
+                  ) : null}
+                </div>
+              </section>
+            </div>
           </ScrollRegion>
         ) : photoOpen && selected?.photoUrl ? (
           <div className="places-photo">
@@ -499,7 +590,7 @@ export function PlacesScreen({
               <h2>{selected.name}</h2>
               <p>{locationLine(selected)}</p>
               {selected.visitedAt ? <p>{formatVisit(selected.visitedAt)}</p> : null}
-              <StarValue rating={selected.rating} />
+              <PlaceCoupleRatings profile={profile} place={selected} layout="stack" />
               {selected.notes ? <p className="places-photo__notes">{selected.notes}</p> : null}
             </section>
           </div>
@@ -546,16 +637,21 @@ export function PlacesScreen({
                 </button>
               </div>
               {selected.notes ? <p className="places-detail__blurb">{selected.notes}</p> : null}
+              {selected.status === 'been' ? (
+                <section className="places-detail__rating">
+                  <h3>Ratings</h3>
+                  <PlaceCoupleRatings
+                    profile={profile}
+                    place={selected}
+                    onYouChange={(myRating) => void handleMyRatingChange(selected, myRating)}
+                  />
+                </section>
+              ) : null}
               <div className="places-detail__meta">
                 {selected.status === 'been' && selected.visitedAt ? (
                   <span>
                     <CalendarIcon size={16} />
                     Been Here {formatVisit(selected.visitedAt)}
-                  </span>
-                ) : null}
-                {selected.rating ? (
-                  <span>
-                    ★ Rating {selected.rating.toFixed(1)}
                   </span>
                 ) : null}
               </div>
@@ -605,87 +701,117 @@ export function PlacesScreen({
             ) : (
               <ul className="places-rows">
                 {collectionPlaces.map((place) => (
-                  <PlaceRow key={place.id} place={place} onOpen={openDetail} mark="bookmark" />
+                  <PlaceRow key={place.id} profile={profile} place={place} onOpen={openDetail} mark="bookmark" />
                 ))}
               </ul>
             )}
           </ScrollRegion>
-        ) : tab === 'map' ? (
-          <div className="places-map-screen">
-            <div className="places-search">
-              <button type="button" className="places-search__back" onClick={onBack} aria-label="Back">
-                <BackIcon size={18} />
-              </button>
-              <SearchIcon size={18} />
-              <input
-                value={mapQuery}
-                onChange={(event) => setMapQuery(event.target.value)}
-                placeholder="Search places, cuisine, or areas"
-              />
-              <button
-                type="button"
-                className={`places-search__filter${mapStatus !== 'all' ? ' is-on' : ''}`}
-                onClick={() =>
-                  setMapStatus((current) =>
-                    current === 'all' ? 'been' : current === 'been' ? 'want' : 'all',
-                  )
-                }
-                aria-label="Filter places"
-              >
-                <FilterIcon size={18} />
-              </button>
-            </div>
-            <div className="places-map-wrap">
-              <PlacesMap
-                places={mapPlaces}
-                selectedId={null}
-                onSelect={(id) => {
-                  const place = places.find((item) => item.id === id)
-                  if (place) openDetail(place)
-                }}
-                interactive
-                flyTo={flyTo}
-              />
-              <button type="button" className="places-locate" onClick={locate} aria-label="My location">
-                <LocateIcon size={18} />
-              </button>
-            </div>
-            <section className="places-sheet">
-              <div className="places-sheet__handle" aria-hidden />
-              <header className="places-sheet__head">
-                <h2>All Places</h2>
-              </header>
-              <div className="places-chips">
-                {([
-                  ['all', 'All'],
-                  ['been', 'Been To'],
-                  ['want', 'Want To Go'],
-                ] as const).map(([value, label]) => (
-                  <button
-                    key={value}
-                    type="button"
-                    className={mapStatus === value ? 'is-active' : ''}
-                    onClick={() => setMapStatus(value)}
-                  >
-                    {label}
-                  </button>
-                ))}
+        ) : showMainTabs ? (
+          <div className="places-main-tabs">
+            <div
+              className={`places-map-screen${tab === 'map' ? ' is-active' : ''}${
+                mapSheetOpen ? '' : ' is-sheet-collapsed'
+              }`}
+              aria-hidden={tab !== 'map'}
+            >
+              <div className="places-search">
+                <button type="button" className="places-search__back" onClick={onBack} aria-label="Back">
+                  <BackIcon size={18} />
+                </button>
+                <SearchIcon size={18} />
+                <input
+                  value={mapQuery}
+                  onChange={(event) => setMapQuery(event.target.value)}
+                  placeholder="Search places, cuisine, or areas"
+                />
+                <button
+                  type="button"
+                  className={`places-search__filter${mapStatus !== 'all' ? ' is-on' : ''}`}
+                  onClick={() =>
+                    setMapStatus((current) =>
+                      current === 'all' ? 'been' : current === 'been' ? 'want' : 'all',
+                    )
+                  }
+                  aria-label="Filter places"
+                >
+                  <FilterIcon size={18} />
+                </button>
               </div>
-              <ScrollRegion className="places-sheet__list">
-                {mapPlaces.length === 0 ? (
-                  <p className="places-hint">No places match that search.</p>
-                ) : (
-                  <ul className="places-rows">
-                    {mapPlaces.map((place) => (
-                      <PlaceRow key={place.id} place={place} onOpen={openDetail} mark="bookmark" />
+              <div className="places-map-wrap">
+                <PlacesMap
+                  places={mapPlaces}
+                  selectedId={null}
+                  onSelect={handleMapSelect}
+                  interactive
+                  active={tab === 'map'}
+                  autoFitKey={mapStatus}
+                  flyTo={flyTo}
+                />
+                <button type="button" className="places-map-locate" onClick={locate} aria-label="My location">
+                  <LocateIcon size={18} />
+                </button>
+              </div>
+              <section className={`places-sheet${mapSheetOpen ? ' is-expanded' : ' is-collapsed'}`}>
+                <button
+                  type="button"
+                  className="places-sheet__toggle"
+                  onClick={() => setMapSheetOpen((open) => !open)}
+                  aria-expanded={mapSheetOpen}
+                  aria-label={mapSheetOpen ? 'Collapse places list' : 'Expand places list'}
+                >
+                  <span className="places-sheet__handle" aria-hidden />
+                  <span className="places-sheet__head">
+                    <span className="places-sheet__title">
+                      <h2>All Places</h2>
+                      <span className="places-sheet__count">{mapPlaces.length}</span>
+                    </span>
+                    <span
+                      className={`places-sheet__chevron${mapSheetOpen ? ' is-open' : ''}`}
+                      aria-hidden
+                    >
+                      <ChevronIcon size={18} />
+                    </span>
+                  </span>
+                </button>
+                <div className="places-sheet__body">
+                  <div className="places-chips">
+                    {([
+                      ['all', 'All'],
+                      ['been', 'Been To'],
+                      ['want', 'Want To Go'],
+                    ] as const).map(([value, label]) => (
+                      <button
+                        key={value}
+                        type="button"
+                        className={mapStatus === value ? 'is-active' : ''}
+                        onClick={() => setMapStatus(value)}
+                      >
+                        {label}
+                      </button>
                     ))}
-                  </ul>
-                )}
-              </ScrollRegion>
-            </section>
-          </div>
-        ) : (
-          <ScrollRegion className="places-home">
+                  </div>
+                  <ScrollRegion className="places-sheet__list">
+                    {mapPlaces.length === 0 ? (
+                      <p className="places-hint">No places match that search.</p>
+                    ) : (
+                      <ul className="places-rows">
+                        {mapPlaces.map((place) => (
+                          <PlaceRow
+                            key={place.id}
+                            profile={profile}
+                            place={place}
+                            onOpen={openDetail}
+                            mark="bookmark"
+                          />
+                        ))}
+                      </ul>
+                    )}
+                  </ScrollRegion>
+                </div>
+              </section>
+            </div>
+
+            <ScrollRegion className={`places-home${tab === 'home' ? ' is-active' : ''}`} aria-hidden={tab !== 'home'}>
             <button type="button" className="places-icon-ghost places-home__back" onClick={onBack} aria-label="Back">
               <BackIcon size={20} />
             </button>
@@ -751,6 +877,7 @@ export function PlacesScreen({
                   {recent.map((place) => (
                     <PlaceRow
                       key={place.id}
+                      profile={profile}
                       place={place}
                       onOpen={openDetail}
                       mark="heart"
@@ -761,7 +888,8 @@ export function PlacesScreen({
               )}
             </section>
           </ScrollRegion>
-        )}
+          </div>
+        ) : null}
       </div>
 
       {hideTabs ? null : (

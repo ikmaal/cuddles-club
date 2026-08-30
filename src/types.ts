@@ -125,6 +125,11 @@ export interface AcademicMaterial {
 
 export type FoodPlaceStatus = 'been' | 'want'
 
+export interface PlaceRatings {
+  you: number
+  partner: number
+}
+
 export interface FoodPlace {
   id: string
   name: string
@@ -133,8 +138,10 @@ export interface FoodPlace {
   cuisine: string
   address: string
   notes: string
-  /** 0 means unrated */
-  rating: number
+  /** Absolute couple slot A rating (0 = unrated). */
+  ratingA: number
+  /** Absolute couple slot B rating (0 = unrated). */
+  ratingB: number
   lat: number | null
   lng: number | null
   photoUrl: string
