@@ -320,11 +320,47 @@
 }
 
 .services--apps {
-  padding: 20px 16px 18px;
+  padding: 16px 14px;
   background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.05);
   border-radius: 22px;
   box-shadow: 0 8px 22px rgba(26, 26, 40, 0.06);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.services__grid--apps {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 8px;
+  max-width: none;
+  margin: 0;
+  width: 100%;
+}
+
+.services__grid--solo .service__tile {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+}
+
+.services__grid--apps .service {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.services__grid--apps .service__tile {
+  width: min(68px, 100%);
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 18px;
+  margin-inline: auto;
+}
+
+.services__grid--solo .service__tile--bare.service__tile--image,
+.services__grid--apps .service__tile--bare.service__tile--image {
+  background: transparent;
+  box-shadow: none;
 }
 
 .services__grid--solo {
@@ -332,26 +368,6 @@
   justify-items: center;
   max-width: 120px;
   margin: 0 auto;
-}
-
-.services__grid--apps {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px 12px;
-  max-width: none;
-  margin: 0;
-}
-
-.services__grid--solo .service__tile,
-.services__grid--apps .service__tile {
-  width: 88px;
-  height: 88px;
-  border-radius: 22px;
-}
-
-.services__grid--solo .service__tile--bare.service__tile--image,
-.services__grid--apps .service__tile--bare.service__tile--image {
-  background: transparent;
-  box-shadow: none;
 }
 
 .services__grid--solo .service,
@@ -362,7 +378,9 @@
 .services__grid--solo .service__label,
 .services__grid--apps .service__label {
   min-height: auto;
-  font-size: 0.76rem;
+  font-size: 0.72rem;
+  max-width: 100%;
+  padding: 0 2px;
 }
 
 .metrics--solo {
