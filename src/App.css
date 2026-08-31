@@ -8248,10 +8248,12 @@ a.home-listening:focus-visible {
   transform: translateZ(0);
   overflow: hidden;
   transition: height 0.28s ease;
+  touch-action: pan-y;
 }
 
 .places-sheet.is-dragging {
   transition: none;
+  touch-action: none;
 }
 
 .places-sheet.is-expanded {
@@ -8265,7 +8267,6 @@ a.home-listening:focus-visible {
 .places-sheet__drag {
   flex-shrink: 0;
   padding-top: 8px;
-  touch-action: none;
   cursor: grab;
   user-select: none;
 }
@@ -9152,30 +9153,12 @@ a.home-listening:focus-visible {
   resize: vertical;
 }
 
-.places-editor .places-field__date {
-  position: relative;
+.places-editor .places-field input[type='date'] {
   display: block;
-  width: 100%;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.places-editor .places-field__date input {
-  display: block;
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-  padding-right: 40px;
-}
-
-.places-editor .places-field__date svg {
-  position: absolute;
-  right: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #8a8a8a;
-  pointer-events: none;
+  min-height: 46px;
+  line-height: 1.35;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .places-editor .places-segment {

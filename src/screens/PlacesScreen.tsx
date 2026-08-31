@@ -28,6 +28,7 @@ type CollectionFilter = 'all' | 'been' | 'want'
 
 const SHEET_COLLAPSED_HEIGHT = 88
 const SHEET_EXPANDED_RATIO = 0.46
+const SHEET_DRAG_ZONE_HEIGHT = 80
 
 interface PlacesScreenProps extends PlacesApi {
   profile: CoupleProfile
@@ -189,14 +190,36 @@ export function PlacesScreen({
 
   const getSheetExpandedHeight = useCallback(() => {
     const screen = mapScreenRef.current
-    const height = screen?.clientHeight ?? window.innerHeight
+    const measured = screen?.clientHeight ?? 0
+    const height = measured > 0 ? measured : window.innerHeight
     return Math.round(height * SHEET_EXPANDED_RATIO)
   }, [])
+
+  useEffect(() => {
+    if (tab !== 'map') return
+
+    const syncSheetHeight = () => {
+      setSheetHeight(getSheetExpandedHeight())
+    }
+
+    syncSheetHeight()
+    const frame = requestAnimationFrame(syncSheetHeight)
+    const timer = window.setTimeout(syncSheetHeight, 150)
+
+    return () => {
+      cancelAnimationFrame(frame)
+      window.clearTimeout(timer)
+    }
+  }, [tab, getSheetExpandedHeight])
 
   const resolvedSheetHeight = sheetHeight ?? getSheetExpandedHeight()
   const sheetCollapsed = resolvedSheetHeight <= SHEET_COLLAPSED_HEIGHT + 24
 
-  const handleSheetDragStart = (event: PointerEvent<HTMLDivElement>) => {
+  const handleSheetDragStart = (event: PointerEvent<HTMLElement>) => {
+    const sheet = event.currentTarget
+    const fromTop = event.clientY - sheet.getBoundingClientRect().top
+    if (fromTop > SHEET_DRAG_ZONE_HEIGHT) return
+
     event.currentTarget.setPointerCapture(event.pointerId)
     sheetDragRef.current = {
       startY: event.clientY,
@@ -205,7 +228,7 @@ export function PlacesScreen({
     setSheetDragging(true)
   }
 
-  const handleSheetDragMove = (event: PointerEvent<HTMLDivElement>) => {
+  const handleSheetDragMove = (event: PointerEvent<HTMLElement>) => {
     if (!event.currentTarget.hasPointerCapture(event.pointerId)) return
     const delta = sheetDragRef.current.startY - event.clientY
     const expanded = getSheetExpandedHeight()
@@ -216,7 +239,7 @@ export function PlacesScreen({
     setSheetHeight(next)
   }
 
-  const handleSheetDragEnd = (event: PointerEvent<HTMLDivElement>) => {
+  const handleSheetDragEnd = (event: PointerEvent<HTMLElement>) => {
     if (!event.currentTarget.hasPointerCapture(event.pointerId)) return
     event.currentTarget.releasePointerCapture(event.pointerId)
     setSheetDragging(false)
@@ -576,16 +599,13 @@ export function PlacesScreen({
                     <>
                       <label className="places-field">
                         <span>Date visited</span>
-                        <span className="places-field__date">
-                          <input
-                            type="date"
-                            value={draft.visitedAt}
-                            onChange={(event) =>
-                              setDraft((current) => ({ ...current, visitedAt: event.target.value }))
-                            }
-                          />
-                          <CalendarIcon size={18} />
-                        </span>
+                        <input
+                          type="date"
+                          value={draft.visitedAt}
+                          onChange={(event) =>
+                            setDraft((current) => ({ ...current, visitedAt: event.target.value }))
+                          }
+                        />
                       </label>
                       <fieldset className="places-rating-field">
                         <legend>Your rating</legend>
@@ -777,14 +797,12 @@ export function PlacesScreen({
                   sheetDragging ? ' is-dragging' : ''
                 }`}
                 style={{ height: resolvedSheetHeight }}
+                onPointerDown={handleSheetDragStart}
+                onPointerMove={handleSheetDragMove}
+                onPointerUp={handleSheetDragEnd}
+                onPointerCancel={handleSheetDragEnd}
               >
-                <div
-                  className="places-sheet__drag"
-                  onPointerDown={handleSheetDragStart}
-                  onPointerMove={handleSheetDragMove}
-                  onPointerUp={handleSheetDragEnd}
-                  onPointerCancel={handleSheetDragEnd}
-                >
+                <div className="places-sheet__drag">
                   <span className="places-sheet__handle" aria-hidden />
                   <div className="places-sheet__head">
                     <div className="places-sheet__title">

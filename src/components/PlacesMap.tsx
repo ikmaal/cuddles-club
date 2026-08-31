@@ -10,23 +10,14 @@ const OSM_ATTRIBUTION =
 
 function addBaseTileLayer(map: L.Map): L.TileLayer {
   const cartoKey = (import.meta.env.VITE_CARTO_API_KEY as string | undefined)?.trim()
-  if (cartoKey) {
-    return L.tileLayer(
-      `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${encodeURIComponent(cartoKey)}`,
-      {
-        attribution: `${OSM_ATTRIBUTION}, &copy; <a href="https://carto.com/attributions">CARTO</a>`,
-        subdomains: 'abcd',
-        maxZoom: 20,
-        updateWhenIdle: true,
-        updateWhenZooming: false,
-        keepBuffer: 3,
-      },
-    ).addTo(map)
-  }
+  const voyagerUrl = cartoKey
+    ? `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${encodeURIComponent(cartoKey)}`
+    : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
 
-  return L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: OSM_ATTRIBUTION,
-    maxZoom: 19,
+  return L.tileLayer(voyagerUrl, {
+    attribution: `${OSM_ATTRIBUTION}, &copy; <a href="https://carto.com/attributions">CARTO</a>`,
+    subdomains: 'abcd',
+    maxZoom: 20,
     updateWhenIdle: true,
     updateWhenZooming: false,
     keepBuffer: 3,
