@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent } from 'react'
 import { PlacesMap } from '../components/PlacesMap'
 import { PlaceCoupleRatings } from '../components/PlaceCoupleRatings'
 import { PlaceRating } from '../components/PlaceRating'
@@ -7,12 +7,9 @@ import { placeRatingsForViewer } from '../lib/placeRatings'
 import {
   BackIcon,
   BeenToIcon,
-  BookmarkIcon,
   CalendarIcon,
   CameraIcon,
-  ChevronIcon,
   FilterIcon,
-  HeartIcon,
   HomeIcon,
   LocateIcon,
   MapPinIcon,
@@ -28,6 +25,9 @@ import type { CoupleProfile, FoodPlace, FoodPlaceStatus } from '../types'
 type PlacesApi = ReturnType<typeof usePlaces>
 type PlacesTab = 'home' | 'map'
 type CollectionFilter = 'all' | 'been' | 'want'
+
+const SHEET_COLLAPSED_HEIGHT = 88
+const SHEET_EXPANDED_RATIO = 0.46
 
 interface PlacesScreenProps extends PlacesApi {
   profile: CoupleProfile
@@ -91,13 +91,11 @@ function PlaceRow({
   place,
   profile,
   onOpen,
-  mark,
   showCuisine = true,
 }: {
   place: FoodPlace
   profile: CoupleProfile
   onOpen: (place: FoodPlace) => void
-  mark?: 'heart' | 'bookmark'
   showCuisine?: boolean
 }) {
   return (
@@ -111,17 +109,6 @@ function PlaceRow({
           {place.status === 'been' ? (
             <PlaceCoupleRatings profile={profile} place={place} layout="inline" />
           ) : null}
-        </span>
-        <span
-          className={`places-row__mark${
-            (mark === 'heart' && place.status === 'been') ||
-            (mark === 'bookmark' && place.status === 'want')
-              ? ' is-on'
-              : ''
-          }`}
-          aria-hidden
-        >
-          {mark === 'bookmark' ? <BookmarkIcon size={18} /> : <HeartIcon size={18} />}
         </span>
       </button>
     </li>
@@ -151,7 +138,10 @@ export function PlacesScreen({
   const [mapStatus, setMapStatus] = useState<CollectionFilter>('all')
   const [mapQuery, setMapQuery] = useState('')
   const [flyTo, setFlyTo] = useState<{ lat: number; lng: number; token?: number } | null>(null)
-  const [mapSheetOpen, setMapSheetOpen] = useState(true)
+  const [sheetHeight, setSheetHeight] = useState<number | null>(null)
+  const [sheetDragging, setSheetDragging] = useState(false)
+  const mapScreenRef = useRef<HTMLDivElement>(null)
+  const sheetDragRef = useRef({ startY: 0, startHeight: 0 })
   const [draft, setDraft] = useState<PlaceDraft>(emptyDraft('been'))
   const [query, setQuery] = useState('')
   const [hits, setHits] = useState<GeocodeHit[]>([])
@@ -196,6 +186,45 @@ export function PlacesScreen({
     },
     [places],
   )
+
+  const getSheetExpandedHeight = useCallback(() => {
+    const screen = mapScreenRef.current
+    const height = screen?.clientHeight ?? window.innerHeight
+    return Math.round(height * SHEET_EXPANDED_RATIO)
+  }, [])
+
+  const resolvedSheetHeight = sheetHeight ?? getSheetExpandedHeight()
+  const sheetCollapsed = resolvedSheetHeight <= SHEET_COLLAPSED_HEIGHT + 24
+
+  const handleSheetDragStart = (event: PointerEvent<HTMLDivElement>) => {
+    event.currentTarget.setPointerCapture(event.pointerId)
+    sheetDragRef.current = {
+      startY: event.clientY,
+      startHeight: sheetHeight ?? getSheetExpandedHeight(),
+    }
+    setSheetDragging(true)
+  }
+
+  const handleSheetDragMove = (event: PointerEvent<HTMLDivElement>) => {
+    if (!event.currentTarget.hasPointerCapture(event.pointerId)) return
+    const delta = sheetDragRef.current.startY - event.clientY
+    const expanded = getSheetExpandedHeight()
+    const next = Math.min(
+      expanded,
+      Math.max(SHEET_COLLAPSED_HEIGHT, sheetDragRef.current.startHeight + delta),
+    )
+    setSheetHeight(next)
+  }
+
+  const handleSheetDragEnd = (event: PointerEvent<HTMLDivElement>) => {
+    if (!event.currentTarget.hasPointerCapture(event.pointerId)) return
+    event.currentTarget.releasePointerCapture(event.pointerId)
+    setSheetDragging(false)
+    const expanded = getSheetExpandedHeight()
+    const current = sheetHeight ?? expanded
+    const midpoint = (SHEET_COLLAPSED_HEIGHT + expanded) / 2
+    setSheetHeight(current < midpoint ? SHEET_COLLAPSED_HEIGHT : expanded)
+  }
 
   const photoPreview = useMemo(() => {
     if (draft.photoFile) return URL.createObjectURL(draft.photoFile)
@@ -625,16 +654,6 @@ export function PlacesScreen({
                     )}
                   </small>
                 </div>
-                <button
-                  type="button"
-                  className={`places-heart${selected.status === 'been' ? ' is-on' : ''}`}
-                  onClick={() => {
-                    if (selected.status === 'want') void markBeen(selected.id)
-                  }}
-                  aria-label={selected.status === 'been' ? 'Been here' : 'Mark as been'}
-                >
-                  <HeartIcon size={18} />
-                </button>
               </div>
               {selected.notes ? <p className="places-detail__blurb">{selected.notes}</p> : null}
               {selected.status === 'been' ? (
@@ -701,7 +720,7 @@ export function PlacesScreen({
             ) : (
               <ul className="places-rows">
                 {collectionPlaces.map((place) => (
-                  <PlaceRow key={place.id} profile={profile} place={place} onOpen={openDetail} mark="bookmark" />
+                  <PlaceRow key={place.id} profile={profile} place={place} onOpen={openDetail} />
                 ))}
               </ul>
             )}
@@ -709,9 +728,11 @@ export function PlacesScreen({
         ) : showMainTabs ? (
           <div className="places-main-tabs">
             <div
+              ref={mapScreenRef}
               className={`places-map-screen${tab === 'map' ? ' is-active' : ''}${
-                mapSheetOpen ? '' : ' is-sheet-collapsed'
+                sheetCollapsed ? ' is-sheet-collapsed' : ''
               }`}
+              style={{ '--sheet-height': `${resolvedSheetHeight}px` } as CSSProperties}
               aria-hidden={tab !== 'map'}
             >
               <div className="places-search">
@@ -751,28 +772,27 @@ export function PlacesScreen({
                   <LocateIcon size={18} />
                 </button>
               </div>
-              <section className={`places-sheet${mapSheetOpen ? ' is-expanded' : ' is-collapsed'}`}>
-                <button
-                  type="button"
-                  className="places-sheet__toggle"
-                  onClick={() => setMapSheetOpen((open) => !open)}
-                  aria-expanded={mapSheetOpen}
-                  aria-label={mapSheetOpen ? 'Collapse places list' : 'Expand places list'}
+              <section
+                className={`places-sheet${sheetCollapsed ? ' is-collapsed' : ' is-expanded'}${
+                  sheetDragging ? ' is-dragging' : ''
+                }`}
+                style={{ height: resolvedSheetHeight }}
+              >
+                <div
+                  className="places-sheet__drag"
+                  onPointerDown={handleSheetDragStart}
+                  onPointerMove={handleSheetDragMove}
+                  onPointerUp={handleSheetDragEnd}
+                  onPointerCancel={handleSheetDragEnd}
                 >
                   <span className="places-sheet__handle" aria-hidden />
-                  <span className="places-sheet__head">
-                    <span className="places-sheet__title">
+                  <div className="places-sheet__head">
+                    <div className="places-sheet__title">
                       <h2>All Places</h2>
                       <span className="places-sheet__count">{mapPlaces.length}</span>
-                    </span>
-                    <span
-                      className={`places-sheet__chevron${mapSheetOpen ? ' is-open' : ''}`}
-                      aria-hidden
-                    >
-                      <ChevronIcon size={18} />
-                    </span>
-                  </span>
-                </button>
+                    </div>
+                  </div>
+                </div>
                 <div className="places-sheet__body">
                   <div className="places-chips">
                     {([
@@ -796,13 +816,12 @@ export function PlacesScreen({
                     ) : (
                       <ul className="places-rows">
                         {mapPlaces.map((place) => (
-                          <PlaceRow
-                            key={place.id}
-                            profile={profile}
-                            place={place}
-                            onOpen={openDetail}
-                            mark="bookmark"
-                          />
+                        <PlaceRow
+                          key={place.id}
+                          profile={profile}
+                          place={place}
+                          onOpen={openDetail}
+                        />
                         ))}
                       </ul>
                     )}
@@ -880,7 +899,6 @@ export function PlacesScreen({
                       profile={profile}
                       place={place}
                       onOpen={openDetail}
-                      mark="heart"
                       showCuisine={false}
                     />
                   ))}

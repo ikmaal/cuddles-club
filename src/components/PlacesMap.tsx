@@ -12,7 +12,7 @@ function addBaseTileLayer(map: L.Map): L.TileLayer {
   const cartoKey = (import.meta.env.VITE_CARTO_API_KEY as string | undefined)?.trim()
   if (cartoKey) {
     return L.tileLayer(
-      `https://{s}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png?key=${encodeURIComponent(cartoKey)}`,
+      `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${encodeURIComponent(cartoKey)}`,
       {
         attribution: `${OSM_ATTRIBUTION}, &copy; <a href="https://carto.com/attributions">CARTO</a>`,
         subdomains: 'abcd',

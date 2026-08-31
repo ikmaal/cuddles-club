@@ -7954,7 +7954,7 @@ a.home-listening:focus-visible {
 .places-row {
   width: 100%;
   display: grid;
-  grid-template-columns: 56px minmax(0, 1fr) 28px;
+  grid-template-columns: 56px minmax(0, 1fr);
   align-items: center;
   gap: 12px;
   padding: 8px 4px;
@@ -8207,11 +8207,15 @@ a.home-listening:focus-visible {
   transform: rotate(45deg) scale(1);
 }
 
+.places-map-screen {
+  --sheet-height: 46%;
+}
+
 .places-map-locate {
   position: absolute;
   z-index: 4;
   right: 16px;
-  bottom: calc(46% + 16px);
+  bottom: calc(var(--sheet-height) + 16px);
   width: 44px;
   height: 44px;
   display: grid;
@@ -8224,7 +8228,7 @@ a.home-listening:focus-visible {
 }
 
 .places-map-screen.is-sheet-collapsed .places-map-locate {
-  bottom: calc(88px + var(--safe-bottom));
+  bottom: calc(var(--sheet-height) + 16px);
 }
 
 .places-sheet {
@@ -8246,21 +8250,28 @@ a.home-listening:focus-visible {
   transition: height 0.28s ease;
 }
 
+.places-sheet.is-dragging {
+  transition: none;
+}
+
 .places-sheet.is-expanded {
-  height: 46%;
-  padding-top: 8px;
+  padding-top: 0;
 }
 
 .places-sheet.is-collapsed {
-  height: auto;
-  padding-top: 8px;
+  padding-top: 0;
 }
 
-.places-sheet__toggle {
-  display: block;
-  width: 100%;
+.places-sheet__drag {
   flex-shrink: 0;
-  text-align: left;
+  padding-top: 8px;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+}
+
+.places-sheet.is-dragging .places-sheet__drag {
+  cursor: grabbing;
 }
 
 .places-sheet__handle {
@@ -8281,7 +8292,7 @@ a.home-listening:focus-visible {
 }
 
 .places-sheet.is-collapsed .places-sheet__head {
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
 .places-sheet__title {
@@ -8306,27 +8317,6 @@ a.home-listening:focus-visible {
   font-size: 0.72rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-}
-
-.places-sheet__chevron {
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  background: #f4f4f4;
-  color: #161616;
-  transform: rotate(90deg);
-  transition: transform 0.28s ease, background 0.2s ease;
-}
-
-.places-sheet__chevron.is-open {
-  transform: rotate(-90deg);
-}
-
-.places-sheet__toggle:active .places-sheet__chevron {
-  background: #ececec;
 }
 
 .places-sheet__body {
@@ -8730,26 +8720,36 @@ a.home-listening:focus-visible {
 .place-rating__track-wrap {
   position: relative;
   width: 100%;
-  padding-top: 2px;
+  min-height: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 10px 0 4px;
+  touch-action: none;
+  cursor: grab;
+}
+
+.place-rating__track-wrap.is-dragging {
+  cursor: grabbing;
 }
 
 .place-rating__range {
   position: absolute;
-  inset: 2px 0 auto;
+  inset: 0;
   width: 100%;
-  height: 36px;
+  height: 100%;
+  margin: 0;
   opacity: 0;
-  cursor: pointer;
-  z-index: 2;
+  cursor: grab;
+  z-index: 3;
 }
 
 .place-rating__track {
   position: relative;
-  height: 4px;
+  height: 6px;
   border-radius: 999px;
   background: #ececec;
-  touch-action: none;
-  cursor: pointer;
+  pointer-events: none;
 }
 
 .place-rating__track-fill {
@@ -8763,18 +8763,27 @@ a.home-listening:focus-visible {
   transition: width 80ms linear;
 }
 
+.place-rating__track-wrap.is-dragging .place-rating__track-fill {
+  transition: none;
+}
+
 .place-rating__thumb {
   position: absolute;
   top: 50%;
-  width: 16px;
-  height: 16px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: #ffffff;
   border: 2px solid #161616;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   transform: translate(-50%, -50%);
   transition: left 80ms linear;
   pointer-events: none;
+}
+
+.place-rating__track-wrap.is-dragging .place-rating__thumb {
+  transition: none;
+  transform: translate(-50%, -50%) scale(1.08);
 }
 
 .place-rating__scale {
@@ -9146,9 +9155,17 @@ a.home-listening:focus-visible {
 .places-editor .places-field__date {
   position: relative;
   display: block;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .places-editor .places-field__date input {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   padding-right: 40px;
 }
 

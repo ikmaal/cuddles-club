@@ -1,4 +1,4 @@
-import { useCallback, useId, useRef } from 'react'
+import { useCallback, useId, useRef, useState } from 'react'
 import {
   clampPlaceRating,
   PLACE_RATING_MAX,
@@ -27,6 +27,7 @@ export function PlaceRating({
   const inputId = useId()
   const hint = ratingVibe(rating)
   const percent = (rating / PLACE_RATING_MAX) * 100
+  const [dragging, setDragging] = useState(false)
 
   const setFromClientX = useCallback(
     (clientX: number) => {
@@ -42,6 +43,13 @@ export function PlaceRating({
 
   const bump = (delta: number) => {
     onChange?.(clampPlaceRating(rating + delta))
+  }
+
+  const endDrag = (target: HTMLElement, pointerId: number) => {
+    if (target.hasPointerCapture(pointerId)) {
+      target.releasePointerCapture(pointerId)
+    }
+    setDragging(false)
   }
 
   if (readOnly && size === 'sm') {
@@ -96,7 +104,25 @@ export function PlaceRating({
 
       {interactive ? (
         <div className="place-rating__controls">
-          <div className="place-rating__track-wrap">
+          <div
+            className={`place-rating__track-wrap${dragging ? ' is-dragging' : ''}`}
+            onPointerDown={(event) => {
+              if (!onChange) return
+              event.currentTarget.setPointerCapture(event.pointerId)
+              setDragging(true)
+              setFromClientX(event.clientX)
+            }}
+            onPointerMove={(event) => {
+              if (!event.currentTarget.hasPointerCapture(event.pointerId)) return
+              setFromClientX(event.clientX)
+            }}
+            onPointerUp={(event) => {
+              endDrag(event.currentTarget, event.pointerId)
+            }}
+            onPointerCancel={(event) => {
+              endDrag(event.currentTarget, event.pointerId)
+            }}
+          >
             <label className="sr-only" htmlFor={inputId}>
               Rating out of 10
             </label>
@@ -109,25 +135,10 @@ export function PlaceRating({
               step={PLACE_RATING_STEP}
               value={rating}
               onChange={(event) => onChange?.(clampPlaceRating(Number(event.target.value)))}
+              onPointerDown={() => setDragging(true)}
+              onPointerUp={() => setDragging(false)}
             />
-            <div
-              ref={trackRef}
-              className="place-rating__track"
-              onPointerDown={(event) => {
-                event.currentTarget.setPointerCapture(event.pointerId)
-                setFromClientX(event.clientX)
-              }}
-              onPointerMove={(event) => {
-                if (!event.currentTarget.hasPointerCapture(event.pointerId)) return
-                setFromClientX(event.clientX)
-              }}
-              onPointerUp={(event) => {
-                event.currentTarget.releasePointerCapture(event.pointerId)
-              }}
-              onPointerCancel={(event) => {
-                event.currentTarget.releasePointerCapture(event.pointerId)
-              }}
-            >
+            <div ref={trackRef} className="place-rating__track">
               <span className="place-rating__track-fill" style={{ width: `${percent}%` }} />
               <span className="place-rating__thumb" style={{ left: `${percent}%` }} />
             </div>
