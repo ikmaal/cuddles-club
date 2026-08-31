@@ -461,7 +461,6 @@ export function PlacesScreen({
                   </button>
                   <div className="places-editor__photo-copy">
                     <strong>Add a photo</strong>
-                    <p>Optional — show what you ate or the vibe</p>
                   </div>
                   <input
                     ref={photoRef}
