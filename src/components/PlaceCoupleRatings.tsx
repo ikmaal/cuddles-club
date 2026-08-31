@@ -22,6 +22,7 @@ export function PlaceCoupleRatings({
   return (
     <PlaceRatingsDuo
       names={{ you: profile.nameYou, partner: profile.namePartner }}
+      photos={{ you: profile.you.photo, partner: profile.partner.photo }}
       ratings={ratings}
       onYouChange={onYouChange}
       layout={layout}

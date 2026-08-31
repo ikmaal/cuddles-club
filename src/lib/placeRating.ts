@@ -18,10 +18,20 @@ export function ratingTone(score: number): PlaceRatingTone {
 
 export function ratingVibe(score: number): string {
   if (score <= 0) return 'Set a score from 0 to 10'
+  if (score < 3) return 'Not for me'
   if (score < 4) return 'Below average'
   if (score < 6) return 'Average'
   if (score < 7.5) return 'Good'
   if (score < 8.5) return 'Very good'
   if (score < 9.5) return 'Excellent'
   return 'Outstanding'
+}
+
+export function ratingEmoji(score: number): string {
+  if (score <= 0) return '✨'
+  if (score < 3) return '😞'
+  if (score < 5) return '😐'
+  if (score < 7.5) return '🙂'
+  if (score < 9) return '😊'
+  return '🤩'
 }

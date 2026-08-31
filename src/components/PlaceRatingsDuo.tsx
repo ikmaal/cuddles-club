@@ -1,4 +1,6 @@
+import { CoupleRatingArt } from './CoupleRatingArt'
 import { PlaceRating } from './PlaceRating'
+import { PlaceRatingStars } from './PlaceRatingStars'
 import { placeRatingAverage } from '../lib/placeRatings'
 import type { PlaceRatings } from '../types'
 
@@ -8,6 +10,7 @@ function firstName(name: string): string {
 
 interface PlaceRatingsDuoProps {
   names: { you: string; partner: string }
+  photos?: { you: string; partner: string }
   ratings: PlaceRatings
   onYouChange?: (rating: number) => void
   layout?: 'stack' | 'inline'
@@ -15,6 +18,7 @@ interface PlaceRatingsDuoProps {
 
 export function PlaceRatingsDuo({
   names,
+  photos,
   ratings,
   onYouChange,
   layout = 'stack',
@@ -50,50 +54,51 @@ export function PlaceRatingsDuo({
   }
 
   return (
-    <div className="place-ratings-duo">
+    <div className="place-ratings-page">
       {average != null ? (
-        <div className="place-ratings-average" aria-label={`Average rating ${average.toFixed(1)} out of 10`}>
-          <div className="place-ratings-average__head">
-            <span className="place-ratings-average__label">Average</span>
-            <div className="place-ratings-average__scoreblock">
-              <span className="place-ratings-average__score">{average.toFixed(1)}</span>
-              <span className="place-ratings-average__max">/ 10</span>
+        <article className="place-ratings-avg-card" aria-label={`Average rating ${average.toFixed(1)} out of 10`}>
+          <div className="place-ratings-avg-card__copy">
+            <h3 className="place-ratings-avg-card__title">Average Rating</h3>
+            <div className="place-ratings-avg-card__scoreblock">
+              <span className="place-ratings-avg-card__score">{average.toFixed(1)}</span>
+              <span className="place-ratings-avg-card__max">/ 10</span>
             </div>
+            <PlaceRatingStars score={average} />
           </div>
-          <div className="place-ratings-average__meter" aria-hidden>
-            <span
-              className="place-ratings-average__meter-fill"
-              style={{ width: `${(average / 10) * 100}%` }}
-            />
-          </div>
-        </div>
+          <CoupleRatingArt className="place-ratings-avg-card__art" />
+        </article>
       ) : null}
 
-      <article className={`place-rating-card${onYouChange ? ' is-editable' : ''}`}>
-        <header className="place-rating-card__head">
-          <div className="place-rating-card__title">
-            <span className="place-rating-card__label">Rated by {youLabel}</span>
-            {onYouChange ? <span className="place-rating-card__tag">You</span> : null}
+      <article className={`place-ratings-user-card${onYouChange ? ' is-editable' : ''}`}>
+        <header className="place-ratings-user-card__head">
+          <div className="place-ratings-user-card__title">
+            <h3>Your Rating ({youLabel})</h3>
+            {onYouChange ? <span className="place-ratings-user-card__badge">You</span> : null}
           </div>
         </header>
         <PlaceRating
           value={ratings.you}
           onChange={onYouChange}
           readOnly={!onYouChange}
-          size="lg"
+          variant="detail"
         />
       </article>
 
-      <article className="place-rating-card place-rating-card--partner">
-        <header className="place-rating-card__head">
-          <div className="place-rating-card__title">
-            <span className="place-rating-card__label">Rated by {partnerLabel}</span>
-          </div>
+      <article className="place-ratings-user-card place-ratings-user-card--partner">
+        <header className="place-ratings-user-card__head place-ratings-user-card__head--partner">
+          {photos?.partner ? (
+            <img className="place-ratings-user-card__avatar" src={photos.partner} alt="" />
+          ) : (
+            <span className="place-ratings-user-card__avatar place-ratings-user-card__avatar--fallback">
+              {partnerLabel[0]?.toUpperCase() ?? '?'}
+            </span>
+          )}
+          <h3>{partnerLabel}&apos;s Rating</h3>
         </header>
         {ratings.partner > 0 ? (
-          <PlaceRating value={ratings.partner} readOnly size="md" />
+          <PlaceRating value={ratings.partner} readOnly variant="detail" />
         ) : (
-          <p className="place-rating-card__waiting">
+          <p className="place-ratings-user-card__waiting">
             Waiting for {partnerLabel}&apos;s score
           </p>
         )}

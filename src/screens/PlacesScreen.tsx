@@ -643,7 +643,7 @@ export function PlacesScreen({
             </section>
           </div>
         ) : selected ? (
-          <div className="places-detail">
+          <div className={`places-detail${selected.status === 'been' ? ' places-detail--ratings' : ''}`}>
             <div className="places-detail__hero">
               {selected.photoUrl ? (
                 <img src={selected.photoUrl} alt="" />
@@ -662,52 +662,65 @@ export function PlacesScreen({
                 ···
               </button>
             </div>
-            <ScrollRegion className="places-detail__sheet">
-              <div className="places-detail__title">
-                <div>
-                  <h2>{selected.name}</h2>
-                  <p>{locationLine(selected)}</p>
-                  <small>
-                    {[selected.cuisine || 'Place', selected.status === 'been' ? 'Been here' : 'Want to go'].join(
-                      ' • ',
-                    )}
-                  </small>
-                </div>
-              </div>
-              {selected.notes ? <p className="places-detail__blurb">{selected.notes}</p> : null}
+            <ScrollRegion
+              className={
+                selected.status === 'been' ? 'places-detail__content' : 'places-detail__sheet'
+              }
+            >
+              <article className="places-detail-card">
+                <h2>{selected.name}</h2>
+                <p className="places-detail-card__location">
+                  <MapPinIcon size={16} />
+                  {locationLine(selected)}
+                </p>
+                <p className="places-detail-card__status">
+                  {[selected.cuisine || 'Place', selected.status === 'been' ? 'Been here' : 'Want to go'].join(
+                    ' • ',
+                  )}
+                </p>
+              </article>
+
               {selected.status === 'been' ? (
-                <section className="places-detail__rating">
-                  <h3>Ratings</h3>
-                  <PlaceCoupleRatings
-                    profile={profile}
-                    place={selected}
-                    onYouChange={(myRating) => void handleMyRatingChange(selected, myRating)}
-                  />
-                </section>
+                <PlaceCoupleRatings
+                  profile={profile}
+                  place={selected}
+                  onYouChange={(myRating) => void handleMyRatingChange(selected, myRating)}
+                />
               ) : null}
-              <div className="places-detail__meta">
-                {selected.status === 'been' && selected.visitedAt ? (
-                  <span>
-                    <CalendarIcon size={16} />
-                    Been Here {formatVisit(selected.visitedAt)}
-                  </span>
-                ) : null}
-              </div>
-              {selected.photoUrl ? (
-                <section className="places-detail__photos">
-                  <header>
-                    <h3>Photos</h3>
-                    <button type="button" onClick={() => setPhotoOpen(true)}>
-                      See All
-                    </button>
-                  </header>
-                  <button type="button" className="places-detail__shot" onClick={() => setPhotoOpen(true)}>
-                    <img src={selected.photoUrl} alt="" />
-                  </button>
-                </section>
-              ) : null}
-              {selected.notes ? (
-                <section className="places-detail__notes">
+
+              {selected.status !== 'been' ? (
+                <>
+                  {selected.notes ? <p className="places-detail__blurb">{selected.notes}</p> : null}
+                  <div className="places-detail__meta">
+                    {selected.visitedAt ? (
+                      <span>
+                        <CalendarIcon size={16} />
+                        Been Here {formatVisit(selected.visitedAt)}
+                      </span>
+                    ) : null}
+                  </div>
+                  {selected.photoUrl ? (
+                    <section className="places-detail__photos">
+                      <header>
+                        <h3>Photos</h3>
+                        <button type="button" onClick={() => setPhotoOpen(true)}>
+                          See All
+                        </button>
+                      </header>
+                      <button type="button" className="places-detail__shot" onClick={() => setPhotoOpen(true)}>
+                        <img src={selected.photoUrl} alt="" />
+                      </button>
+                    </section>
+                  ) : null}
+                  {selected.notes ? (
+                    <section className="places-detail__notes">
+                      <h3>Notes</h3>
+                      <p>{selected.notes}</p>
+                    </section>
+                  ) : null}
+                </>
+              ) : selected.notes ? (
+                <section className="places-detail-notes-card">
                   <h3>Notes</h3>
                   <p>{selected.notes}</p>
                 </section>
