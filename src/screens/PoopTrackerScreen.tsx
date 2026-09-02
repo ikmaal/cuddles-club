@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react'
 import {
   BackIcon,
   CalendarIcon,
@@ -6,7 +6,7 @@ import {
   ChevronIcon,
 } from '../components/Icons'
 import { ScrollRegion } from '../components/ScrollRegion'
-import type { UsePoopTrackerReturn } from '../hooks/usePoopTracker'
+import { weekRangeStart, weekTitle, type UsePoopTrackerReturn } from '../hooks/usePoopTracker'
 import type { Carer, CoupleProfile } from '../types'
 
 interface PoopTrackerScreenProps extends UsePoopTrackerReturn {
@@ -72,8 +72,10 @@ export function PoopTrackerScreen({
   onBack,
 }: PoopTrackerScreenProps) {
   const [owner, setOwner] = useState<Carer>('you')
+  const [weekOffset, setWeekOffset] = useState(0)
   const [justLogged, setJustLogged] = useState(false)
   const [logFailed, setLogFailed] = useState(false)
+  const weekSwipeRef = useRef({ startX: 0, tracking: false })
 
   const names = useMemo(
     () => ({
@@ -83,8 +85,35 @@ export function PoopTrackerScreen({
     [profile.namePartner, profile.nameYou],
   )
 
-  const stats = statsFor(owner)
+  const stats = statsFor(owner, weekOffset)
   const displayName = firstName(names[owner])
+  const weekLabel = weekTitle(weekOffset)
+  const canGoForward = weekOffset < 0
+
+  useEffect(() => {
+    setWeekOffset(0)
+  }, [owner])
+
+  function goToOlderWeek() {
+    setWeekOffset((current) => current - 1)
+  }
+
+  function goToNewerWeek() {
+    setWeekOffset((current) => (current < 0 ? current + 1 : current))
+  }
+
+  function handleWeekSwipeStart(event: PointerEvent<HTMLElement>) {
+    weekSwipeRef.current = { startX: event.clientX, tracking: true }
+  }
+
+  function handleWeekSwipeEnd(event: PointerEvent<HTMLElement>) {
+    if (!weekSwipeRef.current.tracking) return
+    const delta = event.clientX - weekSwipeRef.current.startX
+    weekSwipeRef.current.tracking = false
+    if (Math.abs(delta) < 48) return
+    if (delta < 0) goToOlderWeek()
+    else goToNewerWeek()
+  }
 
   useEffect(() => {
     void refresh()
@@ -175,14 +204,39 @@ export function PoopTrackerScreen({
           <span>{justLogged ? 'Logged!' : 'I just pooped'}</span>
         </button>
 
-        <section className="poop-card poop-week" aria-label="Weekly overview">
+        <section
+          className="poop-card poop-week"
+          aria-label="Weekly overview"
+          onPointerDown={handleWeekSwipeStart}
+          onPointerUp={handleWeekSwipeEnd}
+          onPointerCancel={handleWeekSwipeEnd}
+        >
           <div className="poop-week__header">
-            <div className="poop-week__header-copy">
-              <p className="poop-week__date">
-                <CalendarIcon size={14} />
-                {formatCardDate()}
-              </p>
-              <h2 className="poop-week__title">This week</h2>
+            <div className="poop-week__header-main">
+              <button
+                type="button"
+                className="poop-week__nav"
+                onClick={goToOlderWeek}
+                aria-label="Previous week"
+              >
+                <ChevronIcon size={16} />
+              </button>
+              <div className="poop-week__header-copy">
+                <p className="poop-week__date">
+                  <CalendarIcon size={14} />
+                  {formatCardDate(weekRangeStart(weekOffset))}
+                </p>
+                <h2 className="poop-week__title">{weekLabel}</h2>
+              </div>
+              <button
+                type="button"
+                className="poop-week__nav poop-week__nav--next"
+                onClick={goToNewerWeek}
+                disabled={!canGoForward}
+                aria-label="Next week"
+              >
+                <ChevronIcon size={16} />
+              </button>
             </div>
             <div className="poop-week__badge" aria-label={`${stats.weekTotal} logs this week`}>
               <strong>{stats.weekTotal}</strong>

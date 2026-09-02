@@ -36,12 +36,12 @@ function entriesForOwner(entries: PoopLog[], owner: Carer): PoopLog[] {
 
 const WEEKDAY_LABELS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'] as const
 
-function calendarWeekDayKeys(): string[] {
+function calendarWeekDayKeys(weekOffset = 0): string[] {
   const today = new Date()
   today.setHours(12, 0, 0, 0)
   const daysFromMonday = (today.getDay() + 6) % 7
   const monday = new Date(today)
-  monday.setDate(today.getDate() - daysFromMonday)
+  monday.setDate(today.getDate() - daysFromMonday + weekOffset * 7)
 
   const keys: string[] = []
   for (let index = 0; index < 7; index += 1) {
@@ -50,6 +50,27 @@ function calendarWeekDayKeys(): string[] {
     keys.push(todayKey(date))
   }
   return keys
+}
+
+export function weekTitle(weekOffset: number): string {
+  if (weekOffset === 0) return 'This week'
+  if (weekOffset === -1) return 'Last week'
+
+  const keys = calendarWeekDayKeys(weekOffset)
+  const start = new Date(`${keys[0]}T12:00:00`)
+  const end = new Date(`${keys[6]}T12:00:00`)
+  const sameMonth = start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()
+  const startLabel = start.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
+  const endLabel = end.toLocaleDateString(undefined, {
+    day: 'numeric',
+    ...(sameMonth ? {} : { month: 'short' }),
+  })
+  return `${startLabel} – ${endLabel}`
+}
+
+export function weekRangeStart(weekOffset: number): Date {
+  const keys = calendarWeekDayKeys(weekOffset)
+  return new Date(`${keys[0]}T12:00:00`)
 }
 
 function countByDay(entries: PoopLog[], owner: Carer): Map<string, number> {
@@ -259,10 +280,10 @@ export function usePoopTracker() {
   )
 
   const statsFor = useCallback(
-    (owner: Carer) => {
+    (owner: Carer, weekOffset = 0) => {
       const counts = countByDay(entries, owner)
       const todayKeyStr = todayKey()
-      const weekKeys = calendarWeekDayKeys()
+      const weekKeys = calendarWeekDayKeys(weekOffset)
       const week: WeekBar[] = weekKeys.map((key, index) => ({
         key,
         label: WEEKDAY_LABELS[index],

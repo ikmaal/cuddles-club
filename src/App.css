@@ -10070,6 +10070,7 @@ a.home-listening:focus-visible {
 
 .poop-week {
   padding: 16px 16px 14px;
+  touch-action: pan-y;
 }
 
 .poop-week__header {
@@ -10078,6 +10079,39 @@ a.home-listening:focus-visible {
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 14px;
+}
+
+.poop-week__header-main {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 32px;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.poop-week__nav {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  color: var(--poop-accent);
+  transform: rotate(180deg);
+}
+
+.poop-week__nav--next {
+  transform: none;
+}
+
+.poop-week__nav:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.poop-week__header-copy {
+  min-width: 0;
+  text-align: center;
 }
 
 .poop-week__date {

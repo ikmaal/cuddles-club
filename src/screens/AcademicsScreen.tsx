@@ -79,6 +79,11 @@ function formatDueDate(dueDate: string): string {
   })
 }
 
+function isActiveDeadline(dueDate: string): boolean {
+  const diff = daysUntil(dueDate)
+  return diff !== null && diff >= 0
+}
+
 function dueTone(dueDate: string, done: boolean) {
   const diff = daysUntil(dueDate)
   if (diff === null || done) return ''
@@ -331,7 +336,7 @@ export function AcademicsScreen({
   )
   const deadlines = useMemo(() => {
     return assignments
-      .filter((item) => item.dueDate && !item.done)
+      .filter((item) => item.dueDate && !item.done && isActiveDeadline(item.dueDate))
       .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
   }, [assignments])
 
@@ -378,7 +383,8 @@ export function AcademicsScreen({
           moduleIds.has(item.moduleId) &&
           item.kind === 'assignment' &&
           item.dueDate &&
-          !item.done,
+          !item.done &&
+          isActiveDeadline(item.dueDate),
       )
       .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
   }, [materials, ownedModules])
