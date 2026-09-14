@@ -5,8 +5,10 @@ import {
   CheckIcon,
   ChevronIcon,
 } from '../components/Icons'
+import { PoopHeroHeadline } from '../components/PoopHeroHeadline'
 import { ScrollRegion } from '../components/ScrollRegion'
 import { weekRangeStart, weekTitle, type UsePoopTrackerReturn } from '../hooks/usePoopTracker'
+import { pickPoopHeroMessage } from '../lib/poopHeroMessages'
 import type { Carer, CoupleProfile } from '../types'
 
 interface PoopTrackerScreenProps extends UsePoopTrackerReturn {
@@ -87,6 +89,10 @@ export function PoopTrackerScreen({
 
   const stats = statsFor(owner, weekOffset)
   const displayName = firstName(names[owner])
+  const heroLines = useMemo(
+    () => pickPoopHeroMessage(owner, displayName, stats.todayCount),
+    [displayName, owner, stats.todayCount],
+  )
   const weekLabel = weekTitle(weekOffset)
   const canGoForward = weekOffset < 0
 
@@ -169,13 +175,7 @@ export function PoopTrackerScreen({
       <ScrollRegion className="screen__scroll poop-scroll">
         <section className="poop-hero" aria-label="Summary">
           <div className="poop-hero__copy">
-            <h1>
-              Hey {displayName.toLowerCase()},
-              <br />
-              you&apos;re doing
-              <br />
-              <em>great</em> so far.
-            </h1>
+            <PoopHeroHeadline lines={heroLines} />
           </div>
           <div className="poop-mascot" aria-hidden>
             <img src={`${import.meta.env.BASE_URL}poopmascot.png`} alt="" />

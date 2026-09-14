@@ -3,7 +3,7 @@ import { PlacesMap } from '../components/PlacesMap'
 import { PlaceCoupleRatings } from '../components/PlaceCoupleRatings'
 import { PlaceRating } from '../components/PlaceRating'
 import { useCouple } from '../context/CoupleContext'
-import { placeRatingsForViewer } from '../lib/placeRatings'
+import { placeRatingAverageFromPlace, placeRatingsForViewer } from '../lib/placeRatings'
 import {
   BackIcon,
   BeenToIcon,
@@ -88,6 +88,15 @@ function PlaceThumb({ place, className }: { place?: FoodPlace; className?: strin
   )
 }
 
+function sortBeenByRating(places: FoodPlace[]): FoodPlace[] {
+  return [...places].sort((a, b) => {
+    const avgA = placeRatingAverageFromPlace(a) ?? -1
+    const avgB = placeRatingAverageFromPlace(b) ?? -1
+    if (avgB !== avgA) return avgB - avgA
+    return a.name.localeCompare(b.name)
+  })
+}
+
 function PlaceRow({
   place,
   profile,
@@ -151,7 +160,10 @@ export function PlacesScreen({
   const photoRef = useRef<HTMLInputElement>(null)
   const photoPreviewRef = useRef('')
 
-  const been = useMemo(() => places.filter((place) => place.status === 'been'), [places])
+  const been = useMemo(
+    () => sortBeenByRating(places.filter((place) => place.status === 'been')),
+    [places],
+  )
   const want = useMemo(() => places.filter((place) => place.status === 'want'), [places])
   const recent = useMemo(() => places.slice(0, 6), [places])
 

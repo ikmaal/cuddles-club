@@ -6722,6 +6722,71 @@ a.home-listening:focus-visible {
   box-shadow: var(--acad-shadow);
 }
 
+.acad-push {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  border-radius: 20px;
+  background: #fff8e6;
+  border: 1.5px solid #111111;
+  box-shadow: var(--acad-shadow);
+}
+
+.acad-push > div {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.acad-push strong {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.acad-push p {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: #444;
+  line-height: 1.4;
+}
+
+.acad-push button {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1.5px solid #111111;
+  background: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.acad-push button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.acad-push--on {
+  background: #e8f8ef;
+}
+
+.acad-push--info {
+  background: #f5f5f5;
+}
+
+.acad-push--info p {
+  margin: 0;
+}
+
+.acad-push__message {
+  flex: 1 0 100%;
+  margin: 0;
+  font-size: 0.8rem;
+  color: #666;
+}
+
 .acad-panel__head {
   display: flex;
   align-items: center;

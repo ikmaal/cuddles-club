@@ -15,6 +15,7 @@ import {
   PlusIcon,
   SwapIcon,
 } from '../components/Icons'
+import { DeadlinePushPrompt } from '../components/DeadlinePushPrompt'
 import { ScrollRegion } from '../components/ScrollRegion'
 import { StudyTogetherBanner } from '../components/StudyTogetherBanner'
 import { useLongPress } from '../hooks/useLongPress'
@@ -634,6 +635,7 @@ export function AcademicsScreen({
               </p>
             </div>
             <StudyTogetherBanner />
+            <DeadlinePushPrompt />
 
             {!ready ? (
               <p className="acad-empty">Loading your desk…</p>
