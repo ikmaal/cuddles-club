@@ -124,3 +124,33 @@ export async function unsubscribeFromDeadlinePush(): Promise<{ ok: true } | { ok
 
   return { ok: true }
 }
+
+export async function showTestDeadlineNotification(): Promise<{ ok: true } | { ok: false; message: string }> {
+  if (!('Notification' in window)) {
+    return { ok: false, message: 'This browser does not support notifications.' }
+  }
+
+  if (Notification.permission !== 'granted') {
+    return { ok: false, message: 'Enable deadline reminders first and allow notifications.' }
+  }
+
+  const registration =
+    (await navigator.serviceWorker.getRegistration(import.meta.env.BASE_URL)) ??
+    (await registerServiceWorker())
+  if (!registration) {
+    return { ok: false, message: 'Could not register the notification service.' }
+  }
+
+  await navigator.serviceWorker.ready
+
+  const iconUrl = `${import.meta.env.BASE_URL}favicon.jpg`
+  await registration.showNotification('Deadline in 3 days', {
+    body: 'Sample assignment · CS101 is due in 3 days.',
+    icon: iconUrl,
+    badge: iconUrl,
+    tag: 'study-deadline-test',
+    data: { url: import.meta.env.BASE_URL },
+  })
+
+  return { ok: true }
+}

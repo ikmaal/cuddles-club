@@ -7,6 +7,7 @@ import {
   pushSupportError,
   subscribeToDeadlinePush,
   unsubscribeFromDeadlinePush,
+  showTestDeadlineNotification,
 } from '../lib/pushNotifications'
 
 export function useDeadlinePush() {
@@ -58,6 +59,19 @@ export function useDeadlinePush() {
     return true
   }, [refresh])
 
+  const test = useCallback(async () => {
+    setBusy(true)
+    setMessage('')
+    const result = await showTestDeadlineNotification()
+    setBusy(false)
+    if (!result.ok) {
+      setMessage(result.message)
+      return false
+    }
+    setMessage('Test notification sent.')
+    return true
+  }, [])
+
   return {
     configured: isPushConfigured(),
     supportError: pushSupportError(),
@@ -68,6 +82,7 @@ export function useDeadlinePush() {
     message,
     enable,
     disable,
+    test,
     refresh,
   }
 }

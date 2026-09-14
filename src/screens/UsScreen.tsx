@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { SettingsIcon } from '../components/Icons'
 import { CloudSyncCard } from '../components/CloudSyncCard'
+import { DeadlinePushSettingsCard } from '../components/DeadlinePushSettingsCard'
 import { PersonProfileCard } from '../components/PersonProfileCard'
 import { StorageCard } from '../components/StorageCard'
 import { ScrollRegion } from '../components/ScrollRegion'
@@ -161,6 +162,13 @@ export function UsScreen({ profile, onSave }: UsScreenProps) {
                     <p className="us-settings__label">Music</p>
                     <div className="us-settings__stack">
                       <SpotifyConnectCard />
+                    </div>
+                  </section>
+
+                  <section className="us-settings__group">
+                    <p className="us-settings__label">Study</p>
+                    <div className="us-settings__stack">
+                      <DeadlinePushSettingsCard />
                     </div>
                   </section>
 
