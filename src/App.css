@@ -531,6 +531,51 @@
   cursor: grabbing;
 }
 
+.home-polaroid__sticker--selected {
+  filter: drop-shadow(0 8px 18px rgba(60, 40, 50, 0.2));
+}
+
+.home-polaroid__sticker-body {
+  touch-action: none;
+}
+
+.home-polaroid__sticker--selected .home-polaroid__sticker-body {
+  outline: 2px solid rgba(207, 61, 98, 0.75);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.home-polaroid__sticker-handle {
+  position: absolute;
+  z-index: 2;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(92, 36, 56, 0.28);
+  touch-action: none;
+}
+
+.home-polaroid__sticker-handle--rotate {
+  top: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #7a4a58;
+  cursor: grab;
+}
+
+.home-polaroid__sticker-handle--scale {
+  right: -14px;
+  bottom: -14px;
+  background: #cf3d62;
+  cursor: nwse-resize;
+}
+
+.home-polaroid__sticker-handle:active {
+  cursor: grabbing;
+}
+
 .home-polaroid__sticker-remove {
   position: absolute;
   top: -8px;

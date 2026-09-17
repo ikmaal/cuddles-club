@@ -97,21 +97,22 @@ export function usePolaroidScenery() {
 
   const addFromDataUrl = useCallback(
     async (dataUrl: string) => {
-      if (items.length >= MAX_ITEMS) {
+      const current = itemsRef.current
+      if (current.length >= MAX_ITEMS) {
         setError(`You can add up to ${MAX_ITEMS} stickers.`)
         return null
       }
-      const placement = defaultPlacement(items.length)
+      const placement = defaultPlacement(current.length)
       const item: PolaroidSceneryItem = {
         id: createId(),
         src: dataUrl,
         ...placement,
       }
-      const next = [...items, item]
+      const next = [...current, item]
       await persist(next)
       return item
     },
-    [items, persist],
+    [persist],
   )
 
   const addFromFile = useCallback(
