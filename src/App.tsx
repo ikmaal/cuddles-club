@@ -52,6 +52,7 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>('home')
   const [splashPhase, setSplashPhase] = useState<SplashPhase>('active')
   const [homeVisible, setHomeVisible] = useState(false)
+  const [polaroidSceneryEditing, setPolaroidSceneryEditing] = useState(false)
 
   const splashActive = splashPhase !== 'done'
   const homeLive = screen === 'home' && splashPhase === 'done'
@@ -128,6 +129,11 @@ export default function App() {
 
   const goHome = () => goToScreen('home')
 
+  function startPolaroidSceneryDecorate() {
+    setPolaroidSceneryEditing(true)
+    goToScreen('home')
+  }
+
   return (
     <div
       className={`app${navyLive ? ' app--home-bg' : ''}${homeLive ? ' app--home-image' : ''}${shellVisible ? ' app--home-visible' : ''}${screen === 'strips' && !splashActive ? ' app--strips' : ''}${academicsLive ? ' app--academics' : ''}${placesLive ? ' app--places' : ''}${poopLive ? ' app--poop' : ''}${splashActive ? ' app--splash' : ''}`}
@@ -148,6 +154,8 @@ export default function App() {
                 profile={profile}
                 latestStrip={strips.strips[0] ?? null}
                 onOpen={goToScreen}
+                polaroidSceneryEditing={polaroidSceneryEditing}
+                onPolaroidSceneryEditingChange={setPolaroidSceneryEditing}
               />
             ) : null}
 
@@ -180,7 +188,11 @@ export default function App() {
             ) : null}
 
             {screen === 'us' ? (
-              <UsScreen profile={profile} onSave={updateProfile} />
+              <UsScreen
+                profile={profile}
+                onSave={updateProfile}
+                onDecorateHomeScenery={startPolaroidSceneryDecorate}
+              />
             ) : null}
           </main>
 

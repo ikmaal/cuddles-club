@@ -406,220 +406,216 @@
   font-weight: 600;
 }
 
-.home-duo {
+.home-polaroid {
   width: 100%;
-  margin: 0;
+  margin: -10px 0 4px;
 }
 
-.home-duo__card {
+.home-polaroid__toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 6px;
+}
+
+.home-polaroid__edit-btn {
+  padding: 6px 12px;
+  border: 1px solid rgba(92, 36, 56, 0.12);
+  border-radius: 999px;
+  background: #fff;
+  color: #7a4a58;
+  font-size: 0.72rem;
+  font-weight: 650;
+  box-shadow: 0 4px 12px rgba(92, 36, 56, 0.06);
+}
+
+.home-polaroid__edit-btn:active {
+  transform: scale(0.98);
+}
+
+.home-polaroid--editing .home-polaroid__edit-btn {
+  background: #fff0f3;
+  color: #cf3d62;
+  border-color: rgba(207, 61, 98, 0.25);
+}
+
+.home-polaroid__hint {
+  margin: 0 0 8px;
+  padding: 0 4px;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: #8a6a72;
+  text-align: center;
+}
+
+.home-polaroid__error {
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: #fff0f0;
+  color: #9a3a32;
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+.home-polaroid__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.home-polaroid__action-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 999px;
+  background: #cf3d62;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.home-polaroid__action-btn:disabled {
+  opacity: 0.6;
+}
+
+.home-polaroid__action-btn--secondary {
+  background: #fff;
+  color: #7a4a58;
+  box-shadow: 0 4px 12px rgba(92, 36, 56, 0.06);
+  border: 1px solid rgba(92, 36, 56, 0.12);
+}
+
+.home-polaroid__scene {
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 46%);
-  align-items: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: calc(100% + 32px);
+  max-width: none;
+  min-height: 250px;
+  margin: 0 -16px;
+  padding: 4px 8px 14px;
+}
+
+.home-polaroid--editing .home-polaroid__scene {
+  min-height: 290px;
+  border-radius: 20px;
+  background: rgba(255, 248, 250, 0.85);
+  box-shadow: inset 0 0 0 1.5px dashed rgba(207, 61, 98, 0.22);
+  outline: none;
+}
+
+.home-polaroid__sticker {
+  position: absolute;
+  z-index: 3;
+  width: 72px;
+  touch-action: none;
+  user-select: none;
+  filter: drop-shadow(0 6px 14px rgba(60, 40, 50, 0.14));
+}
+
+.home-polaroid__sticker img {
+  display: block;
   width: 100%;
-  min-height: 168px;
-  border-radius: 28px;
+  height: auto;
+  pointer-events: none;
+}
+
+.home-polaroid__sticker--editing {
+  cursor: grab;
+}
+
+.home-polaroid__sticker--editing:active {
+  cursor: grabbing;
+}
+
+.home-polaroid__sticker-remove {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: #cf3d62;
+  color: #fff;
+  font-size: 1rem;
+  line-height: 1;
+  box-shadow: 0 2px 8px rgba(92, 36, 56, 0.25);
+}
+
+.home-polaroid__frame {
+  position: relative;
+  z-index: 2;
+  width: min(100%, 200px);
+  margin: 0 auto;
+  padding: 10px 10px 14px;
+  border-radius: 3px;
+  background: #fffefb;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 10px 22px rgba(92, 52, 68, 0.12),
+    0 3px 8px rgba(92, 52, 68, 0.07);
+  transform: rotate(-2.5deg) translateY(-6px);
+}
+
+.home-polaroid__tape {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  z-index: 3;
+  width: 56px;
+  height: 21px;
+  border-radius: 2px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 248, 236, 0.92) 0%,
+    rgba(245, 228, 210, 0.78) 100%
+  );
+  border: 1px solid rgba(210, 180, 150, 0.35);
+  box-shadow: 0 2px 6px rgba(80, 50, 40, 0.08);
+  transform: translateX(-50%) rotate(1deg);
+  opacity: 0.95;
+}
+
+.home-polaroid__photo {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 2px;
   overflow: hidden;
   background:
-    radial-gradient(circle at 18% 88%, rgba(255, 255, 255, 0.55) 0%, transparent 42%),
-    radial-gradient(circle at 72% 18%, rgba(255, 255, 255, 0.35) 0%, transparent 36%),
-    linear-gradient(165deg, #fff0f2 0%, #fad8de 42%, #f2b8c4 100%);
-  box-shadow: 0 10px 28px rgba(198, 74, 108, 0.12);
-}
-
-.home-duo--photo-only .home-duo__card {
-  grid-template-columns: 1fr;
-}
-
-.home-duo__deco {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.home-duo__sparkle {
-  position: absolute;
-  color: #e8a45a;
-  font-size: 0.72rem;
-  line-height: 1;
-  opacity: 0.9;
-}
-
-.home-duo__sparkle--1,
-.home-duo__sparkle--a {
-  top: 18%;
-  left: 46%;
-}
-
-.home-duo__sparkle--2,
-.home-duo__sparkle--b {
-  top: 34%;
-  left: 54%;
-  font-size: 0.58rem;
-  opacity: 0.75;
-}
-
-.home-duo__sparkle--3,
-.home-duo__sparkle--c {
-  top: 52%;
-  left: 42%;
-  font-size: 0.5rem;
-  opacity: 0.55;
-}
-
-.home-duo__deco-heart {
-  position: absolute;
-  color: rgba(207, 61, 98, 0.45);
-  font-size: 0.82rem;
-  line-height: 1;
-}
-
-.home-duo__deco-heart--1,
-.home-duo__deco-heart--a {
-  top: 24%;
-  left: 50%;
-}
-
-.home-duo__deco-heart--2,
-.home-duo__deco-heart--b {
-  bottom: 28%;
-  left: 38%;
-  font-size: 0.68rem;
-  opacity: 0.7;
-}
-
-.home-duo__cloud,
-.home-duo__clouds span {
-  position: absolute;
-  bottom: -10px;
-  display: block;
-  background: rgba(255, 248, 250, 0.92);
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-.home-duo__cloud--1,
-.home-duo__clouds span:nth-child(1) {
-  left: 4%;
-  width: 54px;
-  height: 28px;
-}
-
-.home-duo__cloud--2,
-.home-duo__clouds span:nth-child(2) {
-  left: 22%;
-  width: 72px;
-  height: 34px;
-  bottom: -14px;
-}
-
-.home-duo__cloud--3,
-.home-duo__clouds span:nth-child(3) {
-  left: 44%;
-  width: 48px;
-  height: 24px;
-  bottom: -8px;
-  opacity: 0.85;
-}
-
-.home-duo__stat {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 0;
-  padding: 18px 12px 28px 24px;
-  min-width: 0;
-  text-align: left;
-}
-
-.home-duo__eyebrow {
-  margin: 0;
-  font-size: 0.78rem;
-  font-weight: 600;
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.7) 0%, transparent 45%),
+    linear-gradient(145deg, #ffe8ee 0%, #f5c4d0 48%, #e8a8b8 100%);
   color: #b85a6f;
-  letter-spacing: 0.01em;
-}
-
-.home-duo__number {
-  margin: 2px 0 0;
-  font-family: 'Fredoka', 'Outfit', system-ui, sans-serif;
-  font-size: clamp(2.85rem, 13vw, 4rem);
-  font-weight: 700;
-  line-height: 0.92;
-  color: #cf3d62;
-  letter-spacing: -0.04em;
-}
-
-.home-duo__unit {
-  margin: 4px 0 0;
-  font-family: 'Dancing Script', 'Great Vibes', 'Segoe Script', cursive;
-  font-size: clamp(1.2rem, 4.2vw, 1.55rem);
-  font-weight: 600;
-  color: #2f2f2f;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  line-height: 1.1;
-}
-
-.home-duo__heart {
-  font-family: var(--font-body);
-  font-size: 0.85em;
-  color: #d4617f;
-  font-style: normal;
-  line-height: 1;
-}
-
-.home-duo__photo {
-  position: relative;
-  z-index: 2;
-  min-width: 0;
-  min-height: 168px;
-  border: none;
-  padding: 0;
-  margin: 0;
-  background: transparent;
-  color: #b85a6f;
+  box-shadow: inset 0 0 0 1px rgba(184, 90, 111, 0.12);
   transition: transform 140ms ease;
 }
 
-.home-duo--photo-only .home-duo__photo {
-  width: 100%;
-  min-height: 180px;
-  aspect-ratio: 16 / 10;
-}
-
-.home-duo__photo:active {
+.home-polaroid__photo:active {
   transform: scale(0.985);
 }
 
-.home-duo__photo:disabled {
-  opacity: 0.7;
+.home-polaroid__photo:disabled {
+  opacity: 0.75;
 }
 
-.home-duo__photo img {
+.home-polaroid__photo img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 22%;
-  position: absolute;
-  inset: 0;
-  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 18%, #000 100%);
-  mask-image: linear-gradient(90deg, transparent 0%, #000 18%, #000 100%);
-}
-
-.home-duo--photo-only .home-duo__photo img {
-  -webkit-mask-image: none;
-  mask-image: none;
   object-position: center;
 }
 
-.home-duo__photo-empty {
+.home-polaroid__photo-empty {
   position: absolute;
   inset: 0;
   display: grid;
@@ -627,23 +623,59 @@
   justify-items: center;
   gap: 4px;
   padding: 8px;
+  text-align: center;
 }
 
-.home-duo__photo-plus {
+.home-polaroid__photo-plus {
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  background: rgba(184, 90, 111, 0.16);
-  font-size: 1.1rem;
+  background: rgba(255, 255, 255, 0.55);
+  font-size: 1rem;
   font-weight: 500;
   line-height: 1;
+  box-shadow: 0 3px 8px rgba(184, 90, 111, 0.12);
 }
 
-.home-duo__photo-empty span:last-child {
-  font-size: 0.72rem;
-  font-weight: 600;
+.home-polaroid__photo-empty span:last-child {
+  font-size: 0.65rem;
+  font-weight: 650;
+}
+
+.home-polaroid__caption {
+  display: grid;
+  gap: 2px;
+  margin-top: 8px;
+  padding: 0 2px;
+  text-align: center;
+}
+
+.home-polaroid__days {
+  margin: 0;
+  font-family: 'Great Vibes', 'Dancing Script', cursive;
+  font-size: clamp(1.5rem, 6vw, 1.85rem);
+  font-weight: 400;
+  line-height: 1.05;
+  color: #3d2f32;
+  letter-spacing: 0.01em;
+  -webkit-text-stroke: 0.55px rgba(61, 47, 50, 0.9);
+  paint-order: stroke fill;
+  text-shadow:
+    0.35px 0 0 currentColor,
+    -0.35px 0 0 currentColor;
+}
+
+.home-polaroid__days span {
+  color: #d4617f;
+  -webkit-text-stroke: 0.55px rgba(196, 70, 100, 0.95);
+}
+
+.home-polaroid__days--muted {
+  font-size: 1.35rem;
+  color: #8a6a72;
+  -webkit-text-stroke: 0.55px rgba(138, 106, 114, 0.95);
 }
 
 .home-crop-backdrop {
@@ -3091,7 +3123,8 @@ a.home-listening:focus-visible {
 .us-settings__stack > .surface,
 .us-settings__stack > .cloud-card,
 .us-settings__stack > .form-card,
-.us-settings__stack > .push-settings-card {
+.us-settings__stack > .push-settings-card,
+.us-settings__stack > .display-settings-card {
   background: var(--set-card);
   border: none;
   border-radius: 0;
@@ -3139,8 +3172,29 @@ a.home-listening:focus-visible {
 
 .us-settings .cloud-card,
 .us-settings .form-card,
-.us-settings .push-settings-card {
+.us-settings .push-settings-card,
+.us-settings .display-settings-card {
   padding: 16px 16px 18px;
+}
+
+.display-settings-card__intro {
+  margin-bottom: 14px;
+}
+
+.display-settings-card__intro h2 {
+  margin: 0 0 6px;
+  font-family: var(--set-font);
+  font-size: 0.98rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--set-ink);
+}
+
+.display-settings-card__intro p {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--set-mute);
 }
 
 .us-settings .cloud-card__body {

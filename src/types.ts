@@ -68,6 +68,19 @@ export interface Photostrip {
   createdAt: number
 }
 
+/** Sticker placed around the home Polaroid (percent positions within the scenery canvas). */
+export interface PolaroidSceneryItem {
+  id: string
+  /** Display URL (public storage URL or local data URL). */
+  src: string
+  x: number
+  y: number
+  rotation: number
+  scale: number
+  /** Set when synced to Supabase storage (for deletes). */
+  storagePath?: string
+}
+
 export type AcademicMaterialKind = 'lecture' | 'tutorial' | 'assignment' | 'notes'
 
 export const MODULE_COLORS = [

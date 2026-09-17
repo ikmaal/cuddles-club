@@ -21,6 +21,7 @@ import type {
   MoodEntry,
   Note,
   Photostrip,
+  PolaroidSceneryItem,
 } from '../types'
 import { createId } from '../hooks/useStored'
 import { defaultCat } from '../hooks/useCat'
@@ -650,4 +651,123 @@ export async function deleteBoothPose(pose: BoothPosePhoto, coupleId: string) {
   await client.storage.from(PHOTOSTRIP_BUCKET).remove([storagePath])
   const { error } = await client.from('booth_poses').delete().eq('id', pose.id)
   if (error) throw error
+}
+
+interface PolaroidSceneryStoredRow {
+  id: string
+  storagePath?: string
+  x: number
+  y: number
+  rotation: number
+  scale: number
+}
+
+function sceneryRowToItem(row: PolaroidSceneryStoredRow): PolaroidSceneryItem {
+  return {
+    id: row.id,
+    src: row.storagePath ? homePhotoPublicUrl(row.storagePath, null) : '',
+    x: row.x,
+    y: row.y,
+    rotation: row.rotation,
+    scale: row.scale,
+    storagePath: row.storagePath,
+  }
+}
+
+export async function fetchPolaroidScenery(coupleId: string): Promise<PolaroidSceneryItem[]> {
+  const client = requireClient()
+  const { data, error } = await client
+    .from('couples')
+    .select('polaroid_scenery')
+    .eq('id', coupleId)
+    .maybeSingle()
+  if (error) throw error
+  const rows = (data?.polaroid_scenery ?? []) as PolaroidSceneryStoredRow[]
+  return rows
+    .filter((row) => row.storagePath)
+    .map((row) => sceneryRowToItem(row))
+}
+
+export async function uploadPolaroidSceneryImage(
+  coupleId: string,
+  itemId: string,
+  imageDataUrl: string,
+): Promise<{ storagePath: string; src: string }> {
+  const client = requireClient()
+  const storagePath = `${coupleId}/polaroid-scenery/${itemId}.png`
+  const blob = dataUrlToBlob(imageDataUrl)
+  const { error: uploadError } = await client.storage
+    .from(PHOTOSTRIP_BUCKET)
+    .upload(storagePath, blob, {
+      contentType: 'image/png',
+      upsert: true,
+      cacheControl: '3600',
+    })
+  if (uploadError) throw uploadError
+  return { storagePath, src: homePhotoPublicUrl(storagePath, Date.now()) }
+}
+
+export async function savePolaroidScenery(
+  coupleId: string,
+  items: PolaroidSceneryItem[],
+): Promise<PolaroidSceneryItem[]> {
+  const client = requireClient()
+  const { data: previous, error: readError } = await client
+    .from('couples')
+    .select('polaroid_scenery')
+    .eq('id', coupleId)
+    .maybeSingle()
+  if (readError) throw readError
+
+  const savedRows: PolaroidSceneryStoredRow[] = []
+  const savedItems: PolaroidSceneryItem[] = []
+
+  for (const item of items) {
+    let storagePath = item.storagePath
+    let src = item.src
+
+    if (!storagePath && item.src.startsWith('data:')) {
+      const uploaded = await uploadPolaroidSceneryImage(coupleId, item.id, item.src)
+      storagePath = uploaded.storagePath
+      src = uploaded.src
+    }
+
+    if (!storagePath) continue
+
+    savedRows.push({
+      id: item.id,
+      storagePath,
+      x: item.x,
+      y: item.y,
+      rotation: item.rotation,
+      scale: item.scale,
+    })
+    savedItems.push({
+      id: item.id,
+      src,
+      x: item.x,
+      y: item.y,
+      rotation: item.rotation,
+      scale: item.scale,
+      storagePath,
+    })
+  }
+
+  const previousRows = (previous?.polaroid_scenery ?? []) as PolaroidSceneryStoredRow[]
+  const nextPaths = new Set(savedRows.map((row) => row.storagePath).filter(Boolean))
+  const removedPaths = previousRows
+    .map((row) => row.storagePath)
+    .filter((path): path is string => Boolean(path && !nextPaths.has(path)))
+
+  if (removedPaths.length) {
+    await client.storage.from(PHOTOSTRIP_BUCKET).remove(removedPaths)
+  }
+
+  const { error } = await client
+    .from('couples')
+    .update({ polaroid_scenery: savedRows })
+    .eq('id', coupleId)
+  if (error) throw error
+
+  return savedItems
 }

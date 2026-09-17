@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { SettingsIcon } from '../components/Icons'
 import { CloudSyncCard } from '../components/CloudSyncCard'
 import { DeadlinePushSettingsCard } from '../components/DeadlinePushSettingsCard'
+import { PolaroidDisplaySettingsCard } from '../components/PolaroidDisplaySettingsCard'
 import { PersonProfileCard } from '../components/PersonProfileCard'
 import { StorageCard } from '../components/StorageCard'
 import { ScrollRegion } from '../components/ScrollRegion'
@@ -15,9 +16,10 @@ import type { CoupleProfile, PersonProfile } from '../types'
 interface UsScreenProps {
   profile: CoupleProfile
   onSave: (profile: CoupleProfile) => void | Promise<void>
+  onDecorateHomeScenery: () => void
 }
 
-export function UsScreen({ profile, onSave }: UsScreenProps) {
+export function UsScreen({ profile, onSave, onDecorateHomeScenery }: UsScreenProps) {
   const { isCloud, slot } = useCouple()
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [since, setSince] = useState(profile.since)
@@ -169,6 +171,18 @@ export function UsScreen({ profile, onSave }: UsScreenProps) {
                     <p className="us-settings__label">Study</p>
                     <div className="us-settings__stack">
                       <DeadlinePushSettingsCard />
+                    </div>
+                  </section>
+
+                  <section className="us-settings__group">
+                    <p className="us-settings__label">Display</p>
+                    <div className="us-settings__stack">
+                      <PolaroidDisplaySettingsCard
+                        onDecorate={() => {
+                          closeSettings()
+                          onDecorateHomeScenery()
+                        }}
+                      />
                     </div>
                   </section>
 

@@ -1,10 +1,7 @@
-import { useRef, useState } from 'react'
-import { HomePhotoCropSheet } from '../components/HomePhotoCropSheet'
+import { HomePolaroidSection } from '../components/HomePolaroidSection'
 import { SERVICES } from '../services'
 import { useSpotifyListening } from '../context/SpotifyListeningContext'
-import { useHomePhoto } from '../hooks/useHomePhoto'
 import { useOverscrollGuard } from '../hooks/useOverscrollGuard'
-import { daysTogether } from '../hooks/useProfile'
 import { formatRelative } from '../hooks/useStored'
 import type { CoupleProfile, ListeningCard, Photostrip, Screen } from '../types'
 
@@ -12,6 +9,8 @@ interface HomeScreenProps {
   profile: CoupleProfile
   latestStrip: Photostrip | null
   onOpen: (screen: Screen) => void
+  polaroidSceneryEditing: boolean
+  onPolaroidSceneryEditingChange: (editing: boolean) => void
 }
 
 function greeting(): string {
@@ -109,35 +108,15 @@ function ListeningRow({
   return <div className={className}>{body}</div>
 }
 
-export function HomeScreen({ profile, latestStrip, onOpen }: HomeScreenProps) {
-  const days = daysTogether(profile.since)
+export function HomeScreen({
+  profile,
+  latestStrip,
+  onOpen,
+  polaroidSceneryEditing,
+  onPolaroidSceneryEditingChange,
+}: HomeScreenProps) {
   const homeRef = useOverscrollGuard<HTMLDivElement>(true)
-  const { photo, photoKey, busy, saveDataUrl } = useHomePhoto()
-  const photoInputRef = useRef<HTMLInputElement>(null)
-  const photoBtnRef = useRef<HTMLButtonElement>(null)
   const spotify = useSpotifyListening()
-  const [cropSrc, setCropSrc] = useState<string | null>(null)
-  const [cropAspect, setCropAspect] = useState(2.6)
-
-  function closeCrop() {
-    if (cropSrc) URL.revokeObjectURL(cropSrc)
-    setCropSrc(null)
-  }
-
-  function onPhotoPicked(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0]
-    event.target.value = ''
-    if (!file || !file.type.startsWith('image/')) return
-
-    const button = photoBtnRef.current
-    if (button && button.clientWidth > 0 && button.clientHeight > 0) {
-      setCropAspect(button.clientWidth / button.clientHeight)
-    } else {
-      setCropAspect(days === null ? 16 / 9 : 1.35)
-    }
-
-    setCropSrc(URL.createObjectURL(file))
-  }
 
   return (
     <div className="home" ref={homeRef}>
@@ -167,6 +146,12 @@ export function HomeScreen({ profile, latestStrip, onOpen }: HomeScreenProps) {
       </header>
 
       <div className="home__scroll">
+        <HomePolaroidSection
+          since={profile.since}
+          editingScenery={polaroidSceneryEditing}
+          onEditingSceneryChange={onPolaroidSceneryEditingChange}
+        />
+
         <section className="services services--apps" aria-label="Things you can do">
           <ul className="services__grid services__grid--apps">
             {SERVICES.map((service) => (
@@ -195,63 +180,6 @@ export function HomeScreen({ profile, latestStrip, onOpen }: HomeScreenProps) {
               </li>
             ))}
           </ul>
-        </section>
-
-        <section
-          className={`home-duo${days === null ? ' home-duo--photo-only' : ''}`}
-          aria-label="Together"
-        >
-          <div className="home-duo__card">
-            <div className="home-duo__deco" aria-hidden>
-              <span className="home-duo__sparkle home-duo__sparkle--1">✦</span>
-              <span className="home-duo__sparkle home-duo__sparkle--2">✦</span>
-              <span className="home-duo__sparkle home-duo__sparkle--3">✦</span>
-              <span className="home-duo__deco-heart home-duo__deco-heart--1">♡</span>
-              <span className="home-duo__deco-heart home-duo__deco-heart--2">♡</span>
-              <span className="home-duo__cloud home-duo__cloud--1" />
-              <span className="home-duo__cloud home-duo__cloud--2" />
-              <span className="home-duo__cloud home-duo__cloud--3" />
-            </div>
-
-            {days !== null ? (
-              <div className="home-duo__stat">
-                <p className="home-duo__eyebrow">Together for</p>
-                <p className="home-duo__number">{days}</p>
-                <p className="home-duo__unit">
-                  {days === 1 ? 'day' : 'days'}
-                  <span className="home-duo__heart">♡</span>
-                </p>
-              </div>
-            ) : null}
-
-            <button
-              ref={photoBtnRef}
-              type="button"
-              className={`home-duo__photo${photo ? ' has-image' : ''}`}
-              onClick={() => photoInputRef.current?.click()}
-              disabled={busy || Boolean(cropSrc)}
-              aria-label={photo ? 'Change home photo' : 'Add a home photo'}
-            >
-              {photo ? (
-                <img key={photoKey} src={photo} alt="" />
-              ) : (
-                <span className="home-duo__photo-empty">
-                  <span className="home-duo__photo-plus" aria-hidden>
-                    +
-                  </span>
-                  <span>{busy ? 'Saving…' : 'Add photo'}</span>
-                </span>
-              )}
-            </button>
-          </div>
-
-          <input
-            ref={photoInputRef}
-            type="file"
-            accept="image/*"
-            className="sr-only"
-            onChange={onPhotoPicked}
-          />
         </section>
 
         <section className="home-section home-lately" aria-label="Activities">
@@ -305,19 +233,6 @@ export function HomeScreen({ profile, latestStrip, onOpen }: HomeScreenProps) {
           </div>
         </section>
       </div>
-
-      {cropSrc ? (
-        <HomePhotoCropSheet
-          src={cropSrc}
-          aspectRatio={cropAspect}
-          busy={busy}
-          onCancel={closeCrop}
-          onConfirm={async (dataUrl) => {
-            await saveDataUrl(dataUrl)
-            closeCrop()
-          }}
-        />
-      ) : null}
     </div>
   )
 }
