@@ -972,9 +972,8 @@
   justify-content: center;
   flex: 0 0 auto;
   width: 188px;
-  min-height: calc(188px * 3 / 4);
-  height: auto;
-  align-self: stretch;
+  max-width: 188px;
+  aspect-ratio: 4 / 3;
   margin: 0;
   padding: 12px 12px 40px;
   border-radius: 14px;
@@ -1065,8 +1064,9 @@
 }
 
 .home-lately__track {
+  --home-photobooth-height: calc(188px * 3 / 4);
   display: inline-flex;
-  align-items: stretch;
+  align-items: flex-start;
   flex-wrap: nowrap;
   gap: 10px;
   min-width: min-content;
@@ -1090,7 +1090,42 @@
   gap: 8px;
   width: 288px;
   min-width: 288px;
-  align-self: stretch;
+  height: var(--home-photobooth-height);
+  min-height: var(--home-photobooth-height);
+  max-height: var(--home-photobooth-height);
+}
+
+.home-listening-list .home-listening {
+  grid-template-columns: 40px minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px 6px 10px;
+}
+
+.home-listening-list .home-listening__art-wrap,
+.home-listening-list .home-listening__art {
+  width: 40px;
+  height: 40px;
+}
+
+.home-listening-list .home-listening__main {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.home-listening-list .home-listening__header {
+  margin-bottom: 0;
+}
+
+.home-listening-list .home-listening__progress-block {
+  margin-top: 3px;
+  gap: 2px;
+}
+
+.home-listening-list .home-listening__control {
+  width: 28px;
+  height: 28px;
+  margin-top: 0;
 }
 
 .home-listening {
@@ -1104,8 +1139,8 @@
   width: 100%;
   min-width: 0;
   min-height: 0;
-  height: auto;
-  padding: 10px 10px 10px 12px;
+  overflow: hidden;
+  padding: 12px 10px 12px 12px;
   border: 1px solid rgba(0, 0, 0, 0.04);
   border-radius: 20px;
   text-align: left;
