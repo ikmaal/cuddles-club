@@ -1,5 +1,13 @@
 ﻿/* ---------- Shell ---------- */
 
+@font-face {
+  font-family: 'Papernotes';
+  src: url('./assets/fonts/Papernotes.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 .app {
   position: absolute;
   inset: 0;
@@ -320,13 +328,13 @@
 }
 
 .services--apps {
-  padding: 16px 14px;
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  border-radius: 22px;
-  box-shadow: 0 8px 22px rgba(26, 26, 40, 0.06);
+  padding: 6px 4px 8px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .services__grid--apps {
@@ -699,28 +707,21 @@
 
 .home-polaroid__days {
   margin: 0;
-  font-family: 'Great Vibes', 'Dancing Script', cursive;
-  font-size: clamp(1.5rem, 6vw, 1.85rem);
-  font-weight: 400;
-  line-height: 1.05;
+  font-family: 'Papernotes', 'Great Vibes', cursive;
+  font-size: clamp(1.25rem, 5.2vw, 1.5rem);
+  font-weight: normal;
+  line-height: 1.15;
   color: #3d2f32;
-  letter-spacing: 0.01em;
-  -webkit-text-stroke: 0.55px rgba(61, 47, 50, 0.9);
-  paint-order: stroke fill;
-  text-shadow:
-    0.35px 0 0 currentColor,
-    -0.35px 0 0 currentColor;
+  letter-spacing: 0.02em;
 }
 
 .home-polaroid__days span {
   color: #d4617f;
-  -webkit-text-stroke: 0.55px rgba(196, 70, 100, 0.95);
 }
 
 .home-polaroid__days--muted {
-  font-size: 1.35rem;
+  font-size: 1.2rem;
   color: #8a6a72;
-  -webkit-text-stroke: 0.55px rgba(138, 106, 114, 0.95);
 }
 
 .home-crop-backdrop {
@@ -8078,112 +8079,121 @@ a.home-listening:focus-visible {
 .places-overview {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 10px;
 }
 
 .places-overview__card {
   position: relative;
   overflow: hidden;
-  display: grid;
-  justify-items: start;
-  gap: 2px;
-  min-height: 148px;
-  padding: 16px 14px 14px;
-  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  min-height: 112px;
+  padding: 14px 52px 14px 14px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
   text-align: left;
-  color: inherit;
+  color: #1a1a1a;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    border-color 140ms ease;
 }
 
 .places-overview__card--been {
-  background:
-    radial-gradient(120px 80px at 108% -8%, rgba(232, 176, 122, 0.38), transparent 70%),
-    linear-gradient(165deg, #fff8f1 0%, #f4e2cf 100%);
-  box-shadow: 0 12px 28px rgba(122, 74, 38, 0.08);
+  background: linear-gradient(165deg, #fff 0%, #faf7f4 100%);
+  border-color: rgba(160, 110, 58, 0.14);
 }
 
 .places-overview__card--want {
-  background:
-    radial-gradient(120px 80px at 108% -8%, rgba(232, 150, 168, 0.32), transparent 70%),
-    linear-gradient(165deg, #fff6f8 0%, #f3dce3 100%);
-  box-shadow: 0 12px 28px rgba(140, 62, 82, 0.08);
+  background: linear-gradient(165deg, #fff 0%, #fdf8f9 100%);
+  border-color: rgba(180, 90, 108, 0.14);
 }
 
-.places-overview__card--want::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 16px;
-  width: 12px;
-  height: 20px;
-  background: #e39aaa;
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
+.places-overview__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 
 .places-overview__icon {
-  width: 38px;
-  height: 38px;
-  margin-bottom: 10px;
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
   display: grid;
   place-items: center;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.78);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.04);
+  box-shadow: none;
 }
 
 .places-overview__card--been .places-overview__icon {
-  color: #b56832;
+  color: #9a5c28;
+  background: rgba(180, 120, 60, 0.12);
 }
 
 .places-overview__card--want .places-overview__icon {
-  color: #c45b6e;
+  color: #b04a5c;
+  background: rgba(196, 91, 110, 0.12);
 }
 
-.places-overview__card small {
-  color: #6f5a4c;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.places-overview__card--want small {
-  color: #7a4a56;
-}
-
-.places-overview__card strong {
-  font-size: 2rem;
-  font-weight: 750;
-  letter-spacing: -0.05em;
-  line-height: 1;
-}
-
-.places-overview__card em {
-  color: rgba(22, 22, 22, 0.45);
-  font-size: 0.75rem;
-  font-style: normal;
+.places-overview__label {
+  font-size: 0.68rem;
   font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.42);
+}
+
+.places-overview__metric {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  margin-top: auto;
+}
+
+.places-overview__metric strong {
+  font-size: 1.65rem;
+  font-weight: 650;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.places-overview__metric span {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.38);
 }
 
 .places-overview__photo,
 .places-overview__photo.is-mono {
   position: absolute;
-  right: 12px;
-  bottom: 12px;
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
+  top: 50%;
+  right: 10px;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  border-radius: 11px;
   object-fit: cover;
-  background: rgba(255, 255, 255, 0.7);
-  border: 2px solid rgba(255, 255, 255, 0.92);
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+  transform: translateY(-50%);
+  background: #f2f2f2;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: none;
   display: grid;
   place-items: center;
-  font-weight: 700;
-  color: #8a8a8a;
+  font-size: 0.85rem;
+  font-weight: 650;
+  color: rgba(0, 0, 0, 0.28);
 }
 
 .places-overview__card:active {
-  transform: scale(0.985);
+  transform: scale(0.98);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 @media (prefers-reduced-motion: reduce) {

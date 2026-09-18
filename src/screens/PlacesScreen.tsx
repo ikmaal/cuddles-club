@@ -19,7 +19,6 @@ import {
 } from '../components/Icons'
 import { ScrollRegion } from '../components/ScrollRegion'
 import type { PlaceDraft, usePlaces } from '../hooks/usePlaces'
-import { isInSingapore, searchPlaces, type GeocodeHit } from '../lib/geocode'
 import type { CoupleProfile, FoodPlace, FoodPlaceStatus } from '../types'
 
 type PlacesApi = ReturnType<typeof usePlaces>
@@ -153,10 +152,6 @@ export function PlacesScreen({
   const mapScreenRef = useRef<HTMLDivElement>(null)
   const sheetDragRef = useRef({ startY: 0, startHeight: 0 })
   const [draft, setDraft] = useState<PlaceDraft>(emptyDraft('been'))
-  const [query, setQuery] = useState('')
-  const [hits, setHits] = useState<GeocodeHit[]>([])
-  const [searchBias, setSearchBias] = useState({ lat: 1.3521, lng: 103.8198 })
-  const [searching, setSearching] = useState(false)
   const photoRef = useRef<HTMLInputElement>(null)
   const photoPreviewRef = useRef('')
 
@@ -277,42 +272,9 @@ export function PlacesScreen({
     }
   }, [photoPreview])
 
-  useEffect(() => {
-    if (!editor) return
-    if (!navigator.geolocation) return
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords
-        if (isInSingapore(latitude, longitude)) {
-          setSearchBias({ lat: latitude, lng: longitude })
-        }
-      },
-      () => {},
-      { enableHighAccuracy: false, timeout: 5000, maximumAge: 600_000 },
-    )
-  }, [editor])
-
-  useEffect(() => {
-    const term = query.trim()
-    if (term.length < 2) {
-      setHits([])
-      return
-    }
-    const timer = window.setTimeout(() => {
-      setSearching(true)
-      void searchPlaces(term, searchBias)
-        .then(setHits)
-        .catch(() => setHits([]))
-        .finally(() => setSearching(false))
-    }, 320)
-    return () => window.clearTimeout(timer)
-  }, [query, searchBias])
-
   function openNew() {
     setError('')
     setDraft(emptyDraft(collection === 'want' ? 'want' : 'been'))
-    setQuery('')
-    setHits([])
     setEditor('new')
     setPhotoOpen(false)
   }
@@ -320,8 +282,6 @@ export function PlacesScreen({
   function openEdit(place: FoodPlace) {
     setError('')
     setDraft(draftFromPlace(place, mySlot))
-    setQuery(place.address || [place.name, place.area].filter(Boolean).join(', '))
-    setHits([])
     setEditor(place)
     setMenuId(null)
     setPhotoOpen(false)
@@ -333,27 +293,15 @@ export function PlacesScreen({
     setMenuId(null)
   }
 
-  function applyHit(hit: GeocodeHit) {
-    setDraft((current) => ({
-      ...current,
-      name: current.name || hit.label,
-      area: current.area || hit.area,
-      address: hit.address,
-      lat: hit.lat,
-      lng: hit.lng,
-      cuisine: current.cuisine || hit.category || '',
-    }))
-    setQuery(hit.label)
-    setHits([])
-  }
-
   async function submit() {
-    const location = query.trim()
+    const address = draft.address.trim()
     const saved = await savePlace(
       {
         ...draft,
-        address: draft.address.trim() || location,
-        area: draft.area.trim() || location,
+        address,
+        area: draft.area.trim() || address,
+        lat: null,
+        lng: null,
       },
       editor === 'new' || !editor ? null : editor,
     )
@@ -501,67 +449,17 @@ export function PlacesScreen({
                     />
                   </label>
 
-                  <div className="places-field places-editor-location">
-                    <div className="places-editor-location__head">
-                      <span>Location</span>
-                      <span className="places-editor-location__region">Singapore</span>
-                    </div>
-                    <div
-                      className={`places-editor-location__box${
-                        hits.length > 0 || (query.trim().length >= 2 && !searching) ? ' is-open' : ''
-                      }`}
-                    >
-                      <div className="places-editor-location__input-wrap">
-                        <span className="places-editor-location__icon" aria-hidden>
-                          <SearchIcon size={18} />
-                        </span>
-                        <input
-                          className="places-editor-location__input"
-                          value={query}
-                          onChange={(event) => setQuery(event.target.value)}
-                          placeholder="Search restaurants, cafes, or areas"
-                          autoComplete="off"
-                          spellCheck={false}
-                        />
-                        {searching ? (
-                          <span className="places-editor-location__spinner" aria-label="Searching" />
-                        ) : null}
-                      </div>
-
-                      {hits.length > 0 ? (
-                        <ul
-                          className="places-editor-location__results"
-                          role="listbox"
-                          aria-label="Search results"
-                        >
-                          {hits.map((hit) => (
-                            <li key={hit.id} role="option">
-                              <button
-                                type="button"
-                                className="places-editor-location__result"
-                                onClick={() => applyHit(hit)}
-                              >
-                                <span className="places-editor-location__result-icon" aria-hidden>
-                                  <MapPinIcon size={16} />
-                                </span>
-                                <span className="places-editor-location__result-copy">
-                                  <span className="places-editor-location__result-top">
-                                    <strong>{hit.label}</strong>
-                                    {hit.category ? (
-                                      <span className="places-editor-location__tag">{hit.category}</span>
-                                    ) : null}
-                                  </span>
-                                  <small>{hit.area || hit.address}</small>
-                                </span>
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : query.trim().length >= 2 && !searching ? (
-                        <p className="places-editor-location__empty">No places found in Singapore</p>
-                      ) : null}
-                    </div>
-                  </div>
+                  <label className="places-field">
+                    <span>Location</span>
+                    <input
+                      value={draft.address}
+                      onChange={(event) =>
+                        setDraft((current) => ({ ...current, address: event.target.value }))
+                      }
+                      placeholder="e.g. Jewel Changi, Tampines Mall"
+                      maxLength={120}
+                    />
+                  </label>
 
                   <label className="places-field">
                     <span>Category</span>
@@ -889,12 +787,16 @@ export function PlacesScreen({
                   className="places-overview__card places-overview__card--been"
                   onClick={() => setCollection('been')}
                 >
-                  <span className="places-overview__icon" aria-hidden>
-                    <BeenToIcon size={22} />
+                  <span className="places-overview__head">
+                    <span className="places-overview__icon" aria-hidden>
+                      <BeenToIcon size={18} />
+                    </span>
+                    <span className="places-overview__label">Been to</span>
                   </span>
-                  <small>Been To</small>
-                  <strong>{been.length}</strong>
-                  <em>{been.length === 1 ? 'place' : 'places'}</em>
+                  <span className="places-overview__metric">
+                    <strong>{been.length}</strong>
+                    <span>{been.length === 1 ? 'place' : 'places'}</span>
+                  </span>
                   {been[0] ? (
                     <PlaceThumb place={been[0]} className="places-overview__photo" />
                   ) : null}
@@ -904,12 +806,16 @@ export function PlacesScreen({
                   className="places-overview__card places-overview__card--want"
                   onClick={() => setCollection('want')}
                 >
-                  <span className="places-overview__icon" aria-hidden>
-                    <WantToGoIcon size={22} />
+                  <span className="places-overview__head">
+                    <span className="places-overview__icon" aria-hidden>
+                      <WantToGoIcon size={18} />
+                    </span>
+                    <span className="places-overview__label">Want to go</span>
                   </span>
-                  <small>Want To Go</small>
-                  <strong>{want.length}</strong>
-                  <em>{want.length === 1 ? 'place' : 'places'}</em>
+                  <span className="places-overview__metric">
+                    <strong>{want.length}</strong>
+                    <span>{want.length === 1 ? 'place' : 'places'}</span>
+                  </span>
                   {want[0] ? (
                     <PlaceThumb place={want[0]} className="places-overview__photo" />
                   ) : null}
