@@ -26,6 +26,9 @@ export function bindOverscrollContain(element: HTMLElement): () => void {
 
   const onTouchMove = (event: TouchEvent) => {
     if (isInteractive(event.target)) return
+    if (event.target instanceof Element && event.target.closest('.home-lately__scroller')) {
+      return
+    }
 
     const y = event.touches[0]?.clientY ?? 0
     const delta = y - startY
@@ -55,6 +58,7 @@ function isInsideScrollRegion(target: EventTarget | null): boolean {
     if (node instanceof HTMLElement) {
       // Home manages its own touch lock.
       if (node.classList.contains('home')) return true
+      if (node.classList.contains('home-lately__scroller')) return true
       if (
         node.classList.contains('places-map') ||
         node.classList.contains('leaflet-container')

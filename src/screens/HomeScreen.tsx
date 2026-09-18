@@ -107,7 +107,8 @@ export function HomeScreen({
             <h2>Activities</h2>
           </div>
 
-          <div className="home-lately__row">
+          <div className="home-lately__scroller">
+            <div className="home-lately__track">
             {latestStrip ? (
               <button
                 type="button"
@@ -150,6 +151,7 @@ export function HomeScreen({
                 }
               />
               <HomeListeningCard card={spotify.partner} memberPhoto={profile.partner.photo} />
+            </div>
             </div>
           </div>
         </section>
