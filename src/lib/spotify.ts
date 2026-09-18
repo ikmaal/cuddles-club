@@ -194,6 +194,8 @@ export interface SpotifyNowPlaying {
   albumArtUrl: string | null
   trackUrl: string | null
   isPlaying: boolean
+  progressMs: number | null
+  durationMs: number | null
 }
 
 function emptyNowPlaying(): SpotifyNowPlaying {
@@ -205,16 +207,23 @@ function emptyNowPlaying(): SpotifyNowPlaying {
     albumArtUrl: null,
     trackUrl: null,
     isPlaying: false,
+    progressMs: null,
+    durationMs: null,
   }
 }
 
-function fromTrack(track: {
-  id?: string
-  name?: string
-  artists?: { name: string }[]
-  album?: { name?: string; images?: { url: string }[] }
-  external_urls?: { spotify?: string }
-}, isPlaying: boolean): SpotifyNowPlaying {
+function fromTrack(
+  track: {
+    id?: string
+    name?: string
+    duration_ms?: number
+    artists?: { name: string }[]
+    album?: { name?: string; images?: { url: string }[] }
+    external_urls?: { spotify?: string }
+  },
+  isPlaying: boolean,
+  progressMs: number | null = null,
+): SpotifyNowPlaying {
   return {
     trackId: track.id ?? null,
     trackName: track.name ?? null,
@@ -223,6 +232,8 @@ function fromTrack(track: {
     albumArtUrl: track.album?.images?.[0]?.url ?? null,
     trackUrl: track.external_urls?.spotify ?? null,
     isPlaying,
+    progressMs,
+    durationMs: track.duration_ms ?? null,
   }
 }
 
@@ -244,11 +255,13 @@ export async function fetchNowPlaying(accessToken: string): Promise<SpotifyNowPl
   }
 
   const data = (await current.json()) as {
+    progress_ms?: number
     is_playing?: boolean
     currently_playing_type?: string
     item?: {
       id?: string
       name?: string
+      duration_ms?: number
       artists?: { name: string }[]
       album?: { name?: string; images?: { url: string }[] }
       external_urls?: { spotify?: string }
@@ -258,7 +271,11 @@ export async function fetchNowPlaying(accessToken: string): Promise<SpotifyNowPl
   // Prefer the current player item even when paused/stopped — Spotify's
   // recently-played feed often lags and may skip the track you just left.
   if (data.item && data.currently_playing_type !== 'ad') {
-    return fromTrack(data.item, Boolean(data.is_playing))
+    return fromTrack(
+      data.item,
+      Boolean(data.is_playing),
+      typeof data.progress_ms === 'number' ? data.progress_ms : null,
+    )
   }
 
   return fetchRecentlyPlayed(accessToken)
@@ -277,6 +294,7 @@ async function fetchRecentlyPlayed(accessToken: string): Promise<SpotifyNowPlayi
       track?: {
         id?: string
         name?: string
+        duration_ms?: number
         artists?: { name: string }[]
         album?: { name?: string; images?: { url: string }[] }
         external_urls?: { spotify?: string }

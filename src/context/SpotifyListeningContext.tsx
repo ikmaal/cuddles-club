@@ -68,6 +68,8 @@ function toCard(
     isPlaying: status?.isPlaying ?? false,
     updatedAt: status?.updatedAt ?? 0,
     connected: Boolean(status?.spotifyUserId || status?.displayName || connectedFallback),
+    progressMs: status?.progressMs ?? null,
+    durationMs: status?.durationMs ?? null,
   }
 }
 
@@ -132,6 +134,8 @@ export function SpotifyListeningProvider({ children }: { children: ReactNode }) 
         trackUrl: now.trackUrl,
         isPlaying: now.isPlaying,
         updatedAt: Date.now(),
+        progressMs: now.progressMs,
+        durationMs: now.durationMs,
       }
 
       setYouStatus(status)

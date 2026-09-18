@@ -473,3 +473,31 @@ export function WantToGoIcon({ size = 24 }: IconProps) {
     </svg>
   )
 }
+
+export function SpotifyIcon({ size = 24 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden>
+      <circle cx="12" cy="12" r="11" fill="currentColor" />
+      <path
+        fill="#fff"
+        d="M17.2 15.1c-.3-.1-3.1-1.2-8.6-.6-.7.1-1.2-.4-1.3-1.1 0-.7.4-1.2 1.1-1.3 6.3-.7 9.7.7 10 .8.6.2 1 .8.8 1.4-.2.5-.8.9-1.4.7zm.1-2.8c-.4-.1-3.4-1.1-9.2-.4-.8.1-1.6-.4-1.7-1.2-.1-.8.4-1.6 1.2-1.7 6.7-.8 10.3.8 10.7.9 1 .3 1.5 1.3 1.2 2.3-.3.9-1.3 1.4-2.2 1.1zm.1-2.9c-.4-.1-4-1.3-10.6-.2-1 .2-1.9-.5-2.1-1.5s.5-1.9 1.5-2.1c7.6-1.1 11.8.9 12.3 1.1 1.2.4 1.8 1.7 1.4 2.9-.4 1.2-1.7 1.8-2.9 1.4z"
+      />
+    </svg>
+  )
+}
+
+export function PlayIcon({ size = 24 }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="M9 7.5v9l7.5-4.5L9 7.5z" fill="currentColor" stroke="none" />
+    </Frame>
+  )
+}
+
+export function PauseIcon({ size = 24 }: IconProps) {
+  return (
+    <Frame size={size}>
+      <path d="M9 7h2v10H9V7zm4 0h2v10h-2V7z" fill="currentColor" stroke="none" />
+    </Frame>
+  )
+}

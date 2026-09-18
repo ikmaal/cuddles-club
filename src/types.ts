@@ -234,6 +234,8 @@ export interface ListeningStatus {
   trackUrl: string | null
   isPlaying: boolean
   updatedAt: number
+  progressMs: number | null
+  durationMs: number | null
 }
 
 export interface ListeningCard {
@@ -246,4 +248,6 @@ export interface ListeningCard {
   isPlaying: boolean
   updatedAt: number
   connected: boolean
+  progressMs: number | null
+  durationMs: number | null
 }

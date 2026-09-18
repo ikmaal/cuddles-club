@@ -1,9 +1,10 @@
+import { HomeListeningCard } from '../components/HomeListeningCard'
 import { HomePolaroidSection } from '../components/HomePolaroidSection'
 import { SERVICES } from '../services'
 import { useSpotifyListening } from '../context/SpotifyListeningContext'
 import { useOverscrollGuard } from '../hooks/useOverscrollGuard'
 import { formatRelative } from '../hooks/useStored'
-import type { CoupleProfile, ListeningCard, Photostrip, Screen } from '../types'
+import type { CoupleProfile, Photostrip, Screen } from '../types'
 
 interface HomeScreenProps {
   profile: CoupleProfile
@@ -25,87 +26,6 @@ function initials(profile: CoupleProfile): string {
   const a = profile.nameYou.trim()[0] ?? 'Y'
   const b = profile.namePartner.trim()[0] ?? 'P'
   return `${a}${b}`.toUpperCase()
-}
-
-function ListeningRow({
-  card,
-  onConnect,
-}: {
-  card: ListeningCard
-  onConnect?: () => void
-}) {
-  const isPartner = card.who === 'partner'
-  const shortName = card.name.trim().split(/\s+/)[0] || card.name
-  const hasTrack = Boolean(card.trackName)
-  const statusLabel = card.isPlaying ? 'Listening now' : 'Recently played'
-  const title = card.trackName
-    ? card.trackName
-    : card.connected
-      ? 'Quiet for now'
-      : isPartner
-        ? 'Waiting'
-        : 'Connect'
-  const subtitle = hasTrack
-    ? [shortName, card.artists].filter(Boolean).join(' · ')
-    : card.connected
-      ? shortName
-      : isPartner
-        ? 'Us tab'
-        : 'Spotify'
-
-  const className = [
-    'home-activity',
-    'home-listening',
-    card.isPlaying ? 'is-playing' : '',
-    hasTrack && !card.isPlaying ? 'is-recent' : '',
-    !hasTrack ? 'is-idle' : '',
-  ]
-    .filter(Boolean)
-    .join(' ')
-
-  const body = (
-    <>
-      {card.albumArtUrl ? (
-        <img className="home-listening__art" src={card.albumArtUrl} alt="" />
-      ) : (
-        <span className="home-listening__art home-listening__art--empty" aria-hidden>
-          ♪
-        </span>
-      )}
-      <span className="home-listening__copy">
-        <span className="home-listening__eyebrow">
-          {hasTrack ? statusLabel : shortName}
-        </span>
-        <strong>{title}</strong>
-        <small>{subtitle}</small>
-      </span>
-      {card.isPlaying ? (
-        <span className="home-listening__eq" aria-label="Playing">
-          <i />
-          <i />
-          <i />
-        </span>
-      ) : null}
-    </>
-  )
-
-  if (card.trackUrl) {
-    return (
-      <a className={className} href={card.trackUrl} target="_blank" rel="noreferrer">
-        {body}
-      </a>
-    )
-  }
-
-  if (!card.connected && onConnect) {
-    return (
-      <button type="button" className={className} onClick={onConnect}>
-        {body}
-      </button>
-    )
-  }
-
-  return <div className={className}>{body}</div>
 }
 
 export function HomeScreen({
@@ -220,15 +140,16 @@ export function HomeScreen({
             )}
 
             <div className="home-listening-list" aria-label="Listening">
-              <ListeningRow
+              <HomeListeningCard
                 card={spotify.you}
+                memberPhoto={profile.you.photo}
                 onConnect={
                   spotify.configured && !spotify.connected
                     ? () => onOpen('us')
                     : undefined
                 }
               />
-              <ListeningRow card={spotify.partner} />
+              <HomeListeningCard card={spotify.partner} memberPhoto={profile.partner.photo} />
             </div>
           </div>
         </section>

@@ -35,6 +35,8 @@ function rowToStatus(row: ListeningRow): ListeningStatus {
     trackUrl: row.track_url,
     isPlaying: row.is_playing,
     updatedAt: Number(row.updated_at),
+    progressMs: null,
+    durationMs: null,
   }
 }
 
@@ -52,7 +54,7 @@ export async function fetchListeningStatuses(coupleId: string): Promise<Listenin
 export async function upsertListeningStatus(
   coupleId: string,
   slot: MemberSlot,
-  status: Omit<ListeningStatus, 'slot'>,
+  status: Omit<ListeningStatus, 'slot' | 'progressMs' | 'durationMs'>,
 ): Promise<void> {
   const client = requireClient()
   const { error } = await client.from('listening_status').upsert(
