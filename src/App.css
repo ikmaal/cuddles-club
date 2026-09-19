@@ -1049,7 +1049,7 @@
   width: calc(100% + 32px);
   max-width: calc(100% + 32px);
   margin: 0 -16px;
-  padding: 0 16px 6px 24px;
+  padding: 0 0 6px;
   overflow-x: scroll;
   overflow-y: hidden;
   overscroll-behavior-x: contain;
@@ -1070,7 +1070,8 @@
   flex-wrap: nowrap;
   gap: 10px;
   min-width: min-content;
-  padding-right: 4px;
+  padding-left: 16px;
+  padding-right: 16px;
 }
 
 .home-lately__track > * {
