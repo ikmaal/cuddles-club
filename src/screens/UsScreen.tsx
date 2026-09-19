@@ -8,6 +8,7 @@ import { PersonProfileCard } from '../components/PersonProfileCard'
 import { StorageCard } from '../components/StorageCard'
 import { ScrollRegion } from '../components/ScrollRegion'
 import { SpotifyConnectCard } from '../components/SpotifyConnectCard'
+import { VersionHistoryCard } from '../components/VersionHistoryCard'
 import { useCouple } from '../context/CoupleContext'
 import { cardMemberSlot } from '../components/CardBuddy'
 import { normalizeCoupleProfile } from '../storage'
@@ -212,6 +213,13 @@ export function UsScreen({ profile, onSave, onDecorateHomeScenery }: UsScreenPro
                           {saved ? 'Saved' : 'Save date'}
                         </button>
                       </form>
+                    </div>
+                  </section>
+
+                  <section className="us-settings__group">
+                    <p className="us-settings__label">About</p>
+                    <div className="us-settings__stack">
+                      <VersionHistoryCard />
                     </div>
                   </section>
 

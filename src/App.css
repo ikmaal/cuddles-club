@@ -3303,7 +3303,8 @@ a.home-listening:focus-visible {
 .us-settings__stack > .cloud-card,
 .us-settings__stack > .form-card,
 .us-settings__stack > .push-settings-card,
-.us-settings__stack > .display-settings-card {
+.us-settings__stack > .display-settings-card,
+.us-settings__stack > .version-history-card {
   background: var(--set-card);
   border: none;
   border-radius: 0;
@@ -3352,7 +3353,8 @@ a.home-listening:focus-visible {
 .us-settings .cloud-card,
 .us-settings .form-card,
 .us-settings .push-settings-card,
-.us-settings .display-settings-card {
+.us-settings .display-settings-card,
+.us-settings .version-history-card {
   padding: 16px 16px 18px;
 }
 
@@ -3374,6 +3376,196 @@ a.home-listening:focus-visible {
   font-size: 0.78rem;
   line-height: 1.45;
   color: var(--set-mute);
+}
+
+.version-history-card {
+  display: grid;
+  gap: 0;
+}
+
+.version-history__hero {
+  display: grid;
+  gap: 6px;
+}
+
+.version-history__brand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.version-history__app {
+  margin: 0;
+  font-family: var(--set-font);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--set-ink);
+}
+
+.version-history__version-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: rgba(28, 27, 25, 0.06);
+  color: var(--set-mute);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.version-history__updated {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--set-mute);
+}
+
+.version-history__updated time {
+  font-weight: 650;
+  color: var(--set-ink);
+}
+
+.version-history__divider {
+  height: 1px;
+  margin: 16px 0 14px;
+  background: var(--set-line);
+}
+
+.version-history__heading {
+  margin: 0 0 12px;
+  font-family: var(--set-font);
+  font-size: 0.82rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--set-mute);
+}
+
+.version-history__timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0;
+}
+
+.version-history__entry {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 12px;
+  padding-bottom: 18px;
+}
+
+.version-history__entry:last-child {
+  padding-bottom: 4px;
+}
+
+.version-history__marker {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding-top: 5px;
+}
+
+.version-history__marker::after {
+  content: '';
+  position: absolute;
+  top: 13px;
+  bottom: -18px;
+  width: 2px;
+  border-radius: 999px;
+  background: var(--set-line);
+}
+
+.version-history__marker--last::after {
+  display: none;
+}
+
+.version-history__dot {
+  position: relative;
+  z-index: 1;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--set-rose);
+  box-shadow: 0 0 0 3px var(--set-card);
+}
+
+.version-history__body {
+  min-width: 0;
+}
+
+.version-history__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.version-history__meta time {
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  color: var(--set-mute);
+}
+
+.version-history__entry-version {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgba(28, 27, 25, 0.35);
+}
+
+.version-history__entry-title {
+  margin: 0 0 6px;
+  font-family: var(--set-font);
+  font-size: 0.92rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--set-ink);
+}
+
+.version-history__highlights {
+  margin: 0;
+  padding-left: 1.05rem;
+  display: grid;
+  gap: 4px;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--set-mute);
+}
+
+.version-history__highlights li {
+  padding-left: 2px;
+}
+
+.version-history__highlights li::marker {
+  color: rgba(28, 27, 25, 0.28);
+}
+
+.version-history__toggle {
+  margin-top: 12px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--set-line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--set-rose);
+  font-size: 0.8rem;
+  font-weight: 650;
+  text-align: center;
+  transition: background 140ms ease;
+}
+
+.version-history__toggle:active {
+  background: rgba(28, 27, 25, 0.04);
 }
 
 .us-settings .cloud-card__body {
