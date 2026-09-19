@@ -1046,9 +1046,10 @@
 }
 
 .home-lately__scroller {
-  width: calc(100% + 32px);
-  max-width: calc(100% + 32px);
-  margin: 0 -16px;
+  /* Extend scroll area to the right edge only; keep left aligned with section padding */
+  width: calc(100% + 16px);
+  max-width: calc(100% + 16px);
+  margin: 0 -16px 0 0;
   padding: 0 0 6px;
   overflow-x: scroll;
   overflow-y: hidden;
@@ -1056,6 +1057,7 @@
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x pan-y;
   scroll-snap-type: x mandatory;
+  scroll-padding-inline: 0 16px;
   scrollbar-width: none;
 }
 
@@ -1065,12 +1067,14 @@
 
 .home-lately__track {
   --home-photobooth-height: calc(188px * 3 / 4);
-  display: inline-flex;
+  display: flex;
+  width: max-content;
+  max-width: none;
   align-items: flex-start;
   flex-wrap: nowrap;
   gap: 10px;
-  min-width: min-content;
-  padding-left: 16px;
+  box-sizing: border-box;
+  padding-left: 0;
   padding-right: 16px;
 }
 
