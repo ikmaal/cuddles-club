@@ -1,4 +1,4 @@
-﻿/* ---------- Shell ---------- */
+/* ---------- Shell ---------- */
 
 @font-face {
   font-family: 'Papernotes';
@@ -10800,6 +10800,97 @@ a.home-listening:focus-visible {
 
 .poop-week__col.is-future {
   opacity: 0.45;
+}
+
+.poop-overview-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  margin-bottom: 14px;
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(92, 36, 56, 0.06);
+}
+
+.poop-overview-tabs button {
+  min-height: 34px;
+  border-radius: 9px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--poop-muted);
+}
+
+.poop-overview-tabs button.is-on {
+  background: #ffffff;
+  color: var(--poop-accent);
+  box-shadow: 0 2px 8px rgba(92, 36, 56, 0.1);
+}
+
+.poop-month__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.poop-month__weekdays span {
+  text-align: center;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--poop-muted);
+}
+
+.poop-month__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.poop-month__cell {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  position: relative;
+  border-radius: 10px;
+  background: rgba(92, 36, 56, 0.04);
+}
+
+.poop-month__cell.is-pad {
+  background: transparent;
+}
+
+.poop-month__cell.is-active {
+  background: linear-gradient(180deg, rgba(109, 48, 72, 0.18) 0%, rgba(74, 28, 45, 0.12) 100%);
+}
+
+.poop-month__cell.is-today {
+  box-shadow: inset 0 0 0 1.5px rgba(109, 48, 72, 0.45);
+}
+
+.poop-month__cell.is-future {
+  opacity: 0.4;
+}
+
+.poop-month__day {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--poop-ink);
+}
+
+.poop-month__count {
+  position: absolute;
+  top: 3px;
+  right: 4px;
+  min-width: 14px;
+  padding: 0 3px;
+  border-radius: 999px;
+  background: var(--poop-accent);
+  color: #ffffff;
+  font-size: 0.5rem;
+  font-weight: 800;
+  line-height: 14px;
+  text-align: center;
 }
 
 .poop-insight {

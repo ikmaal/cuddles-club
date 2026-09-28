@@ -15,6 +15,15 @@ export interface WeekBar {
   isFuture: boolean
 }
 
+export interface MonthDayCell {
+  key: string
+  day: number
+  count: number
+  isToday: boolean
+  isFuture: boolean
+  isPadding: boolean
+}
+
 function readLocalLogs(): PoopLog[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
@@ -71,6 +80,80 @@ export function weekTitle(weekOffset: number): string {
 export function weekRangeStart(weekOffset: number): Date {
   const keys = calendarWeekDayKeys(weekOffset)
   return new Date(`${keys[0]}T12:00:00`)
+}
+
+function monthAnchor(monthOffset = 0): Date {
+  const anchor = new Date()
+  anchor.setHours(12, 0, 0, 0)
+  anchor.setDate(1)
+  anchor.setMonth(anchor.getMonth() + monthOffset)
+  return anchor
+}
+
+export function monthTitle(monthOffset: number): string {
+  if (monthOffset === 0) return 'This month'
+  const anchor = monthAnchor(monthOffset)
+  const now = new Date()
+  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1, 12, 0, 0, 0)
+  if (
+    monthOffset === -1 &&
+    anchor.getFullYear() === lastMonth.getFullYear() &&
+    anchor.getMonth() === lastMonth.getMonth()
+  ) {
+    return 'Last month'
+  }
+  return anchor.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
+}
+
+export function monthRangeStart(monthOffset: number): Date {
+  return monthAnchor(monthOffset)
+}
+
+function monthDayKeys(monthOffset: number): string[] {
+  const anchor = monthAnchor(monthOffset)
+  const year = anchor.getFullYear()
+  const month = anchor.getMonth()
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+  const keys: string[] = []
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    keys.push(todayKey(new Date(year, month, day, 12, 0, 0, 0)))
+  }
+  return keys
+}
+
+function monthCalendarCells(monthOffset: number, counts: Map<string, number>): MonthDayCell[] {
+  const anchor = monthAnchor(monthOffset)
+  const year = anchor.getFullYear()
+  const month = anchor.getMonth()
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+  const todayKeyStr = todayKey()
+  const cells: MonthDayCell[] = []
+  const firstWeekday = (new Date(year, month, 1).getDay() + 6) % 7
+
+  for (let index = 0; index < firstWeekday; index += 1) {
+    cells.push({
+      key: `pad-${monthOffset}-${index}`,
+      day: 0,
+      count: 0,
+      isToday: false,
+      isFuture: false,
+      isPadding: true,
+    })
+  }
+
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const key = todayKey(new Date(year, month, day, 12, 0, 0, 0))
+    cells.push({
+      key,
+      day,
+      count: counts.get(key) ?? 0,
+      isToday: key === todayKeyStr,
+      isFuture: key > todayKeyStr,
+      isPadding: false,
+    })
+  }
+
+  return cells
 }
 
 function countByDay(entries: PoopLog[], owner: Carer): Map<string, number> {
@@ -314,6 +397,21 @@ export function usePoopTracker() {
     [entries],
   )
 
+  const monthStatsFor = useCallback(
+    (owner: Carer, monthOffset = 0) => {
+      const counts = countByDay(entries, owner)
+      const keys = monthDayKeys(monthOffset)
+      const monthTotal = keys.reduce((sum, key) => sum + (counts.get(key) ?? 0), 0)
+      return {
+        monthLabel: monthTitle(monthOffset),
+        monthTotal,
+        monthCells: monthCalendarCells(monthOffset, counts),
+        canGoForward: monthOffset < 0,
+      }
+    },
+    [entries],
+  )
+
   const coupleTotals = useMemo(() => {
     const you = entriesForOwner(entries, 'you').length
     const partner = entriesForOwner(entries, 'partner').length
@@ -328,6 +426,7 @@ export function usePoopTracker() {
     logPoop,
     removeLog,
     statsFor,
+    monthStatsFor,
     coupleTotals,
     refresh,
   }

@@ -2,8 +2,37 @@
 
 import type { StripDesignId } from './stripDesigns'
 
-const STRIP_W = 420
-const STRIP_H = 1260
+export const STRIP_WIDTH = 420
+export const STRIP_HEIGHT = 1260
+const STRIP_W = STRIP_WIDTH
+const STRIP_H = STRIP_HEIGHT
+
+export type StripSlotRect = { x: number; y: number; w: number; h: number }
+
+export function getStripPhotoSlotRects(design: StripDesignId): StripSlotRect[] {
+  switch (design) {
+    case 'classic':
+      return slotsFromLayout(frameLayout(72, 72, 56, 14))
+    case 'dateNight':
+      return slotsFromLayout(frameLayout(88, 76))
+    case 'polaroid':
+      return slotsFromLayout(frameLayout(80, 70, 44, 22))
+    case 'retro':
+      return slotsFromLayout(frameLayout(84, 74))
+    case 'cute':
+    default:
+      return slotsFromLayout(frameLayout(92, 78))
+  }
+}
+
+function slotsFromLayout(layout: ReturnType<typeof frameLayout>): StripSlotRect[] {
+  return Array.from({ length: 4 }, (_, index) => ({
+    x: layout.insetX,
+    y: layout.top + index * (layout.frameH + layout.gap),
+    w: layout.frameW,
+    h: layout.frameH,
+  }))
+}
 
 export async function composeCuteStrip(
   shots: string[],

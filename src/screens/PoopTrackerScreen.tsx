@@ -7,9 +7,13 @@ import {
 } from '../components/Icons'
 import { PoopHeroHeadline } from '../components/PoopHeroHeadline'
 import { ScrollRegion } from '../components/ScrollRegion'
-import { weekRangeStart, weekTitle, type UsePoopTrackerReturn } from '../hooks/usePoopTracker'
+import { weekRangeStart, weekTitle, monthRangeStart, type UsePoopTrackerReturn } from '../hooks/usePoopTracker'
 import { pickPoopHeroMessage } from '../lib/poopHeroMessages'
 import type { Carer, CoupleProfile } from '../types'
+
+type OverviewPeriod = 'week' | 'month'
+
+const MONTH_WEEKDAY_LABELS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'] as const
 
 interface PoopTrackerScreenProps extends UsePoopTrackerReturn {
   profile: CoupleProfile
@@ -68,13 +72,16 @@ export function PoopTrackerScreen({
   profile,
   logPoop,
   statsFor,
+  monthStatsFor,
   refresh,
   error,
   isCloud,
   onBack,
 }: PoopTrackerScreenProps) {
   const [owner, setOwner] = useState<Carer>('you')
+  const [overviewPeriod, setOverviewPeriod] = useState<OverviewPeriod>('week')
   const [weekOffset, setWeekOffset] = useState(0)
+  const [monthOffset, setMonthOffset] = useState(0)
   const [justLogged, setJustLogged] = useState(false)
   const [logFailed, setLogFailed] = useState(false)
   const weekSwipeRef = useRef({ startX: 0, tracking: false })
@@ -88,16 +95,19 @@ export function PoopTrackerScreen({
   )
 
   const stats = statsFor(owner, weekOffset)
+  const monthStats = monthStatsFor(owner, monthOffset)
   const displayName = firstName(names[owner])
   const heroLines = useMemo(
     () => pickPoopHeroMessage(owner, displayName, stats.todayCount),
     [displayName, owner, stats.todayCount],
   )
   const weekLabel = weekTitle(weekOffset)
-  const canGoForward = weekOffset < 0
+  const canGoForwardWeek = weekOffset < 0
+  const canGoForwardMonth = monthStats.canGoForward
 
   useEffect(() => {
     setWeekOffset(0)
+    setMonthOffset(0)
   }, [owner])
 
   function goToOlderWeek() {
@@ -106,6 +116,14 @@ export function PoopTrackerScreen({
 
   function goToNewerWeek() {
     setWeekOffset((current) => (current < 0 ? current + 1 : current))
+  }
+
+  function goToOlderMonth() {
+    setMonthOffset((current) => current - 1)
+  }
+
+  function goToNewerMonth() {
+    setMonthOffset((current) => (current < 0 ? current + 1 : current))
   }
 
   function handleWeekSwipeStart(event: PointerEvent<HTMLElement>) {
@@ -117,6 +135,11 @@ export function PoopTrackerScreen({
     const delta = event.clientX - weekSwipeRef.current.startX
     weekSwipeRef.current.tracking = false
     if (Math.abs(delta) < 48) return
+    if (overviewPeriod === 'month') {
+      if (delta < 0) goToOlderMonth()
+      else goToNewerMonth()
+      return
+    }
     if (delta < 0) goToOlderWeek()
     else goToNewerWeek()
   }
@@ -206,60 +229,147 @@ export function PoopTrackerScreen({
 
         <section
           className="poop-card poop-week"
-          aria-label="Weekly overview"
+          aria-label={overviewPeriod === 'week' ? 'Weekly overview' : 'Monthly overview'}
           onPointerDown={handleWeekSwipeStart}
           onPointerUp={handleWeekSwipeEnd}
           onPointerCancel={handleWeekSwipeEnd}
         >
-          <div className="poop-week__header">
-            <div className="poop-week__header-main">
+          <div className="poop-overview-tabs" role="tablist" aria-label="Overview period">
+            {(
+              [
+                ['week', 'Week'],
+                ['month', 'Month'],
+              ] as const
+            ).map(([id, label]) => (
               <button
+                key={id}
                 type="button"
-                className="poop-week__nav"
-                onClick={goToOlderWeek}
-                aria-label="Previous week"
+                role="tab"
+                aria-selected={overviewPeriod === id}
+                className={overviewPeriod === id ? 'is-on' : ''}
+                onClick={() => setOverviewPeriod(id)}
               >
-                <ChevronIcon size={16} />
+                {label}
               </button>
-              <div className="poop-week__header-copy">
-                <p className="poop-week__date">
-                  <CalendarIcon size={14} />
-                  {formatCardDate(weekRangeStart(weekOffset))}
-                </p>
-                <h2 className="poop-week__title">{weekLabel}</h2>
-              </div>
-              <button
-                type="button"
-                className="poop-week__nav poop-week__nav--next"
-                onClick={goToNewerWeek}
-                disabled={!canGoForward}
-                aria-label="Next week"
-              >
-                <ChevronIcon size={16} />
-              </button>
-            </div>
-            <div className="poop-week__badge" aria-label={`${stats.weekTotal} logs this week`}>
-              <strong>{stats.weekTotal}</strong>
-              <span>this week</span>
-            </div>
+            ))}
           </div>
 
-          <div className="poop-week__chart">
-            {stats.week.map((bar) => {
-              const active = !bar.isFuture && bar.count > 0
-              return (
-                <div
-                  key={bar.key}
-                  className={`poop-week__col${bar.isToday ? ' is-today' : ''}${bar.isFuture ? ' is-future' : ''}${active ? ' is-active' : ''}`}
-                >
-                  <div className="poop-week__track" aria-hidden>
-                    {active ? <span className="poop-week__count">{bar.count}</span> : null}
+          {overviewPeriod === 'week' ? (
+            <>
+              <div className="poop-week__header">
+                <div className="poop-week__header-main">
+                  <button
+                    type="button"
+                    className="poop-week__nav"
+                    onClick={goToOlderWeek}
+                    aria-label="Previous week"
+                  >
+                    <ChevronIcon size={16} />
+                  </button>
+                  <div className="poop-week__header-copy">
+                    <p className="poop-week__date">
+                      <CalendarIcon size={14} />
+                      {formatCardDate(weekRangeStart(weekOffset))}
+                    </p>
+                    <h2 className="poop-week__title">{weekLabel}</h2>
                   </div>
-                  <span className="poop-week__label">{bar.label}</span>
+                  <button
+                    type="button"
+                    className="poop-week__nav poop-week__nav--next"
+                    onClick={goToNewerWeek}
+                    disabled={!canGoForwardWeek}
+                    aria-label="Next week"
+                  >
+                    <ChevronIcon size={16} />
+                  </button>
                 </div>
-              )
-            })}
-          </div>
+                <div className="poop-week__badge" aria-label={`${stats.weekTotal} logs this week`}>
+                  <strong>{stats.weekTotal}</strong>
+                  <span>this week</span>
+                </div>
+              </div>
+
+              <div className="poop-week__chart">
+                {stats.week.map((bar) => {
+                  const active = !bar.isFuture && bar.count > 0
+                  return (
+                    <div
+                      key={bar.key}
+                      className={`poop-week__col${bar.isToday ? ' is-today' : ''}${bar.isFuture ? ' is-future' : ''}${active ? ' is-active' : ''}`}
+                    >
+                      <div className="poop-week__track" aria-hidden>
+                        {active ? <span className="poop-week__count">{bar.count}</span> : null}
+                      </div>
+                      <span className="poop-week__label">{bar.label}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="poop-week__header">
+                <div className="poop-week__header-main">
+                  <button
+                    type="button"
+                    className="poop-week__nav"
+                    onClick={goToOlderMonth}
+                    aria-label="Previous month"
+                  >
+                    <ChevronIcon size={16} />
+                  </button>
+                  <div className="poop-week__header-copy">
+                    <p className="poop-week__date">
+                      <CalendarIcon size={14} />
+                      {formatCardDate(monthRangeStart(monthOffset))}
+                    </p>
+                    <h2 className="poop-week__title">{monthStats.monthLabel}</h2>
+                  </div>
+                  <button
+                    type="button"
+                    className="poop-week__nav poop-week__nav--next"
+                    onClick={goToNewerMonth}
+                    disabled={!canGoForwardMonth}
+                    aria-label="Next month"
+                  >
+                    <ChevronIcon size={16} />
+                  </button>
+                </div>
+                <div className="poop-week__badge" aria-label={`${monthStats.monthTotal} logs this month`}>
+                  <strong>{monthStats.monthTotal}</strong>
+                  <span>this month</span>
+                </div>
+              </div>
+
+              <div className="poop-month__weekdays" aria-hidden>
+                {MONTH_WEEKDAY_LABELS.map((label) => (
+                  <span key={label}>{label}</span>
+                ))}
+              </div>
+              <div className="poop-month__grid">
+                {monthStats.monthCells.map((cell) => {
+                  if (cell.isPadding) {
+                    return <span key={cell.key} className="poop-month__cell is-pad" aria-hidden />
+                  }
+                  const active = !cell.isFuture && cell.count > 0
+                  return (
+                    <div
+                      key={cell.key}
+                      className={`poop-month__cell${cell.isToday ? ' is-today' : ''}${cell.isFuture ? ' is-future' : ''}${active ? ' is-active' : ''}`}
+                      aria-label={
+                        cell.count > 0
+                          ? `${cell.day}: ${cell.count} log${cell.count === 1 ? '' : 's'}`
+                          : `${cell.day}: no logs`
+                      }
+                    >
+                      <span className="poop-month__day">{cell.day}</span>
+                      {active ? <span className="poop-month__count">{cell.count}</span> : null}
+                    </div>
+                  )
+                })}
+              </div>
+            </>
+          )}
         </section>
 
         <section className="poop-insight" aria-label="Gut health insight">
