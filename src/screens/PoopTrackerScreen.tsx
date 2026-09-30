@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   BackIcon,
   CalendarIcon,
@@ -84,7 +84,6 @@ export function PoopTrackerScreen({
   const [monthOffset, setMonthOffset] = useState(0)
   const [justLogged, setJustLogged] = useState(false)
   const [logFailed, setLogFailed] = useState(false)
-  const weekSwipeRef = useRef({ startX: 0, tracking: false })
 
   const names = useMemo(
     () => ({
@@ -124,24 +123,6 @@ export function PoopTrackerScreen({
 
   function goToNewerMonth() {
     setMonthOffset((current) => (current < 0 ? current + 1 : current))
-  }
-
-  function handleWeekSwipeStart(event: PointerEvent<HTMLElement>) {
-    weekSwipeRef.current = { startX: event.clientX, tracking: true }
-  }
-
-  function handleWeekSwipeEnd(event: PointerEvent<HTMLElement>) {
-    if (!weekSwipeRef.current.tracking) return
-    const delta = event.clientX - weekSwipeRef.current.startX
-    weekSwipeRef.current.tracking = false
-    if (Math.abs(delta) < 48) return
-    if (overviewPeriod === 'month') {
-      if (delta < 0) goToOlderMonth()
-      else goToNewerMonth()
-      return
-    }
-    if (delta < 0) goToOlderWeek()
-    else goToNewerWeek()
   }
 
   useEffect(() => {
@@ -230,9 +211,6 @@ export function PoopTrackerScreen({
         <section
           className="poop-card poop-week"
           aria-label={overviewPeriod === 'week' ? 'Weekly overview' : 'Monthly overview'}
-          onPointerDown={handleWeekSwipeStart}
-          onPointerUp={handleWeekSwipeEnd}
-          onPointerCancel={handleWeekSwipeEnd}
         >
           <div className="poop-overview-tabs" role="tablist" aria-label="Overview period">
             {(
