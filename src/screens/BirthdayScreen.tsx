@@ -1,10 +1,5 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState } from 'react'
 import { BackIcon } from '../components/Icons'
-import {
-  BIRTHDAY_APP_PASSCODE,
-  isBirthdayAppUnlocked,
-  unlockBirthdayApp,
-} from '../lib/birthdayAppGate'
 import {
   formatBirthdayCountdownTitle,
   getBirthdayCountdown,
@@ -35,65 +30,7 @@ function CountdownTile({ value, label }: { value: string; label: string }) {
   )
 }
 
-function BirthdayPasscodeGate({ onBack, onUnlocked }: { onBack: () => void; onUnlocked: () => void }) {
-  const [code, setCode] = useState('')
-  const [wrong, setWrong] = useState(false)
-
-  function submit(event?: FormEvent) {
-    event?.preventDefault()
-    const trimmed = code.trim()
-    if (trimmed === BIRTHDAY_APP_PASSCODE) {
-      unlockBirthdayApp()
-      onUnlocked()
-      return
-    }
-    setWrong(true)
-    setCode('')
-  }
-
-  return (
-    <div className="screen screen--birthday">
-      <div className="birthday-gate">
-        <header className="birthday-gate__top">
-          <button type="button" className="birthday-home__back" onClick={onBack} aria-label="Back">
-            <BackIcon size={18} />
-          </button>
-        </header>
-        <form className="birthday-gate__form" onSubmit={submit}>
-          <p className="birthday-gate__title">Enter code</p>
-          <input
-            className={`birthday-gate__input${wrong ? ' birthday-gate__input--wrong' : ''}`}
-            type="password"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            autoFocus
-            maxLength={6}
-            placeholder="••••••"
-            value={code}
-            aria-invalid={wrong}
-            aria-describedby={wrong ? 'birthday-gate-error' : undefined}
-            onChange={(event) => {
-              const next = event.target.value.replace(/\D/g, '').slice(0, 6)
-              setCode(next)
-              if (wrong) setWrong(false)
-            }}
-          />
-          {wrong ? (
-            <p id="birthday-gate-error" className="birthday-gate__error" role="alert">
-              Wrong code. Try again.
-            </p>
-          ) : null}
-          <button type="submit" className="birthday-gate__submit" disabled={code.length < 6}>
-            Continue
-          </button>
-        </form>
-      </div>
-    </div>
-  )
-}
-
 export function BirthdayScreen({ profile, onBack }: BirthdayScreenProps) {
-  const [unlocked, setUnlocked] = useState(isBirthdayAppUnlocked)
   const [itineraryOpen, setItineraryOpen] = useState(false)
   const [countdown, setCountdown] = useState<BirthdayCountdownParts>(() => getBirthdayCountdown())
 
@@ -102,16 +39,11 @@ export function BirthdayScreen({ profile, onBack }: BirthdayScreenProps) {
   const homeImageSrc = `${import.meta.env.BASE_URL}birthday_home.jpg`
 
   useEffect(() => {
-    if (!unlocked) return
     const tick = () => setCountdown(getBirthdayCountdown())
     tick()
     const id = window.setInterval(tick, 1000)
     return () => window.clearInterval(id)
-  }, [unlocked])
-
-  if (!unlocked) {
-    return <BirthdayPasscodeGate onBack={onBack} onUnlocked={() => setUnlocked(true)} />
-  }
+  }, [])
 
   if (itineraryOpen) {
     return <BirthdayItineraryScreen onBack={() => setItineraryOpen(false)} />

@@ -46,9 +46,10 @@ export const SERVICES: Service[] = [
   },
   {
     id: 'birthday',
-    label: 'hmmm.',
+    label: 'happy birthday!',
     blurb: 'Countdown to her special day',
-    tone: 'purple',
+    tone: 'birthday',
     Icon: CatIcon,
+    image: 'birthday_app_icon.jpg',
   },
 ]

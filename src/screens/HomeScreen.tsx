@@ -78,7 +78,7 @@ export function HomeScreen({
               <li key={service.id}>
                 <button
                   type="button"
-                  className="service"
+                  className={`service${service.id === 'birthday' ? ' service--row' : ''}`}
                   onClick={() => onOpen(service.id)}
                 >
                   <span

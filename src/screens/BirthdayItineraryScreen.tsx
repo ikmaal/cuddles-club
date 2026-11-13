@@ -13,6 +13,12 @@ interface BirthdayItineraryScreenProps {
 
 const SLIDE_COUNT = 3 + BIRTHDAY_ITINERARY_DAYS.length
 
+function ItinerarySwipeHint({ isLast }: { isLast?: boolean }) {
+  return (
+    <p className="birthday-itinerary__swipe-hint">{isLast ? 'swipe ←' : 'swipe →'}</p>
+  )
+}
+
 export function BirthdayItineraryScreen({ onBack }: BirthdayItineraryScreenProps) {
   const [slideProgress, setSlideProgress] = useState(0)
   const trackRef = useRef<HTMLDivElement>(null)
@@ -77,12 +83,14 @@ export function BirthdayItineraryScreen({ onBack }: BirthdayItineraryScreenProps
                 </p>
               ))}
             </div>
+            <ItinerarySwipeHint />
           </article>
         </section>
 
         <section className="birthday-itinerary__slide" aria-label="Itinerary intro">
           <article className="birthday-itinerary__card birthday-itinerary__card--intro">
             <p className="birthday-itinerary__intro">{BIRTHDAY_ITINERARY_INTRO}</p>
+            <ItinerarySwipeHint />
           </article>
         </section>
 
@@ -103,6 +111,7 @@ export function BirthdayItineraryScreen({ onBack }: BirthdayItineraryScreenProps
                   </li>
                 ))}
               </ol>
+              <ItinerarySwipeHint />
             </article>
           </section>
         ))}
@@ -117,6 +126,7 @@ export function BirthdayItineraryScreen({ onBack }: BirthdayItineraryScreenProps
                 </li>
               ))}
             </ul>
+            <ItinerarySwipeHint isLast />
           </article>
         </section>
       </div>
