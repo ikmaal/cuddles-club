@@ -11,6 +11,7 @@ import { HomeScreen } from './screens/HomeScreen'
 import { PlacesScreen } from './screens/PlacesScreen'
 import { usePoopTracker } from './hooks/usePoopTracker'
 import { PoopTrackerScreen } from './screens/PoopTrackerScreen'
+import { BirthdayScreen } from './screens/BirthdayScreen'
 import { StripsScreen } from './screens/StripsScreen'
 import { UsScreen } from './screens/UsScreen'
 import type { Screen } from './types'
@@ -21,6 +22,7 @@ const STRIPS_BLACK = '#000000'
 const ACADEMICS_CREAM = '#f6f1e6'
 const PLACES_PAPER = '#ffffff'
 const POOP_WHITE = '#ffffff'
+const BIRTHDAY_WHITE = '#ffffff'
 const SPLASH_STATUS_COLOR = '#ffffff'
 const DEFAULT_THEME_COLOR = '#E85D75'
 
@@ -60,6 +62,7 @@ export default function App() {
   const academicsLive = screen === 'academics' && splashPhase === 'done'
   const placesLive = screen === 'places' && splashPhase === 'done'
   const poopLive = screen === 'pooptracker' && splashPhase === 'done'
+  const birthdayLive = screen === 'birthday' && splashPhase === 'done'
   const shellVisible = screen === 'us' ? navyLive : homeVisible
   const showTabs = !splashActive && ready && (screen === 'home' || screen === 'us')
 
@@ -74,6 +77,7 @@ export default function App() {
     root.classList.toggle('academics-bg', academicsLive)
     root.classList.toggle('places-bg', placesLive)
     root.classList.toggle('poop-bg', poopLive)
+    root.classList.toggle('birthday-bg', birthdayLive)
     root.style.setProperty('--home-wallpaper', wallpaper)
 
     if (navyLive) {
@@ -91,6 +95,9 @@ export default function App() {
     } else if (poopLive) {
       setThemeColor(POOP_WHITE)
       setStatusBarStyle('default')
+    } else if (birthdayLive) {
+      setThemeColor(BIRTHDAY_WHITE)
+      setStatusBarStyle('default')
     } else if (splashActive) {
       setThemeColor(SPLASH_STATUS_COLOR)
       setStatusBarStyle('default')
@@ -98,7 +105,7 @@ export default function App() {
       setThemeColor(DEFAULT_THEME_COLOR)
       setStatusBarStyle('default')
     }
-  }, [splashActive, navyLive, homeLive, academicsLive, placesLive, poopLive, screen])
+  }, [splashActive, navyLive, homeLive, academicsLive, placesLive, poopLive, birthdayLive, screen])
 
   useEffect(() => {
     if (screen !== 'home' || splashPhase !== 'done') {
@@ -136,7 +143,7 @@ export default function App() {
 
   return (
     <div
-      className={`app${navyLive ? ' app--home-bg' : ''}${homeLive ? ' app--home-image' : ''}${shellVisible ? ' app--home-visible' : ''}${screen === 'strips' && !splashActive ? ' app--strips' : ''}${academicsLive ? ' app--academics' : ''}${placesLive ? ' app--places' : ''}${poopLive ? ' app--poop' : ''}${splashActive ? ' app--splash' : ''}`}
+      className={`app${navyLive ? ' app--home-bg' : ''}${homeLive ? ' app--home-image' : ''}${shellVisible ? ' app--home-visible' : ''}${screen === 'strips' && !splashActive ? ' app--strips' : ''}${academicsLive ? ' app--academics' : ''}${placesLive ? ' app--places' : ''}${poopLive ? ' app--poop' : ''}${birthdayLive ? ' app--birthday' : ''}${splashActive ? ' app--splash' : ''}`}
     >
       {splashActive ? (
         <SplashIntro
@@ -185,6 +192,10 @@ export default function App() {
 
             {screen === 'pooptracker' ? (
               <PoopTrackerScreen {...poopTracker} profile={profile} onBack={goHome} />
+            ) : null}
+
+            {screen === 'birthday' ? (
+              <BirthdayScreen profile={profile} onBack={goHome} />
             ) : null}
 
             {screen === 'us' ? (

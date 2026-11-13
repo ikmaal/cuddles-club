@@ -877,6 +877,11 @@
   color: #6b3b24;
 }
 
+.service__tile--birthday {
+  background: linear-gradient(145deg, #2a2438 0%, #15121c 100%);
+  color: #f5d0a8;
+}
+
 .service__tile--image {
   overflow: hidden;
   padding: 0;
@@ -10934,4 +10939,349 @@ a.home-listening:focus-visible {
   font-weight: 700;
   color: var(--poop-accent) !important;
   background: rgba(92, 36, 56, 0.08);
+}
+
+/* ---------- Happy Birthday countdown ---------- */
+
+.app--birthday {
+  background: #ffffff;
+  color: #1a1a1a;
+  box-shadow: none;
+}
+
+.screen--birthday {
+  position: relative;
+  min-height: 100%;
+  background: #ffffff;
+  color: #1a1a1a;
+  overflow: hidden;
+}
+
+.birthday-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  background: #ffffff;
+  transition: opacity 420ms ease, visibility 420ms ease;
+}
+
+.birthday-loading--out {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.birthday-loading__video {
+  display: block;
+  width: min(200px, 58vw);
+  height: auto;
+  max-height: min(45vh, 360px);
+  object-fit: contain;
+}
+
+.birthday-loading__media {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.birthday-main {
+  flex: 1;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 480ms ease 80ms,
+    transform 480ms ease 80ms;
+}
+
+.birthday-main--in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.birthday-home {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+}
+
+.birthday-home__header {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.birthday-home__art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center 12%;
+  transform: translateY(20px);
+}
+
+.birthday-home__back {
+  position: absolute;
+  z-index: 2;
+  top: max(8px, env(safe-area-inset-top));
+  left: 12px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: rgba(20, 20, 20, 0.55);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(6px);
+}
+
+.birthday-home__back:active {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.birthday-home__bottom {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 0 16px max(16px, env(safe-area-inset-bottom));
+}
+
+.birthday-home__panel {
+  padding: 20px 18px 22px;
+  border-radius: 24px;
+  background: #faf8f5;
+  box-shadow:
+    0 12px 32px rgba(120, 88, 64, 0.08),
+    0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+.birthday-home__countdown-title {
+  margin: 0 0 16px;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: clamp(1.12rem, 4.2vw, 1.28rem);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+}
+
+.birthday-home__tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.birthday-home__tile {
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  padding: 16px 8px 14px;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow:
+    0 8px 20px rgba(100, 72, 52, 0.1),
+    0 0 0 1px rgba(0, 0, 0, 0.035);
+}
+
+.birthday-home__tile-value {
+  font-family: var(--font-body);
+  font-size: clamp(1.65rem, 6.5vw, 1.95rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+.birthday-home__tile-label {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--stone);
+}
+
+.birthday-home__celebrate {
+  margin: 0;
+  padding: 10px 8px;
+  text-align: center;
+  font-family: 'Papernotes', 'Great Vibes', cursive;
+  font-size: clamp(1.5rem, 6vw, 1.85rem);
+  color: #121212;
+}
+
+.birthday-home__nav {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+}
+
+.birthday-home__nav--single {
+  grid-template-columns: auto;
+  justify-content: center;
+}
+
+.birthday-home__nav--single .birthday-home__nav-btn {
+  width: min(88px, 22vw);
+  padding: 8px 6px 7px;
+  gap: 4px;
+  border-radius: 16px;
+  box-shadow:
+    0 6px 14px rgba(110, 82, 58, 0.09),
+    0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+.birthday-home__nav--single .birthday-home__nav-icon {
+  width: 28px;
+  height: 28px;
+}
+
+.birthday-home__nav--single .birthday-home__nav-label {
+  font-size: 0.58rem;
+  line-height: 1.1;
+  max-width: 72px;
+}
+
+.birthday-home__nav-btn {
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  padding: 12px 6px 10px;
+  border-radius: 18px;
+  background: rgba(255, 252, 248, 0.95);
+  box-shadow:
+    0 8px 18px rgba(110, 82, 58, 0.1),
+    0 0 0 1px rgba(0, 0, 0, 0.04);
+  color: #1a1a1a;
+}
+
+.birthday-home__nav-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 4px 10px rgba(110, 82, 58, 0.08);
+}
+
+.birthday-home__nav-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  color: #1a1a1a;
+}
+
+.birthday-home__nav-icon--accent {
+  color: #c45c2a;
+}
+
+.birthday-home__nav-label {
+  font-family: 'Fredoka', 'Outfit', system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: rgba(25, 25, 25, 0.78);
+  text-align: center;
+  line-height: 1.15;
+}
+
+.birthday-gate {
+  flex: 1;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+}
+
+.birthday-gate__top {
+  padding: max(8px, env(safe-area-inset-top)) 12px 8px;
+}
+
+.birthday-gate__top .birthday-home__back {
+  position: static;
+  background: transparent;
+  backdrop-filter: none;
+}
+
+.birthday-gate__form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+  padding: 24px 28px 48px;
+}
+
+.birthday-gate__title {
+  margin: 0 0 4px;
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.birthday-gate__input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--outline);
+  background: var(--foam);
+  font-family: var(--font-body);
+  font-size: 1.35rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.35em;
+  text-align: center;
+  color: var(--ink);
+}
+
+.birthday-gate__input:focus {
+  outline: none;
+  border-color: var(--outline-bold);
+  box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.06);
+}
+
+.birthday-gate__input--wrong {
+  border-color: var(--alert);
+  box-shadow: 0 0 0 3px var(--alert-soft);
+}
+
+.birthday-gate__error {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--alert);
+  text-align: center;
+}
+
+.birthday-gate__submit {
+  width: 100%;
+  margin-top: 6px;
+  padding: 13px 16px;
+  border-radius: 14px;
+  background: var(--ink);
+  color: var(--foam);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.birthday-gate__submit:disabled {
+  opacity: 0.35;
+}
+
+.birthday-gate__submit:not(:disabled):active {
+  opacity: 0.88;
 }
