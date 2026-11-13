@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { BackIcon, CalendarIcon } from '../components/Icons'
+import { BackIcon } from '../components/Icons'
 import {
   BIRTHDAY_APP_PASSCODE,
   isBirthdayAppUnlocked,
@@ -11,6 +11,7 @@ import {
   type BirthdayCountdownParts,
 } from '../lib/birthdayCountdown'
 import type { CoupleProfile } from '../types'
+import { BirthdayItineraryScreen } from './BirthdayItineraryScreen'
 
 interface BirthdayScreenProps {
   profile: CoupleProfile
@@ -93,6 +94,7 @@ function BirthdayPasscodeGate({ onBack, onUnlocked }: { onBack: () => void; onUn
 
 export function BirthdayScreen({ profile, onBack }: BirthdayScreenProps) {
   const [unlocked, setUnlocked] = useState(isBirthdayAppUnlocked)
+  const [itineraryOpen, setItineraryOpen] = useState(false)
   const [countdown, setCountdown] = useState<BirthdayCountdownParts>(() => getBirthdayCountdown())
 
   const partnerName = firstName(profile.namePartner)
@@ -109,6 +111,10 @@ export function BirthdayScreen({ profile, onBack }: BirthdayScreenProps) {
 
   if (!unlocked) {
     return <BirthdayPasscodeGate onBack={onBack} onUnlocked={() => setUnlocked(true)} />
+  }
+
+  if (itineraryOpen) {
+    return <BirthdayItineraryScreen onBack={() => setItineraryOpen(false)} />
   }
 
   return (
@@ -150,11 +156,12 @@ export function BirthdayScreen({ profile, onBack }: BirthdayScreenProps) {
           </div>
 
           <nav className="birthday-home__nav birthday-home__nav--single" aria-label="Birthday apps">
-            <button type="button" className="birthday-home__nav-btn">
-              <span className="birthday-home__nav-icon birthday-home__nav-icon--accent">
-                <CalendarIcon size={22} />
-              </span>
-              <span className="birthday-home__nav-label">Birthday Itinerary</span>
+            <button
+              type="button"
+              className="birthday-home__nav-btn"
+              onClick={() => setItineraryOpen(true)}
+            >
+              <span className="birthday-home__nav-label">birthday itinerary</span>
             </button>
           </nav>
         </div>

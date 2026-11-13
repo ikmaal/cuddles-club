@@ -11133,29 +11133,36 @@ a.home-listening:focus-visible {
 }
 
 .birthday-home__nav--single {
-  grid-template-columns: auto;
-  justify-content: center;
+  grid-template-columns: 1fr;
+  width: 100%;
 }
 
 .birthday-home__nav--single .birthday-home__nav-btn {
-  width: min(88px, 22vw);
-  padding: 8px 6px 7px;
-  gap: 4px;
-  border-radius: 16px;
-  box-shadow:
-    0 6px 14px rgba(110, 82, 58, 0.09),
-    0 0 0 1px rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 15px 16px;
+  border-radius: 14px;
+  background: #0a0a0a;
+  color: #ffffff;
+  box-shadow: none;
 }
 
-.birthday-home__nav--single .birthday-home__nav-icon {
-  width: 28px;
-  height: 28px;
+.birthday-home__nav--single .birthday-home__nav-btn:active {
+  background: #1a1a1a;
+  box-shadow: none;
+  transform: none;
+  opacity: 0.92;
 }
 
 .birthday-home__nav--single .birthday-home__nav-label {
-  font-size: 0.58rem;
+  font-family: 'BlackerShield', 'Playfair Display', Georgia, serif;
+  font-size: clamp(1.05rem, 4.5vw, 1.25rem);
+  font-weight: normal;
   line-height: 1.1;
-  max-width: 72px;
+  max-width: none;
+  color: #ffffff;
 }
 
 .birthday-home__nav-btn {
@@ -11289,4 +11296,229 @@ a.home-listening:focus-visible {
 
 .birthday-gate__submit:not(:disabled):active {
   opacity: 0.88;
+}
+
+/* ---------- Birthday itinerary ---------- */
+
+.screen--birthday-itinerary {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: #f6f1e8;
+  color: #1a1a1a;
+  overflow: hidden;
+}
+
+.birthday-itinerary__header {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  align-items: center;
+  padding: max(10px, env(safe-area-inset-top)) 12px 10px;
+  background: #f6f1e8;
+}
+
+.birthday-itinerary__back {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: rgba(20, 20, 20, 0.6);
+}
+
+.birthday-itinerary__back:active {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.birthday-itinerary__title {
+  margin: 0;
+  grid-column: 2;
+  text-align: center;
+  font-family: 'BlackerShield', 'Playfair Display', Georgia, serif;
+  font-size: clamp(1.15rem, 4.8vw, 1.4rem);
+  font-weight: normal;
+  letter-spacing: 0.02em;
+  color: #1a1a1a;
+}
+
+.birthday-itinerary__slider-nav {
+  --slide-count: 4;
+  --slide-progress: 0;
+  flex-shrink: 0;
+  padding: 0 14px;
+  margin-bottom: 12px;
+}
+
+.birthday-itinerary__slider-rail {
+  height: 3px;
+  border-radius: 3px;
+  background: rgba(30, 61, 50, 0.12);
+  overflow: hidden;
+}
+
+.birthday-itinerary__slider-line {
+  display: block;
+  height: 100%;
+  width: calc(100% / var(--slide-count));
+  border-radius: 3px;
+  background: #1e3d32;
+  transform: translateX(calc(var(--slide-progress) * 100%));
+  will-change: transform;
+}
+
+.birthday-itinerary__track {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.birthday-itinerary__track::-webkit-scrollbar {
+  display: none;
+}
+
+.birthday-itinerary__slide {
+  flex: 0 0 100%;
+  width: 100%;
+  min-height: 0;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  padding: 0 14px 12px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.birthday-itinerary__card {
+  position: relative;
+  padding: 22px 18px 20px;
+  border-radius: 22px;
+  background: #fffdf9;
+  border: 1px solid rgba(45, 74, 62, 0.08);
+  box-shadow:
+    0 10px 28px rgba(80, 62, 44, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.birthday-itinerary__banner {
+  display: inline-block;
+  margin: 0 auto 18px;
+  width: 100%;
+  text-align: center;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ebe4d4 0%, #e3dcc8 100%);
+  font-family: 'Papernotes', 'Great Vibes', cursive;
+  font-size: clamp(1.2rem, 5vw, 1.45rem);
+  color: #1a1a1a;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.birthday-itinerary__timeline {
+  margin: 0;
+  padding: 0 4px 8px 8px;
+  list-style: none;
+}
+
+.birthday-itinerary__stop {
+  position: relative;
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 0 0 18px 0;
+}
+
+.birthday-itinerary__stop:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 14px;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, #c9b89a 0%, rgba(201, 184, 154, 0.35) 100%);
+  border-radius: 2px;
+}
+
+.birthday-itinerary__node {
+  position: relative;
+  z-index: 1;
+  width: 14px;
+  height: 14px;
+  margin-top: 4px;
+  border-radius: 50%;
+  background: #fffdf9;
+  border: 2px solid #1e3d32;
+  box-shadow: 0 0 0 2px rgba(30, 61, 50, 0.12);
+}
+
+.birthday-itinerary__text {
+  margin: 0;
+  font-family: 'Papernotes', 'Great Vibes', cursive;
+  font-size: clamp(1rem, 4.2vw, 1.15rem);
+  line-height: 1.35;
+  color: #1a1a1a;
+}
+
+.birthday-itinerary__footnote {
+  margin: 8px 0 0;
+  padding-top: 14px;
+  border-top: 1px dashed rgba(30, 61, 50, 0.2);
+  text-align: center;
+  font-family: 'Papernotes', 'Great Vibes', cursive;
+  font-size: clamp(1rem, 4vw, 1.12rem);
+  color: #3d4a42;
+}
+
+.birthday-itinerary__card--letter {
+  min-height: min(52vh, 420px);
+}
+
+.birthday-itinerary__letter {
+  display: grid;
+  gap: 14px;
+}
+
+.birthday-itinerary__letter-p {
+  margin: 0;
+  font-family: 'Papernotes', 'Great Vibes', cursive;
+  font-size: clamp(1.05rem, 4.4vw, 1.2rem);
+  line-height: 1.45;
+  color: #1a1a1a;
+}
+
+.birthday-itinerary__swipe-hint {
+  margin: 18px 0 0;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  color: rgba(42, 61, 52, 0.55);
+}
+
+.birthday-itinerary__footer {
+  flex-shrink: 0;
+  margin: 0 14px max(12px, env(safe-area-inset-bottom));
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: #fffdf8;
+  border: 1px solid rgba(45, 74, 62, 0.1);
+  box-shadow: 0 6px 18px rgba(60, 48, 36, 0.08);
+  text-align: center;
+}
+
+.birthday-itinerary__footer-text {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #2a3d34;
 }
