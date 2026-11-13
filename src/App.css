@@ -11026,16 +11026,17 @@ a.home-listening:focus-visible {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: max(44px, calc(env(safe-area-inset-top) + 36px)) 20px 12px;
+  padding: max(56px, calc(env(safe-area-inset-top) + 48px)) 20px 12px;
   background: #ffffff;
   overflow: hidden;
 }
 
 .birthday-home__art {
   display: block;
-  width: min(220px, 62vw);
+  width: min(300px, 78vw);
   height: auto;
-  max-height: min(36vh, 300px);
+  max-height: min(48vh, 420px);
+  margin-top: 28px;
   object-fit: contain;
   object-position: top center;
 }
