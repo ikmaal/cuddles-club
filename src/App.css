@@ -11481,6 +11481,41 @@ a.home-listening:focus-visible {
   min-height: min(52vh, 420px);
 }
 
+.birthday-itinerary__card--intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: min(48vh, 380px);
+  text-align: center;
+}
+
+.birthday-itinerary__intro {
+  margin: 0;
+  font-family: 'Papernotes', 'Great Vibes', cursive;
+  font-size: clamp(1.35rem, 5.5vw, 1.65rem);
+  line-height: 1.35;
+  color: #1a1a1a;
+}
+
+.birthday-itinerary__notes {
+  margin: 0;
+  padding: 0 4px 4px 1.1em;
+  list-style: disc;
+}
+
+.birthday-itinerary__notes-item {
+  margin: 0 0 14px;
+  font-family: 'Papernotes', 'Great Vibes', cursive;
+  font-size: clamp(1rem, 4.2vw, 1.15rem);
+  line-height: 1.4;
+  color: #1a1a1a;
+}
+
+.birthday-itinerary__notes-item:last-child {
+  margin-bottom: 0;
+}
+
 .birthday-itinerary__letter {
   display: grid;
   gap: 14px;

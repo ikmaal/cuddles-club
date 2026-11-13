@@ -1,11 +1,21 @@
 /** Edit this — your birthday letter shows on the first itinerary slide. */
 export const BIRTHDAY_LETTER = {
-  banner: 'for you ♡',
+  banner: 'happy birthday my princess',
   paragraphs: [
-    'Happy birthday, my favourite person.',
-    'I wrote this little plan because every moment with you feels like something worth celebrating — and this trip is just one more excuse to hold your hand a little longer.',
-    'Swipe through the days when you are ready. Until then, read this slowly, like I mean every word.',
-    'Love you always. ♡',
+    'happiest birthday to my most favourite person ever',
+    'you have reached 22 years old baby pie. i hope your birthday this year will be a special one and i will make sure it is. i wanna make u the happiest girl ever because u deserve everything in this world. you are so special to me baby.',
+    'i hope you will enjoy this trip eventhough its just a small thing from me. i feel like my planning could be better this year but i hope it will still make u happy hehe. cant wait to celebrate more birthdays with u my love. i love u sayang',
+  ],
+}
+
+export const BIRTHDAY_ITINERARY_INTRO = 'here is the itinerary plan!'
+
+export const BIRTHDAY_ITINERARY_NOTES = {
+  title: 'things to take note',
+  items: [
+    'wear what u feel is most comfortable',
+    'pls bring the night dress :)',
+    'most importantly, i hope you enjoy the trip baby. i love you ♡',
   ],
 }
 
@@ -29,13 +39,13 @@ export const BIRTHDAY_ITINERARY_DAYS: ItineraryDay[] = [
     banner: '15 Nov • Day 1 ♡',
     dayNumber: 1,
     items: [
-      'Meet at Woodlands MRT (2.00pm)',
-      'Reach JB (3.00pm)',
+      'Meet at Woodlands MRT (1.30pm)',
+      'Reach JB (2.30pm)',
       'Get matcha from Kota Jail',
       'Check in Airbnb',
       'Rest',
       'Dinner at GBQ',
-      'Watch a movie',
+      'Watch a movie (Kudrat 1968)',
     ],
     footnote: 'See you JB! ♡',
   },
@@ -46,11 +56,11 @@ export const BIRTHDAY_ITINERARY_DAYS: ItineraryDay[] = [
     banner: '16 Nov • Day 2 ♡',
     dayNumber: 2,
     items: [
-      'Wake up (8.00am)',
+      'Wake up',
       'Kiss Kiss Cuddles ♡',
       'Whole day surprise activity!',
       'Dinner',
-      'Gift reveal back at Airbnb ♡',
+      'go back to airbnb',
     ],
     footnote: 'Another day, another surprise ♡',
   },
@@ -61,8 +71,9 @@ export const BIRTHDAY_ITINERARY_DAYS: ItineraryDay[] = [
     banner: '17 Nov • Day 3 ♡',
     dayNumber: 3,
     items: [
-      'Wake up whenever',
+      'wake up',
       'Kiss Kiss Cuddles ♡',
+      'check out at 12pm',
       'Lunch',
       'Photobooth at Cult Classics',
       'Time to go back home :(',

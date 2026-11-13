@@ -1,15 +1,19 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { BackIcon } from '../components/Icons'
-import { BIRTHDAY_ITINERARY_DAYS, BIRTHDAY_LETTER } from '../lib/birthdayItinerary'
+import {
+  BIRTHDAY_ITINERARY_DAYS,
+  BIRTHDAY_ITINERARY_INTRO,
+  BIRTHDAY_ITINERARY_NOTES,
+  BIRTHDAY_LETTER,
+} from '../lib/birthdayItinerary'
 
 interface BirthdayItineraryScreenProps {
   onBack: () => void
 }
 
-const SLIDE_COUNT = 1 + BIRTHDAY_ITINERARY_DAYS.length
+const SLIDE_COUNT = 3 + BIRTHDAY_ITINERARY_DAYS.length
 
 export function BirthdayItineraryScreen({ onBack }: BirthdayItineraryScreenProps) {
-  const [activeSlide, setActiveSlide] = useState(0)
   const [slideProgress, setSlideProgress] = useState(0)
   const trackRef = useRef<HTMLDivElement>(null)
 
@@ -22,8 +26,6 @@ export function BirthdayItineraryScreen({ onBack }: BirthdayItineraryScreenProps
       const progress = track.scrollLeft / width
       const clampedProgress = Math.max(0, Math.min(progress, SLIDE_COUNT - 1))
       setSlideProgress(clampedProgress)
-      const index = Math.round(clampedProgress)
-      setActiveSlide((prev) => (prev === index ? prev : index))
     }
 
     onScroll()
@@ -75,7 +77,12 @@ export function BirthdayItineraryScreen({ onBack }: BirthdayItineraryScreenProps
                 </p>
               ))}
             </div>
-            <p className="birthday-itinerary__swipe-hint">swipe for the trip plan →</p>
+          </article>
+        </section>
+
+        <section className="birthday-itinerary__slide" aria-label="Itinerary intro">
+          <article className="birthday-itinerary__card birthday-itinerary__card--intro">
+            <p className="birthday-itinerary__intro">{BIRTHDAY_ITINERARY_INTRO}</p>
           </article>
         </section>
 
@@ -96,22 +103,23 @@ export function BirthdayItineraryScreen({ onBack }: BirthdayItineraryScreenProps
                   </li>
                 ))}
               </ol>
-
-              {day.footnote ? (
-                <p className="birthday-itinerary__footnote">{day.footnote}</p>
-              ) : null}
             </article>
           </section>
         ))}
-      </div>
 
-      <footer className="birthday-itinerary__footer">
-        <span className="birthday-itinerary__footer-text">
-          {activeSlide === 0
-            ? 'start here ♡'
-            : '3 days • 1 birthday adventure ♡'}
-        </span>
-      </footer>
+        <section className="birthday-itinerary__slide" aria-label={BIRTHDAY_ITINERARY_NOTES.title}>
+          <article className="birthday-itinerary__card">
+            <div className="birthday-itinerary__banner">{BIRTHDAY_ITINERARY_NOTES.title}</div>
+            <ul className="birthday-itinerary__notes">
+              {BIRTHDAY_ITINERARY_NOTES.items.map((item, index) => (
+                <li key={index} className="birthday-itinerary__notes-item">
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </article>
+        </section>
+      </div>
     </div>
   )
 }
