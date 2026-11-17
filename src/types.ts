@@ -52,7 +52,7 @@ export interface CatState {
 
 export const XP_PER_LEVEL = 100
 
-export type Screen = 'home' | 'strips' | 'us' | 'academics' | 'places' | 'pooptracker' | 'birthday'
+export type Screen = 'home' | 'strips' | 'us' | 'academics' | 'places' | 'pooptracker'
 
 export interface PoopLog {
   id: string

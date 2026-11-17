@@ -187,18 +187,6 @@ html.poop-bg .app {
   box-shadow: none;
 }
 
-html.birthday-bg,
-html.birthday-bg body,
-html.birthday-bg #root {
-  background-color: #ffffff;
-  overscroll-behavior: none;
-}
-
-html.birthday-bg .app {
-  background: #ffffff;
-  box-shadow: none;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .app--home-bg .app__main,
   .app--home-bg .tabbar {
