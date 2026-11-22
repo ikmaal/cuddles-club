@@ -877,6 +877,11 @@
   color: #6b3b24;
 }
 
+.service__tile--gamenight {
+  background: linear-gradient(145deg, #2a2340 0%, #16121f 100%);
+  color: #c9a4ff;
+}
+
 .service__tile--image {
   overflow: hidden;
   padding: 0;
