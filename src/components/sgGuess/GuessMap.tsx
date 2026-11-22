@@ -38,8 +38,8 @@ function addBaseTileLayer(map: L.Map): L.TileLayer {
   }).addTo(map)
 }
 
-function guessIcon(kind: 'guess' | 'answer') {
-  const color = kind === 'guess' ? '#e74c3c' : '#27ae60'
+function guessIcon(kind: 'guess' | 'answer' | 'rival') {
+  const color = kind === 'guess' ? '#e74c3c' : kind === 'rival' ? '#3498db' : '#27ae60'
   return L.divIcon({
     className: `sg-guess-pin sg-guess-pin--${kind}`,
     html: `<span class="sg-guess-pin__dot" style="--pin-color:${color}"></span>`,
@@ -64,10 +64,11 @@ interface GuessMapProps {
   mode: 'pick' | 'reveal'
   guess: LatLng | null
   answer: LatLng | null
+  rivalGuess?: LatLng | null
   onPick?: (coords: LatLng) => void
 }
 
-export function GuessMap({ mode, guess, answer, onPick }: GuessMapProps) {
+export function GuessMap({ mode, guess, answer, rivalGuess, onPick }: GuessMapProps) {
   const hostRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
   const overlayRef = useRef<L.LayerGroup | null>(null)
@@ -151,6 +152,13 @@ export function GuessMap({ mode, guess, answer, onPick }: GuessMapProps) {
       }).addTo(overlay)
     }
 
+    if (rivalGuess) {
+      L.marker([rivalGuess.lat, rivalGuess.lng], {
+        icon: guessIcon('rival'),
+        zIndexOffset: 950,
+      }).addTo(overlay)
+    }
+
     if (answer) {
       L.marker([answer.lat, answer.lng], {
         icon: guessIcon('answer'),
@@ -174,7 +182,12 @@ export function GuessMap({ mode, guess, answer, onPick }: GuessMapProps) {
         },
       ).addTo(overlay)
 
-      const bounds = L.latLngBounds([guess.lat, guess.lng], [answer.lat, answer.lng])
+      const boundsPoints: L.LatLngTuple[] = [
+        [guess.lat, guess.lng],
+        [answer.lat, answer.lng],
+      ]
+      if (rivalGuess) boundsPoints.push([rivalGuess.lat, rivalGuess.lng])
+      const bounds = L.latLngBounds(boundsPoints)
       map.fitBounds(bounds.pad(0.25), { animate: true, maxZoom: 15 })
       if (map.getZoom() < minZoom) {
         map.setZoom(minZoom)
@@ -186,7 +199,7 @@ export function GuessMap({ mode, guess, answer, onPick }: GuessMapProps) {
     } else {
       refitSingaporeFrame()
     }
-  }, [guess, answer, refitSingaporeFrame])
+  }, [guess, answer, rivalGuess, refitSingaporeFrame])
 
   useEffect(() => {
     const t = window.setTimeout(() => {

@@ -2,7 +2,10 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { BackIcon } from '../components/Icons'
 import { GuessMap } from '../components/sgGuess/GuessMap'
 import { StreetViewPanorama } from '../components/sgGuess/StreetViewPanorama'
+import { useCouple } from '../context/CoupleContext'
 import { useOverscrollGuard } from '../hooks/useOverscrollGuard'
+import { useSgGuessDuel } from '../hooks/useSgGuessDuel'
+import { slotSubmitted } from '../lib/sgGuessDuel'
 import {
   distanceMeters,
   formatDistance,
@@ -61,6 +64,7 @@ interface SgGuessScreenProps {
 export function SgGuessScreen({ onBack }: SgGuessScreenProps) {
   const screenRef = useOverscrollGuard<HTMLDivElement>(false)
   const hasApiKey = Boolean(googleMapsApiKey())
+  const { coupleId, slot, profile } = useCouple()
 
   const [phase, setPhase] = useState<GamePhase>('menu')
   const [mapsApi, setMapsApi] = useState<typeof google.maps | null>(null)
@@ -78,8 +82,37 @@ export function SgGuessScreen({ onBack }: SgGuessScreenProps) {
   const startingRef = useRef(false)
   const timedOutRef = useRef(false)
   const submittedRoundRef = useRef(false)
+  const duelTimedOutRef = useRef(false)
+
+  const duelCtl = useSgGuessDuel(coupleId, slot, Boolean(mapsApi))
 
   const totalScore = roundResults.reduce((sum, row) => sum + row.score, 0)
+
+  const inDuel = duelCtl.duelView === 'lobby' || duelCtl.duelView === 'play'
+  const activePhase = inDuel ? duelCtl.duelPhase : phase
+
+  const myDuelScore =
+    duelCtl.duel && slot
+      ? slot === 'a'
+        ? duelCtl.duel.score_a
+        : duelCtl.duel.score_b
+      : 0
+  const rivalDuelScore =
+    duelCtl.duel && slot
+      ? slot === 'a'
+        ? duelCtl.duel.score_b
+        : duelCtl.duel.score_a
+      : 0
+
+  const duelRoundLocation = duelCtl.duelLocation
+  const duelRoundIndex = duelCtl.duel?.round_index ?? 0
+  const partnerReady =
+    duelCtl.duel && slot
+      ? slot === 'a'
+        ? duelCtl.duel.ready_b
+        : duelCtl.duel.ready_a
+      : false
+  const iAmReady = duelCtl.duel && slot ? (slot === 'a' ? duelCtl.duel.ready_a : duelCtl.duel.ready_b) : false
 
   const prepareMaps = useCallback(async () => {
     setLoadError(null)
@@ -87,6 +120,7 @@ export function SgGuessScreen({ onBack }: SgGuessScreenProps) {
       const g = await loadGoogleMaps()
       mapsRef.current = g.maps
       setMapsApi(g.maps)
+      duelCtl.bindMaps(g.maps)
       return g.maps
     } catch (error) {
       const message =
@@ -97,7 +131,7 @@ export function SgGuessScreen({ onBack }: SgGuessScreenProps) {
       setPhase('menu')
       return null
     }
-  }, [])
+  }, [duelCtl])
 
   const loadRound = useCallback(async (maps: typeof google.maps, index: number) => {
     setPhase('loading')
@@ -181,6 +215,37 @@ export function SgGuessScreen({ onBack }: SgGuessScreenProps) {
     return () => window.clearInterval(id)
   }, [guess, phase, submitGuess, timeLeft])
 
+  // Duel: auto-submit when timer ends
+  useEffect(() => {
+    if (duelCtl.duelPhase !== 'explore' && duelCtl.duelPhase !== 'guess') return
+    if (!duelCtl.duel || !slot) return
+    const left = duelCtl.secondsLeft
+    if (left > 0) return
+    if (duelTimedOutRef.current) return
+  if (slotSubmitted(duelCtl.duel, slot)) return
+    duelTimedOutRef.current = true
+    void duelCtl.postGuess(guess)
+  }, [duelCtl, guess, slot])
+
+  useEffect(() => {
+    if (duelCtl.duel?.status !== 'playing') {
+      duelTimedOutRef.current = false
+    }
+  }, [duelCtl.duel?.status, duelCtl.duel?.round_index])
+
+  useEffect(() => {
+    if (!inDuel || duelCtl.duel?.status !== 'playing') return
+    setGuess(null)
+    duelCtl.setMapSubview('explore')
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reset pin each synced round only
+  }, [inDuel, duelCtl.duel?.round_index])
+
+  useEffect(() => {
+    if (inDuel && duelCtl.duelView === 'play' && hasApiKey && !mapsApi) {
+      void prepareMaps()
+    }
+  }, [duelCtl.duelView, hasApiKey, inDuel, mapsApi, prepareMaps])
+
   useEffect(() => {
     if (phase !== 'summary') return
     const merged = roundResults.reduce((sum, row) => sum + row.score, 0)
@@ -194,23 +259,32 @@ export function SgGuessScreen({ onBack }: SgGuessScreenProps) {
   return (
     <div className="screen screen--sg-guess" ref={screenRef}>
       <header className="sg-guess__top">
-        <button type="button" className="sg-guess__back" onClick={onBack} aria-label="Back">
+        <button
+          type="button"
+          className="sg-guess__back"
+          onClick={() => {
+            if (inDuel) void duelCtl.leaveDuel()
+            else onBack()
+          }}
+          aria-label="Back"
+        >
           <BackIcon size={18} />
         </button>
         <div className="sg-guess__brand">
           <p className="sg-guess__eyebrow">Singapore only</p>
           <h1 className="sg-guess__title">SG Guess</h1>
         </div>
-        {phase !== 'menu' && phase !== 'summary' ? (
+        {activePhase !== 'menu' && activePhase !== 'summary' && activePhase !== 'duel-lobby' ? (
           <div className="sg-guess__round-pill" aria-live="polite">
-            Round {Math.min(roundIndex + 1, SG_GUESS_ROUND_COUNT)}/{SG_GUESS_ROUND_COUNT}
+            Round {Math.min((inDuel ? duelRoundIndex : roundIndex) + 1, SG_GUESS_ROUND_COUNT)}/
+            {SG_GUESS_ROUND_COUNT}
           </div>
         ) : (
           <span className="sg-guess__round-pill sg-guess__round-pill--ghost" aria-hidden />
         )}
       </header>
 
-      {phase === 'menu' ? (
+      {activePhase === 'menu' ? (
         <section className="sg-guess__menu">
           <div className="sg-guess__hero">
             <p className="sg-guess__tagline">
@@ -222,6 +296,39 @@ export function SgGuessScreen({ onBack }: SgGuessScreenProps) {
               <li>Outdoor coverage · Singapore boundary only</li>
             </ul>
           </div>
+
+          {duelCtl.enabled ? (
+            <div className="sg-guess__duel-card">
+              <h2 className="sg-guess__duel-title">Live 1v1 duel</h2>
+              <p className="sg-guess__duel-copy">
+                Same Street View, same timer — you and {profile.namePartner} guess on your own phones.
+                Sign in on both devices (Us tab).
+              </p>
+              {duelCtl.duel && duelCtl.duel.status === 'lobby' && !iAmReady ? (
+                <button
+                  type="button"
+                  className="sg-guess__btn sg-guess__btn--accent"
+                  disabled={duelCtl.duelBusy || !hasApiKey}
+                  onClick={() => void duelCtl.joinLobby()}
+                >
+                  Join {profile.namePartner}&apos;s lobby
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="sg-guess__btn sg-guess__btn--accent"
+                  disabled={duelCtl.duelBusy || !hasApiKey}
+                  onClick={() => void duelCtl.enterLobby()}
+                >
+                  {duelCtl.duel?.status === 'lobby' ? 'Open duel lobby' : 'Start live duel'}
+                </button>
+              )}
+            </div>
+          ) : (
+            <p className="sg-guess__duel-hint">
+              Live duel needs Supabase + both of you signed in on the Us tab.
+            </p>
+          )}
 
           {!hasApiKey ? (
             <div className="sg-guess__notice sg-guess__notice--warn" role="alert">
@@ -237,6 +344,12 @@ export function SgGuessScreen({ onBack }: SgGuessScreenProps) {
           {loadError ? (
             <div className="sg-guess__notice sg-guess__notice--warn" role="alert">
               {loadError}
+            </div>
+          ) : null}
+
+          {duelCtl.duelError ? (
+            <div className="sg-guess__notice sg-guess__notice--warn" role="alert">
+              {duelCtl.duelError}
             </div>
           ) : null}
 
@@ -258,44 +371,107 @@ export function SgGuessScreen({ onBack }: SgGuessScreenProps) {
         </section>
       ) : null}
 
-      {phase === 'loading' ? (
+      {activePhase === 'duel-lobby' && duelCtl.duel && slot ? (
+        <section className="sg-guess__menu sg-guess__duel-lobby">
+          <div className="sg-guess__duel-card sg-guess__duel-card--lobby">
+            <h2 className="sg-guess__duel-title">Duel lobby</h2>
+            <p className="sg-guess__duel-copy">
+              {duelCtl.isHost
+                ? 'Start when you’re both ready — same rounds, synced timer.'
+                : `Waiting for ${profile.namePartner} to start the match.`}
+            </p>
+            <ul className="sg-guess__duel-ready" aria-label="Player readiness">
+              <li className={iAmReady ? 'is-ready' : ''}>
+                You {iAmReady ? '· ready' : '· not ready'}
+              </li>
+              <li className={partnerReady ? 'is-ready' : ''}>
+                {profile.namePartner} {partnerReady ? '· ready' : '· not ready'}
+              </li>
+            </ul>
+            <div className="sg-guess__menu-actions">
+              {duelCtl.isHost ? (
+                <button
+                  type="button"
+                  className="sg-guess__btn sg-guess__btn--primary"
+                  disabled={!iAmReady || !partnerReady || duelCtl.duelBusy || !mapsApi}
+                  onClick={() => void (prepareMaps().then(() => duelCtl.startMatch()))}
+                >
+                  Start duel
+                </button>
+              ) : null}
+              <button
+                type="button"
+                className="sg-guess__btn sg-guess__btn--ghost"
+                onClick={() => void duelCtl.leaveDuel()}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {activePhase === 'loading' || phase === 'loading' ? (
         <div className="sg-guess__loading">
           <span className="sg-guess__spinner" aria-hidden />
-          <p>Finding a Street View spot in Singapore…</p>
+          <p>
+            {inDuel && !duelCtl.isHost
+              ? `${profile.namePartner} is picking a Street View spot…`
+              : 'Finding a Street View spot in Singapore…'}
+          </p>
         </div>
       ) : null}
 
-      {mapsApi && roundLocation && (phase === 'explore' || phase === 'guess') ? (
+      {mapsApi &&
+      ((roundLocation && (phase === 'explore' || phase === 'guess')) ||
+        (inDuel && duelRoundLocation && (activePhase === 'explore' || activePhase === 'guess'))) ? (
         <div className="sg-guess__play">
-          <div className={`sg-guess__street-wrap${phase === 'guess' ? ' is-dimmed' : ''}`}>
+          <div
+            className={`sg-guess__street-wrap${(inDuel ? activePhase : phase) === 'guess' ? ' is-dimmed' : ''}`}
+          >
             <StreetViewPanorama
-              key={`${roundIndex}-${roundLocation.panoId ?? `${roundLocation.lat},${roundLocation.lng}`}`}
+              key={`${inDuel ? duelRoundIndex : roundIndex}-${
+                (inDuel ? duelRoundLocation : roundLocation)!.panoId ??
+                `${(inDuel ? duelRoundLocation : roundLocation)!.lat},${(inDuel ? duelRoundLocation : roundLocation)!.lng}`
+              }`}
               maps={mapsApi}
-              location={roundLocation}
-              interactive={phase === 'explore'}
+              location={(inDuel ? duelRoundLocation : roundLocation)!}
+              interactive={(inDuel ? activePhase : phase) === 'explore'}
             />
           </div>
 
-          {phase === 'guess' ? (
+          {(inDuel ? activePhase : phase) === 'guess' ? (
             <div className="sg-guess__guess-sheet">
               <div className="sg-guess__sheet-head">
                 <h2>Place your pin on the map</h2>
                 <p>Tap on the Singapore map only. Max 5,000 points for a bullseye.</p>
+                {inDuel && duelCtl.duel && slot ? (
+                  <p className="sg-guess__partner-lock">
+                    {slotSubmitted(duelCtl.duel, slot === 'a' ? 'b' : 'a')
+                      ? `${profile.namePartner} locked in`
+                      : `${profile.namePartner} is still guessing…`}
+                  </p>
+                ) : null}
               </div>
               <GuessMap mode="pick" guess={guess} answer={null} onPick={setGuess} />
               <div className="sg-guess__sheet-actions">
                 <button
                   type="button"
                   className="sg-guess__btn sg-guess__btn--ghost"
-                  onClick={() => setPhase('explore')}
+                  onClick={() =>
+                    inDuel ? duelCtl.setMapSubview('explore') : setPhase('explore')
+                  }
                 >
                   Back to Street View
                 </button>
                 <button
                   type="button"
                   className="sg-guess__btn sg-guess__btn--accent"
-                  disabled={!guess}
-                  onClick={() => submitGuess()}
+                  disabled={
+                    !guess ||
+                    Boolean(inDuel && slot && duelCtl.duel && slotSubmitted(duelCtl.duel, slot))
+                  }
+                  onClick={() => (inDuel ? void duelCtl.postGuess(guess) : submitGuess())}
                 >
                   Guess!
                 </button>
@@ -304,17 +480,32 @@ export function SgGuessScreen({ onBack }: SgGuessScreenProps) {
           ) : null}
 
           <footer className="sg-guess__hud">
-            <div className="sg-guess__hud-score">
-              Score <strong>{totalScore.toLocaleString()}</strong>
+            {inDuel ? (
+              <div className="sg-guess__hud-duel">
+                <span>
+                  You <strong>{myDuelScore.toLocaleString()}</strong>
+                </span>
+                <span>
+                  {profile.namePartner} <strong>{rivalDuelScore.toLocaleString()}</strong>
+                </span>
+              </div>
+            ) : (
+              <div className="sg-guess__hud-score">
+                Score <strong>{totalScore.toLocaleString()}</strong>
+              </div>
+            )}
+            <div
+              className={`sg-guess__hud-timer${(inDuel ? duelCtl.secondsLeft : timeLeft) <= 30 ? ' is-urgent' : ''}`}
+            >
+              {formatClock(inDuel ? duelCtl.secondsLeft : timeLeft)}
             </div>
-            <div className={`sg-guess__hud-timer${timeLeft <= 30 ? ' is-urgent' : ''}`}>
-              {formatClock(timeLeft)}
-            </div>
-            {phase === 'explore' ? (
+            {(inDuel ? activePhase : phase) === 'explore' ? (
               <button
                 type="button"
                 className="sg-guess__btn sg-guess__btn--guess"
-                onClick={() => setPhase('guess')}
+                onClick={() =>
+                  inDuel ? duelCtl.setMapSubview('guess') : setPhase('guess')
+                }
               >
                 Guess
               </button>
@@ -325,7 +516,60 @@ export function SgGuessScreen({ onBack }: SgGuessScreenProps) {
         </div>
       ) : null}
 
-      {phase === 'reveal' && lastReveal ? (
+      {inDuel && activePhase === 'reveal' && duelCtl.duel?.last_round && slot ? (
+        <div className="sg-guess__reveal">
+          {(() => {
+            const lr = duelCtl.duel!.last_round!
+            const mine = slot === 'a' ? lr.a : lr.b
+            const rival = slot === 'a' ? lr.b : lr.a
+            return (
+              <>
+                <div className="sg-guess__reveal-scores sg-guess__reveal-scores--duel">
+                  <div>
+                    <p className="sg-guess__reveal-points">{mine.score.toLocaleString()} pts</p>
+                    <p className="sg-guess__reveal-label">You</p>
+                    <p className="sg-guess__reveal-distance">
+                      {Number.isFinite(mine.distanceM) ? formatDistance(mine.distanceM) : 'No guess'}
+                    </p>
+                  </div>
+                  <span className="sg-guess__reveal-vs" aria-hidden>
+                    vs
+                  </span>
+                  <div>
+                    <p className="sg-guess__reveal-points">{rival.score.toLocaleString()} pts</p>
+                    <p className="sg-guess__reveal-label">{profile.namePartner}</p>
+                    <p className="sg-guess__reveal-distance">
+                      {Number.isFinite(rival.distanceM) ? formatDistance(rival.distanceM) : 'No guess'}
+                    </p>
+                  </div>
+                </div>
+                <GuessMap
+                  mode="reveal"
+                  guess={mine.guess}
+                  rivalGuess={rival.guess}
+                  answer={lr.answer}
+                />
+              </>
+            )
+          })()}
+          <div className="sg-guess__reveal-actions">
+            {duelCtl.isHost ? (
+              <button
+                type="button"
+                className="sg-guess__btn sg-guess__btn--primary"
+                disabled={duelCtl.duelBusy}
+                onClick={() => void duelCtl.advanceRound()}
+              >
+                {duelRoundIndex + 1 >= SG_GUESS_ROUND_COUNT ? 'See final scores' : 'Next round'}
+              </button>
+            ) : (
+              <p className="sg-guess__reveal-wait">Waiting for host to continue…</p>
+            )}
+          </div>
+        </div>
+      ) : null}
+
+      {!inDuel && phase === 'reveal' && lastReveal ? (
         <div className="sg-guess__reveal">
           <div className="sg-guess__reveal-scores">
             <p className="sg-guess__reveal-points">{lastReveal.score.toLocaleString()} pts</p>
@@ -349,7 +593,35 @@ export function SgGuessScreen({ onBack }: SgGuessScreenProps) {
         </div>
       ) : null}
 
-      {phase === 'summary' ? (
+      {inDuel && activePhase === 'summary' && duelCtl.duel && slot ? (
+        <section className="sg-guess__summary">
+          <p className="sg-guess__summary-label">Duel complete</p>
+          <p className="sg-guess__summary-score">
+            {myDuelScore.toLocaleString()} — {rivalDuelScore.toLocaleString()}
+          </p>
+          <p className="sg-guess__summary-sub">
+            {myDuelScore === rivalDuelScore
+              ? 'Perfectly matched — rematch?'
+              : myDuelScore > rivalDuelScore
+                ? `You beat ${profile.namePartner} this round!`
+                : `${profile.namePartner} takes the crown.`}
+          </p>
+          <div className="sg-guess__menu-actions">
+            <button
+              type="button"
+              className="sg-guess__btn sg-guess__btn--primary"
+              onClick={() => void duelCtl.leaveDuel()}
+            >
+              Back to menu
+            </button>
+            <button type="button" className="sg-guess__btn sg-guess__btn--ghost" onClick={onBack}>
+              Back home
+            </button>
+          </div>
+        </section>
+      ) : null}
+
+      {!inDuel && phase === 'summary' ? (
         <section className="sg-guess__summary">
           <p className="sg-guess__summary-label">Game complete</p>
           <p className="sg-guess__summary-score">{totalScore.toLocaleString()}</p>

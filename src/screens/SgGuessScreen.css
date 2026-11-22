@@ -438,3 +438,107 @@
 .sg-guess-pin__label {
   display: none;
 }
+
+.sg-guess__duel-card {
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(61, 214, 140, 0.08);
+  border: 1px solid rgba(61, 214, 140, 0.28);
+}
+
+.sg-guess__duel-card--lobby {
+  background: rgba(244, 196, 48, 0.08);
+  border-color: rgba(244, 196, 48, 0.35);
+}
+
+.sg-guess__duel-title {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.sg-guess__duel-copy {
+  margin: 0 0 12px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--sg-muted);
+}
+
+.sg-guess__duel-hint {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--sg-muted);
+  text-align: center;
+}
+
+.sg-guess__duel-ready {
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+  font-size: 0.85rem;
+}
+
+.sg-guess__duel-ready li {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--sg-line);
+}
+
+.sg-guess__duel-ready li.is-ready {
+  border-color: rgba(61, 214, 140, 0.45);
+  color: #b8f5d6;
+}
+
+.sg-guess__duel-lobby {
+  flex: 1;
+  justify-content: center;
+}
+
+.sg-guess__hud-duel {
+  display: grid;
+  gap: 2px;
+  font-size: 0.68rem;
+  color: var(--sg-muted);
+}
+
+.sg-guess__hud-duel strong {
+  color: var(--sg-ink);
+  font-size: 0.82rem;
+}
+
+.sg-guess__partner-lock {
+  margin: 6px 0 0;
+  font-size: 0.75rem;
+  color: var(--sg-green);
+}
+
+.sg-guess__reveal-scores--duel {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 12px;
+  align-items: start;
+  text-align: center;
+}
+
+.sg-guess__reveal-label {
+  margin: 4px 0 0;
+  font-size: 0.72rem;
+  color: var(--sg-muted);
+}
+
+.sg-guess__reveal-vs {
+  margin-top: 12px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--sg-accent);
+}
+
+.sg-guess__reveal-wait {
+  margin: 0;
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--sg-muted);
+}
