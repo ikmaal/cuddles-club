@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="SG Guess">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a3d32"/>
+      <stop offset="100%" stop-color="#0d1f1a"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="url(#bg)"/>
+  <path fill="#3dd68c" d="M64 18c-20 0-36 14-36 36 0 27 36 56 36 56s36-29 36-56c0-22-16-36-36-36zm0 20a16 16 0 1 1 0 32 16 16 0 0 1 0-32z"/>
+  <circle cx="64" cy="58" r="9" fill="#f4c430"/>
+</svg>
