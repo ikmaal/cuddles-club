@@ -542,3 +542,223 @@
   font-size: 0.82rem;
   color: var(--sg-muted);
 }
+
+/* Live duel lobby */
+.sg-duel-lobby {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px 16px max(24px, env(safe-area-inset-bottom));
+  overflow: auto;
+}
+
+.sg-duel-lobby__glow {
+  position: absolute;
+  inset: -20% -30% auto;
+  height: 42%;
+  background: radial-gradient(ellipse at 50% 0%, rgba(244, 196, 48, 0.2), transparent 70%);
+  pointer-events: none;
+}
+
+.sg-duel-lobby__head {
+  position: relative;
+  text-align: center;
+}
+
+.sg-duel-lobby__kicker {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sg-green);
+}
+
+.sg-duel-lobby__title {
+  margin: 6px 0 10px;
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.sg-duel-lobby__sync {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  color: var(--sg-muted);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--sg-line);
+}
+
+.sg-duel-lobby__sync.is-live {
+  color: #b8f5d6;
+  border-color: rgba(61, 214, 140, 0.35);
+}
+
+.sg-duel-lobby__sync-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.sg-duel-lobby__sync.is-live .sg-duel-lobby__sync-dot {
+  background: var(--sg-green);
+  box-shadow: 0 0 10px rgba(61, 214, 140, 0.55);
+}
+
+.sg-duel-lobby__versus {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.sg-duel-lobby__vs {
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: var(--sg-accent);
+}
+
+.sg-duel-lobby__player {
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  padding: 14px 10px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--sg-line);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.sg-duel-lobby__player.is-ready {
+  border-color: rgba(61, 214, 140, 0.45);
+  box-shadow: 0 0 0 1px rgba(61, 214, 140, 0.15), inset 0 0 24px rgba(61, 214, 140, 0.08);
+}
+
+.sg-duel-lobby__player--you.is-ready .sg-duel-lobby__avatar {
+  background: linear-gradient(145deg, #3dd68c, #2ab872);
+}
+
+.sg-duel-lobby__player--partner.is-ready .sg-duel-lobby__avatar {
+  background: linear-gradient(145deg, #5dade2, #3498db);
+}
+
+.sg-duel-lobby__avatar {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0c1210;
+  background: rgba(255, 255, 255, 0.12);
+  border: 2px solid rgba(255, 255, 255, 0.18);
+}
+
+.sg-duel-lobby__name {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.sg-duel-lobby__role {
+  margin: 0;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sg-muted);
+}
+
+.sg-duel-lobby__status {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--sg-accent);
+}
+
+.sg-duel-lobby__player.is-ready .sg-duel-lobby__status {
+  color: var(--sg-green);
+}
+
+.sg-duel-lobby__steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--sg-muted);
+}
+
+.sg-duel-lobby__steps li {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--sg-line);
+}
+
+.sg-duel-lobby__steps li span {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--sg-ink);
+}
+
+.sg-duel-lobby__steps li.done {
+  border-color: rgba(61, 214, 140, 0.35);
+  color: #c8f5e0;
+}
+
+.sg-duel-lobby__steps li.current {
+  border-color: rgba(244, 196, 48, 0.4);
+  color: var(--sg-ink);
+}
+
+.sg-duel-lobby__actions {
+  margin-top: auto;
+  display: grid;
+  gap: 10px;
+}
+
+.sg-duel-lobby__ready.is-on {
+  box-shadow: 0 0 0 2px rgba(61, 214, 140, 0.35);
+}
+
+.sg-duel-lobby__start {
+  min-height: 50px;
+  font-size: 1rem;
+}
+
+.sg-duel-lobby__guest-hint,
+.sg-duel-lobby__blocker {
+  margin: 0;
+  text-align: center;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--sg-muted);
+}
+
+.sg-duel-lobby__blocker {
+  color: #ffe8a3;
+}

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { BackIcon } from '../components/Icons'
 import { GuessMap } from '../components/sgGuess/GuessMap'
+import { SgGuessDuelLobby } from '../components/sgGuess/SgGuessDuelLobby'
 import { StreetViewPanorama } from '../components/sgGuess/StreetViewPanorama'
 import { useCouple } from '../context/CoupleContext'
 import { useOverscrollGuard } from '../hooks/useOverscrollGuard'
@@ -77,6 +78,7 @@ export function SgGuessScreen({ onBack }: SgGuessScreenProps) {
   const [roundResults, setRoundResults] = useState<RoundResult[]>([])
   const [lastReveal, setLastReveal] = useState<RoundResult | null>(null)
   const [bestScore, setBestScore] = useState(() => readBestScore())
+  const [duelStarting, setDuelStarting] = useState(false)
 
   const mapsRef = useRef<typeof google.maps | null>(null)
   const startingRef = useRef(false)
@@ -106,13 +108,8 @@ export function SgGuessScreen({ onBack }: SgGuessScreenProps) {
 
   const duelRoundLocation = duelCtl.duelLocation
   const duelRoundIndex = duelCtl.duel?.round_index ?? 0
-  const partnerReady =
-    duelCtl.duel && slot
-      ? slot === 'a'
-        ? duelCtl.duel.ready_b
-        : duelCtl.duel.ready_a
-      : false
   const iAmReady = duelCtl.duel && slot ? (slot === 'a' ? duelCtl.duel.ready_a : duelCtl.duel.ready_b) : false
+  const openLobby = duelCtl.duel?.status === 'lobby'
 
   const prepareMaps = useCallback(async () => {
     setLoadError(null)
@@ -132,6 +129,18 @@ export function SgGuessScreen({ onBack }: SgGuessScreenProps) {
       return null
     }
   }, [duelCtl])
+
+  const handleDuelStart = useCallback(async () => {
+    setDuelStarting(true)
+    duelCtl.clearDuelError()
+    try {
+      const maps = mapsApi ?? (await prepareMaps())
+      if (!maps) return
+      await duelCtl.startMatch()
+    } finally {
+      setDuelStarting(false)
+    }
+  }, [duelCtl, mapsApi, prepareMaps])
 
   const loadRound = useCallback(async (maps: typeof google.maps, index: number) => {
     setPhase('loading')
@@ -247,6 +256,12 @@ export function SgGuessScreen({ onBack }: SgGuessScreenProps) {
   }, [duelCtl.duelView, hasApiKey, inDuel, mapsApi, prepareMaps])
 
   useEffect(() => {
+    if (activePhase === 'duel-lobby' && hasApiKey && !mapsApi) {
+      void prepareMaps()
+    }
+  }, [activePhase, hasApiKey, mapsApi, prepareMaps])
+
+  useEffect(() => {
     if (phase !== 'summary') return
     const merged = roundResults.reduce((sum, row) => sum + row.score, 0)
     setBestScore((prev) => {
@@ -304,14 +319,17 @@ export function SgGuessScreen({ onBack }: SgGuessScreenProps) {
                 Same Street View, same timer — you and {profile.namePartner} guess on your own phones.
                 Sign in on both devices (Us tab).
               </p>
-              {duelCtl.duel && duelCtl.duel.status === 'lobby' && !iAmReady ? (
+              {openLobby && !inDuel ? (
                 <button
                   type="button"
                   className="sg-guess__btn sg-guess__btn--accent"
                   disabled={duelCtl.duelBusy || !hasApiKey}
-                  onClick={() => void duelCtl.joinLobby()}
+                  onClick={() => {
+                    if (iAmReady) duelCtl.setDuelView('lobby')
+                    else void duelCtl.joinLobby()
+                  }}
                 >
-                  Join {profile.namePartner}&apos;s lobby
+                  Join live lobby
                 </button>
               ) : (
                 <button
@@ -320,7 +338,7 @@ export function SgGuessScreen({ onBack }: SgGuessScreenProps) {
                   disabled={duelCtl.duelBusy || !hasApiKey}
                   onClick={() => void duelCtl.enterLobby()}
                 >
-                  {duelCtl.duel?.status === 'lobby' ? 'Open duel lobby' : 'Start live duel'}
+                  {openLobby ? 'Re-open duel lobby' : 'Create live lobby'}
                 </button>
               )}
             </div>
@@ -372,43 +390,19 @@ export function SgGuessScreen({ onBack }: SgGuessScreenProps) {
       ) : null}
 
       {activePhase === 'duel-lobby' && duelCtl.duel && slot ? (
-        <section className="sg-guess__menu sg-guess__duel-lobby">
-          <div className="sg-guess__duel-card sg-guess__duel-card--lobby">
-            <h2 className="sg-guess__duel-title">Duel lobby</h2>
-            <p className="sg-guess__duel-copy">
-              {duelCtl.isHost
-                ? 'Start when you’re both ready — same rounds, synced timer.'
-                : `Waiting for ${profile.namePartner} to start the match.`}
-            </p>
-            <ul className="sg-guess__duel-ready" aria-label="Player readiness">
-              <li className={iAmReady ? 'is-ready' : ''}>
-                You {iAmReady ? '· ready' : '· not ready'}
-              </li>
-              <li className={partnerReady ? 'is-ready' : ''}>
-                {profile.namePartner} {partnerReady ? '· ready' : '· not ready'}
-              </li>
-            </ul>
-            <div className="sg-guess__menu-actions">
-              {duelCtl.isHost ? (
-                <button
-                  type="button"
-                  className="sg-guess__btn sg-guess__btn--primary"
-                  disabled={!iAmReady || !partnerReady || duelCtl.duelBusy || !mapsApi}
-                  onClick={() => void (prepareMaps().then(() => duelCtl.startMatch()))}
-                >
-                  Start duel
-                </button>
-              ) : null}
-              <button
-                type="button"
-                className="sg-guess__btn sg-guess__btn--ghost"
-                onClick={() => void duelCtl.leaveDuel()}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </section>
+        <SgGuessDuelLobby
+          duel={duelCtl.duel}
+          slot={slot}
+          profile={profile}
+          isHost={duelCtl.isHost}
+          realtimeOk={duelCtl.realtimeOk}
+          duelBusy={duelCtl.duelBusy}
+          hasApiKey={hasApiKey}
+          starting={duelStarting}
+          onToggleReady={(ready) => void duelCtl.toggleReady(ready)}
+          onStart={() => void handleDuelStart()}
+          onLeave={() => void duelCtl.leaveDuel()}
+        />
       ) : null}
 
       {activePhase === 'loading' || phase === 'loading' ? (

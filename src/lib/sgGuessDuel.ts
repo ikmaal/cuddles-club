@@ -127,13 +127,39 @@ export async function createDuelLobby(coupleId: string, hostSlot: MemberSlot): P
   return data as SgGuessDuelRow
 }
 
-export async function setDuelReady(duelId: string, slot: MemberSlot, ready: boolean): Promise<void> {
+export async function setDuelReady(
+  duelId: string,
+  slot: MemberSlot,
+  ready: boolean,
+): Promise<SgGuessDuelRow> {
   const patch = slot === 'a' ? { ready_a: ready } : { ready_b: ready }
-  const { error } = await client()
+  const { data, error } = await client()
     .from('sg_guess_duels')
     .update({ ...patch, updated_at: new Date().toISOString() })
     .eq('id', duelId)
+    .select('*')
+    .single()
   if (error) throw error
+  return data as SgGuessDuelRow
+}
+
+export function duelPartnerReady(row: SgGuessDuelRow, mySlot: MemberSlot): boolean {
+  return mySlot === 'a' ? row.ready_b : row.ready_a
+}
+
+export function duelMyReady(row: SgGuessDuelRow, mySlot: MemberSlot): boolean {
+  return mySlot === 'a' ? row.ready_a : row.ready_b
+}
+
+export function duelPlayerName(
+  targetSlot: MemberSlot,
+  profile: { nameYou: string; namePartner: string },
+  mySlot: MemberSlot,
+): string {
+  const youLabel = profile.nameYou || 'You'
+  const partnerLabel = profile.namePartner || 'Partner'
+  if (targetSlot === mySlot) return youLabel
+  return partnerLabel
 }
 
 export async function abortDuel(duelId: string): Promise<void> {

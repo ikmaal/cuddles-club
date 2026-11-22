@@ -27,6 +27,7 @@ export function useSgGuessDuel(coupleId: string | null, slot: MemberSlot | null,
   const [duelView, setDuelView] = useState<'lobby' | 'play' | null>(null)
   const [mapSubview, setMapSubview] = useState<'explore' | 'guess'>('explore')
   const [clockTick, setClockTick] = useState(0)
+  const [realtimeOk, setRealtimeOk] = useState(false)
 
   const duelRef = useRef(duel)
   duelRef.current = duel
@@ -57,10 +58,20 @@ export function useSgGuessDuel(coupleId: string | null, slot: MemberSlot | null,
 
   useEffect(() => {
     if (!duel) return
-    if (['loading', 'playing', 'reveal', 'summary'].includes(duel.status)) {
+    if (duel.status === 'lobby') {
+      setDuelView('lobby')
+    } else if (['loading', 'playing', 'reveal', 'summary'].includes(duel.status)) {
       setDuelView('play')
     }
   }, [duel?.status])
+
+  useEffect(() => {
+    if (duelView !== 'lobby' || !coupleId) return
+    const id = window.setInterval(() => {
+      void refresh()
+    }, 2500)
+    return () => window.clearInterval(id)
+  }, [coupleId, duelView, refresh])
 
   useEffect(() => {
     if (duel?.status !== 'playing') return
@@ -84,12 +95,18 @@ export function useSgGuessDuel(coupleId: string | null, slot: MemberSlot | null,
         },
         (payload) => {
           const row = payload.new as SgGuessDuelRow
-          if (row?.id) setDuel(row)
+          if (row?.id) {
+            setDuel(row)
+            setRealtimeOk(true)
+          }
         },
       )
-      .subscribe()
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') setRealtimeOk(true)
+      })
 
     return () => {
+      setRealtimeOk(false)
       void client.removeChannel(channel)
     }
   }, [coupleId, enabled])
@@ -104,7 +121,6 @@ export function useSgGuessDuel(coupleId: string | null, slot: MemberSlot | null,
       const row = await createDuelLobby(coupleId, slot)
       setDuel(row)
       setDuelView('lobby')
-      await setDuelReady(row.id, slot, true)
     } catch {
       setDuelError('Could not open duel lobby.')
     } finally {
@@ -113,17 +129,40 @@ export function useSgGuessDuel(coupleId: string | null, slot: MemberSlot | null,
   }, [coupleId, slot])
 
   const joinLobby = useCallback(async () => {
-    if (!duel || !slot) return
+    if (!coupleId || !slot) return
     setDuelBusy(true)
+    setDuelError(null)
     try {
-      await setDuelReady(duel.id, slot, true)
+      const existing = duel ?? (await fetchActiveDuel(coupleId))
+      if (!existing || existing.status !== 'lobby') {
+        setDuelError('No open lobby — ask your partner to open one first.')
+        return
+      }
+      setDuel(existing)
       setDuelView('lobby')
     } catch {
       setDuelError('Could not join lobby.')
     } finally {
       setDuelBusy(false)
     }
-  }, [duel, slot])
+  }, [coupleId, duel, slot])
+
+  const toggleReady = useCallback(
+    async (ready: boolean) => {
+      if (!duel || !slot || duel.status !== 'lobby') return
+      setDuelBusy(true)
+      setDuelError(null)
+      try {
+        const row = await setDuelReady(duel.id, slot, ready)
+        setDuel(row)
+      } catch {
+        setDuelError('Could not update ready status.')
+      } finally {
+        setDuelBusy(false)
+      }
+    },
+    [duel, slot],
+  )
 
   const leaveDuel = useCallback(async () => {
     if (duel?.id) {
@@ -268,6 +307,7 @@ export function useSgGuessDuel(coupleId: string | null, slot: MemberSlot | null,
     secondsLeft,
     enterLobby,
     joinLobby,
+    toggleReady,
     leaveDuel,
     startMatch,
     postGuess,
@@ -275,5 +315,6 @@ export function useSgGuessDuel(coupleId: string | null, slot: MemberSlot | null,
     bindMaps,
     refresh,
     clearDuelError: () => setDuelError(null),
+    realtimeOk,
   }
 }
